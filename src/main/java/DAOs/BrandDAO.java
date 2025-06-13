@@ -11,32 +11,26 @@ import java.sql.Connection;
 
 public class BrandDAO extends DBContext {
 
-    // Retrieve all brands from the database
     public List<Brand> getAllBrands() {
         List<Brand> brands = new ArrayList<>();
-        String query = "SELECT * FROM Brands"; 
-        try (Connection conn = this.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(query);
-             ResultSet rs = stmt.executeQuery()) {
-            
+        String query = "SELECT * FROM Brands";
+        try ( Connection conn = this.getConnection();  PreparedStatement stmt = conn.prepareStatement(query);  ResultSet rs = stmt.executeQuery()) {
+
             while (rs.next()) {
-                Brand brand = mapResultSetToBrand(rs);
-                brands.add(brand);
+                brands.add(mapResultSetToBrand(rs));
             }
         } catch (SQLException e) {
-            handleException("Error fetching all brands", e);
+            System.err.println("Error fetching all brands: " + e.getMessage());
         }
         return brands;
     }
 
-    // Retrieve brands by category
     public List<Brand> getBrandsByCategory(String category) {
         List<Brand> brands = new ArrayList<>();
         String query = "SELECT * FROM Brands WHERE category = ?";
-        try (Connection conn = this.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(query)) {
+        try ( Connection conn = this.getConnection();  PreparedStatement stmt = conn.prepareStatement(query)) {
             stmt.setString(1, category);
-            try (ResultSet rs = stmt.executeQuery()) {
+            try ( ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {
                     Brand brand = mapResultSetToBrand(rs);
                     brands.add(brand);
@@ -47,13 +41,11 @@ public class BrandDAO extends DBContext {
         }
         return brands;
     }
-    // Get total number of brands
+
     public int getTotalBrands() {
         int total = 0;
         String query = "SELECT COUNT(*) AS total FROM Brands";
-        try (Connection conn = this.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(query);
-             ResultSet rs = stmt.executeQuery()) {
+        try ( Connection conn = this.getConnection();  PreparedStatement stmt = conn.prepareStatement(query);  ResultSet rs = stmt.executeQuery()) {
             if (rs.next()) {
                 total = rs.getInt("total");
             }
@@ -63,7 +55,22 @@ public class BrandDAO extends DBContext {
         return total;
     }
 
-    // Helper method to map ResultSet to Brand object
+    public int getTotalBrandsByCategory(String category) {
+        int total = 0;
+        String query = "SELECT COUNT(*) FROM Brands WHERE category = ?";
+        try ( Connection conn = this.getConnection();  PreparedStatement stmt = conn.prepareStatement(query)) {
+            stmt.setString(1, category);
+            try ( ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    total = rs.getInt(1);
+                }
+            }
+        } catch (SQLException e) {
+            handleException("Error fetching total brands by category", e);
+        }
+        return total;
+    }
+
     private Brand mapResultSetToBrand(ResultSet rs) throws SQLException {
         Brand brand = new Brand();
         brand.setId(rs.getInt("brandId"));
@@ -73,7 +80,6 @@ public class BrandDAO extends DBContext {
         return brand;
     }
 
-    // Exception handling utility
     private void handleException(String message, SQLException e) {
         System.err.println(message + ": " + e.getMessage());
         e.printStackTrace();

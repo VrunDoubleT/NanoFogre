@@ -33,7 +33,7 @@ public class AdminViewServerlet extends HttpServlet {
             case "customer":
                 viewPath = "/WEB-INF/employees/components/customerComponent.jsp";
                 break;
-                 case "category":
+            case "category":
                 viewPath = "/WEB-INF/employees/components/categoryComponent.jsp";
                 break;
             case "staff":
@@ -50,19 +50,9 @@ public class AdminViewServerlet extends HttpServlet {
                 break;
             case "brand":
                 viewPath = "/WEB-INF/employees/components/brandComponent.jsp";
-                String category = request.getParameter("category");
-                String search = request.getParameter("search");
-                List<Brand> filteredBrands;
-                if (category != null && !category.equals("all")) {
-                    filteredBrands = brandDao.getBrandsByCategory(category);
-                } else {
-                    filteredBrands = brandDao.getAllBrands();
-                }
-                int totalBrands = filteredBrands.size();
-                request.setAttribute("brands", filteredBrands);
-                request.setAttribute("totalBrands", totalBrands);
-                request.setAttribute("selectedCategory", category);
-                break;
+                request.setAttribute("viewPath", viewPath);
+                request.getRequestDispatcher("/brand").forward(request, response);
+                return;
             case "dashboard":
                 viewPath = "/WEB-INF/employees/components/adminDashboardComponent.jsp";
                 break;

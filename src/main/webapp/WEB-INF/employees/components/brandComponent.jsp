@@ -16,24 +16,21 @@
                         <div class="text-gray-500 text-sm">Total Brands</div>
                     </div>
                 </div>
-                <!-- Bộ lọc và tìm kiếm -->
                 <div class="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
                     <div class="relative flex-1">
                     </div>
                     <select id="brandCategoryFilter" class="border rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500"
                             onchange="filterByCategory(this.value)">
-                        <option value="all">All Categories</option>
-                        <option value="moto">Moto</option>
-                        <option value="airplane">Airplane</option>
-                        <option value="oto">Oto</option>
-                        <option value="other">Other</option>
+                        <option value="all" ${empty selectedCategory || selectedCategory eq 'all' ? 'selected' : ''}>All Categories</option>
+                        <option value="moto" ${selectedCategory eq 'moto' ? 'selected' : ''}>Moto</option>
+                        <option value="airplane" ${selectedCategory eq 'airplane' ? 'selected' : ''}>Airplane</option>
+                        <option value="oto" ${selectedCategory eq 'oto' ? 'selected' : ''}>Oto</option>
+                        <option value="other" ${selectedCategory eq 'other' ? 'selected' : ''}>Other</option>
                     </select>
-
                 </div>
             </div>
         </div>
 
-        <!-- Bảng danh sách Brand -->
         <div class="bg-white rounded-xl shadow overflow-hidden">
             <table class="min-w-full">
                 <thead class="bg-gray-50">
