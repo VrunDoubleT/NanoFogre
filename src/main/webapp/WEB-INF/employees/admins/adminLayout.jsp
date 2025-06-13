@@ -84,6 +84,13 @@
                             }
                             loadProductContentAndEvent(parseOptionNumber(cId, 0), parseOptionNumber(page, 1))
                             break;
+                        case 'staff':
+                            let staffPage = 1;
+                            if (params.length > 0) {
+                                staffPage = params[0].value;
+                            }
+                            loadStaffContentAndEvent(parseOptionNumber(staffPage, 1));
+                            break;
                         default :
                             break;
                     }

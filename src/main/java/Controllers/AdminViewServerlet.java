@@ -2,6 +2,7 @@ package Controllers;
 
 import DAOs.CategoryDAO;
 import DAOs.ProductDAO;
+import DAOs.StaffDAO;
 import Models.Category;
 import Models.Product;
 import Models.ProductStat;
@@ -36,6 +37,7 @@ public class AdminViewServerlet extends HttpServlet {
         // MANAGE DAO
         ProductDAO pDao = new ProductDAO();
         CategoryDAO categoryDao = new CategoryDAO();
+        StaffDAO sDao = new StaffDAO();
         // PATH THE JSP FILE
         String viewPage = request.getParameter("viewPage");
         String viewPath;
@@ -61,6 +63,8 @@ public class AdminViewServerlet extends HttpServlet {
                 viewPath = "/WEB-INF/employees/components/categoryComponent.jsp";
                 break;
             case "staff":
+                int count = sDao.countStaff();
+                request.setAttribute("count", count);
                 viewPath = "/WEB-INF/employees/components/staffComponent.jsp";
                 break;
             default:
