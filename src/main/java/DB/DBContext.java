@@ -13,9 +13,9 @@ import java.util.logging.Logger;
  * @author Tran Thanh Van - CE181019
  */
 public class DBContext {
-    private static final String DB_URL = "jdbc:sqlserver://127.0.0.1:1433;databaseName=DBNanoFogre;encrypt=false";
+    private static final String DB_URL = "jdbc:sqlserver://127.0.0.1:1433;databaseName=Swp;encrypt=false";
     private static final String DB_USER = "sa";
-    private static final String DB_PWD = "123";
+    private static final String DB_PWD = "sa";
 
     public DBContext() {
         try {
