@@ -137,6 +137,11 @@
                         // LOAD CONTENT
                         loadContent(viewPage, false, [{name: 'categoryId', value: categoryId},{name: 'page', value: page}]);
                         break;
+                    case "staff":
+                        const staffPage = params.get('page') || '1';
+                        loadContent(viewPage, false, [{name: 'page', value: staffPage}
+                        ]);
+                        break;
                     default:
                         loadContent(viewPage, false);
                         break;

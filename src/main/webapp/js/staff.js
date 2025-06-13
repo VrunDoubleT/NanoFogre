@@ -38,4 +38,3 @@ const loadStaffContentAndEvent = (page) => {
         });
     });
 };
-

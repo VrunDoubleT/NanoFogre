@@ -45,7 +45,7 @@ public class StaffViewServlet extends HttpServlet {
                 request.setAttribute("slist", staff);
                 request.setAttribute("page", page);
                 request.setAttribute("limit", limit);
-                request.getRequestDispatcher("/WEB-INF/employees/teamplates/staffTemplate.jsp").forward(request, response);
+                request.getRequestDispatcher("/WEB-INF/employees/teamplates/staff/staffTemplate.jsp").forward(request, response);
                 break;
             case "pagination":
                 int p = Converter.parseOption(request.getParameter("page"), 1);
@@ -53,7 +53,7 @@ public class StaffViewServlet extends HttpServlet {
                 request.setAttribute("total", t);
                 request.setAttribute("limit", limit);
                 request.setAttribute("page", p);
-                request.getRequestDispatcher("/WEB-INF/employees/teamplates/paginationTeamplate.jsp").forward(request, response);
+                request.getRequestDispatcher("/WEB-INF/employees/teamplates/products/paginationTeamplate.jsp").forward(request, response);
                 break;
             default:
                 break;
