@@ -23,73 +23,85 @@
         <div style="display: flex;">
             <%@ include file="adminSidebar.jsp" %>
             <div id="main-content" class="bg-gray-100 w-full h-[calc(100vh-74px)] px-8 py-6 overflow-y-auto">
-                <!-- Load content -->
+                <!-- Dynamic content will be loaded here -->
             </div>
         </div>
 
         <script>
-            // TO USE LUCIDE ICON
             lucide.createIcons();
-            // METHOD TO COVERT STRING -> NUMBER (IF ERROR WHEN CASH OR LESS THAN MIN THEN RETURN MIN)
+
             function parseOptionNumber(input, min) {
                 const num = Number(input);
                 if (isNaN(num) || num < min) {
-                    return 0;
+                    return min;
                 }
                 return num;
             }
-            // METHOD TO OPEN OPEN EMPTY MODAL
+
             const openModal = (modal) => {
                 modal.classList.remove("hidden");
                 modal.classList.add("flex");
-                // DON'T SCROLL WHEN OPEN MODAL
                 document.body.classList.add('overflow-hidden')
             }
-            // METHOD TO LOAD CONTENT FOR EACH PAGE (category, product,...)
-            /**
-             * @argument {type} name description
-             * @argument {String} path Use load valid content (HTML) for each page
-             * @argument {Boolean} push Check push or not in history webside 
-             * @argument {{name: string, value: string}[]} params Params of urls (Ex. /admin?name=value) 
-             * */
+
+            // Helper: Render Brand Page layout (title + loading + container)
+            function renderBrandPageLayout() {
+                document.getElementById('main-content').innerHTML = `
+                    <div class="mb-8">
+                        <h2 class="text-2xl font-bold mb-6 text-gray-800">Brand List</h2>
+                        <div id="loadingBrand"></div>
+                        <div id="brandContainer"></div>
+                    </div>
+                `;
+            }
+
             function loadContent(path, push, params = []) {
-                // Default url (serverlet) to load content (HTML)
                 const rootUrl = '/admin/view?viewPage=' + path
-                // Params of url
                 let paramUrl = ''
                 if (params.length > 0) {
                     params.forEach(objParam => {
                         paramUrl += '&' + objParam.name + '=' + objParam.value
                     })
                 }
-                // CALL SERVERLET TO GET HTML
+                if (path === "brand") {
+                    // Render layout for brand page first to avoid duplication
+                    renderBrandPageLayout();
+                }
                 fetch(rootUrl + paramUrl)
-                            // CONVERT RESULT -> STRING HTML
-                        .then(res => res.text())
-                        // RENDER HTML
-                        .then(html => {
+                    .then(res => res.text())
+                    .then(html => {
+                        if (path === "brand") {
+                            document.getElementById('loadingBrand').innerHTML = '';
+                            document.getElementById('brandContainer').innerHTML = html;
+                        } else {
                             document.getElementById('main-content').innerHTML = html;
-                            // ADD HISTORY WEBSIDE
-                            if (push)
-                                history.pushState({page: path}, '', '/admin/dashboard?view=' + path);
-                        }).then(() => {
-                            // LOAD CONTENT FOR EACH PAGE COMPONENT
-                    switch (path) {
-                        case 'product':
-                            let cId = 0;
-                            let page = 1
-                            if(params.length > 0){
-                                cId = params[0].value
-                                page = params[1].value
-                            }
-                            loadProductContentAndEvent(parseOptionNumber(cId, 0), parseOptionNumber(page, 1))
-                            break;
-                        default :
-                            break;
-                    }
-                });
+                        }
+                        if (push)
+                            history.pushState({page: path}, '', '/admin/dashboard?view=' + path);
+                    }).then(() => {
+                        switch (path) {
+                            case 'product':
+                                let cId = 0;
+                                let page = 1;
+                                if(params.length > 0){
+                                    cId = params[0].value
+                                    page = params[1].value
+                                }
+                                loadProductContentAndEvent(parseOptionNumber(cId, 0), parseOptionNumber(page, 1));
+                                break;
+                            case 'brand':
+                                let brandPage = 1;
+                                if(params.length > 0){
+                                    brandPage = params[0].value
+                                }
+                                loadBrandContentAndEvent(parseOptionNumber(brandPage, 1));
+                                break;
+                            default:
+                                break;
+                        }
+                    });
             }
-            // HANDLE ACTIVE NAVBAR
+
             const updateAvtiveSidebar = (page) => {
                 document.querySelectorAll(".nav-link").forEach((element) => {
                     if (element.getAttribute("data-page") === page) {
@@ -99,9 +111,8 @@
                     }
                 });
             }
-            // AFTER CONTET LOADED WILL CALL FUNCTION
+
             window.onload = function () {
-                // HANDLE CLICK NAVBAR
                 document.querySelectorAll('.nav-link').forEach(link => {
                     link.addEventListener('click', function (e) {
                         e.preventDefault();
@@ -110,7 +121,6 @@
                         loadContent(page, true);
                     });
                 });
-                // HANDLE CLICK OUTSIDE MODAL THEN CLOSE MODAL
                 document.getElementById("modal").onclick = () => {
                     document.getElementById("modal").classList.remove("flex")
                     document.body.classList.remove("overflow-hidden")
@@ -119,7 +129,6 @@
                 document.getElementById("modalContent").addEventListener("click", function (event) {
                     event.stopPropagation();
                 });
-                // HANDLE LOAD CONTENT FOR EACH PAGE
                 const params = new URLSearchParams(window.location.search);
                 const viewPage = params.get('view') || 'dashboard';
                 updateAvtiveSidebar(viewPage)
@@ -127,8 +136,11 @@
                     case "product":
                         const categoryId = params.get('categoryId') || '0';
                         const page = params.get('page') || '1';
-                        // LOAD CONTENT
                         loadContent(viewPage, false, [{name: 'categoryId', value: categoryId},{name: 'page', value: page}]);
+                        break;
+                    case "brand":
+                        const brandPage = params.get('page') || '1';
+                        loadContent(viewPage, false, [{name: 'page', value: brandPage}]);
                         break;
                     default:
                         loadContent(viewPage, false);
@@ -136,7 +148,6 @@
                 }
             };
 
-            // POPSTATE
             window.onpopstate = function (e) {
                 if (e.state && e.state.page) {
                     loadContent(e.state.page, false);

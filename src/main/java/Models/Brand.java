@@ -8,7 +8,7 @@ public class Brand {
     private int id;
     private String name;
     private String url;
-
+    private String category;
     public Brand() {
     }
 
@@ -16,6 +16,7 @@ public class Brand {
         this.id = id;
         this.name = name;
         this.url = url;
+        this.category = category;
     }
 
     public int getId() {
@@ -41,9 +42,16 @@ public class Brand {
     public void setUrl(String url) {
         this.url = url;
     }
+    public String getCategory() {
+        return category;
+    }
+
+    public void setCategory(String category) {
+        this.category = category;
+    }
 
     @Override
     public String toString() {
-        return "Brand{" + "id=" + id + ", name=" + name + ", url=" + url + '}';
+        return "Brand{" + "id=" + id + ", name=" + name + ", url=" + url + ", category='" + category + '\'' +'}';
     }
 }
