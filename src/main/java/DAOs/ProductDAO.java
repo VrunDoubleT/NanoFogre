@@ -20,15 +20,15 @@ import java.util.Collections;
  * @author Tran Thanh Van - CE181019
  */
 public class ProductDAO extends DB.DBContext {
+
     public int getTotalPagination(int categoryId) {
-        int limit = 10;
         String query = "select COUNT(p.productId) as total \n"
                 + "from Products p\n"
                 + "join Categories c\n"
                 + "on p.categoryId = c.categoryId\n"
                 + "join Brands b\n"
                 + "on p.brandId = b.brandId\n";
-        if(categoryId > 0){
+        if (categoryId > 0) {
             query += "where p.categoryId = " + categoryId + "\n";
         }
         try ( ResultSet rs = execSelectQuery(query)) {
@@ -41,7 +41,7 @@ public class ProductDAO extends DB.DBContext {
 
         return 0;
     }
-    
+
     public List<Product> products(int categoryId, int page, int limit) {
         int row = (page - 1) * limit;
         List<Product> pros = new ArrayList<>();
@@ -51,11 +51,11 @@ public class ProductDAO extends DB.DBContext {
                 + "on p.categoryId = c.categoryId\n"
                 + "join Brands b\n"
                 + "on p.brandId = b.brandId\n";
-        if(categoryId > 0){
+        if (categoryId > 0) {
             query += "where p.categoryId = " + categoryId + "\n";
         }
-        query += "ORDER BY p.productId\n" +
-                "OFFSET " + row + " ROWS FETCH NEXT " + limit +" ROWS ONLY;";
+        query += "ORDER BY p.productId\n"
+                + "OFFSET " + row + " ROWS FETCH NEXT " + limit + " ROWS ONLY;";
         try ( ResultSet rs = execSelectQuery(query)) {
             while (rs.next()) {
                 Product product = new Product();
@@ -143,7 +143,7 @@ public class ProductDAO extends DB.DBContext {
         ProductStat stat = new ProductStat();
         String sql = "select COUNT(p.productId) as total, SUM(p.productQuantity) as inventory, SUM((p.productQuantity * p.productPrice)) as inventoryValue, SUM(CASE WHEN p.productQuantity = 0 THEN 1 ELSE 0 END) AS outProducts from Products p";
 
-        try (ResultSet rs = execSelectQuery(sql)) {
+        try ( ResultSet rs = execSelectQuery(sql)) {
 
             if (rs.next()) {
                 stat.setTotalProducts(rs.getInt("total"));
@@ -159,4 +159,57 @@ public class ProductDAO extends DB.DBContext {
         return stat;
     }
 
+    public boolean createProduct(Product product) {
+        String sql = "INSERT INTO Products (\n"
+                + "    productTitle, productDescription, scale, material, slug, productPrice, productQuantity,\n"
+                + "    paint, features, manufacturer, length, width, height, weight,\n"
+                + "    _destroy, categoryId, brandId\n"
+                + ")\n"
+                + "VALUES (\n"
+                + "    ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?\n"
+                + ")";
+        String sqlUrls = "INSERT INTO ProductImages (productId, url) VALUES\n";
+                
+        Object[] paramsObj = {
+            product.getTitle(),
+            product.getDescription(),
+            product.getScale(),
+            product.getMaterial(),
+            product.getSlug(),
+            product.getPrice(),
+            product.getQuantity(),
+            product.getPaint(),
+            product.getFeatures(),
+            product.getManufacturer(),
+            product.getLength(),
+            product.getWidth(),
+            product.getHeight(),
+            product.getWeight(),
+            product.isDestroy(),
+            product.getCategory().getId(),
+            product.getBrand().getId()
+        };
+
+        try {
+            int generateId = execQueryReturnId(sql, paramsObj);
+            if (generateId > 0) {
+                if (product.getUrls().size() > 0) {
+                    for (int i = 0; i < product.getUrls().size(); i++) {
+                        sqlUrls += String.format("(%d, N'%s')", generateId, product.getUrls().get(i));
+                        if(i < product.getUrls().size() - 1){
+                            sqlUrls += ",";
+                        }
+                    }
+                    int rowEffect = execQuery(sqlUrls);
+                    if(rowEffect > 0){
+                        return true;
+                    }
+                }
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
 }
