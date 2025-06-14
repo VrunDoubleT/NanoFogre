@@ -56,77 +56,65 @@
             }
 
             function loadContent(path, push, params = []) {
-                const rootUrl = '/admin/view?viewPage=' + path
-                let paramUrl = ''
+                const rootUrl = '/admin/view?viewPage=' + path;
+                let paramUrl = '';
+
                 if (params.length > 0) {
                     params.forEach(objParam => {
-                        paramUrl += '&' + objParam.name + '=' + objParam.value
-                    })
+                        paramUrl += '&' + objParam.name + '=' + objParam.value;
+                    });
                 }
+
                 if (path === "brand") {
                     // Render layout for brand page first to avoid duplication
                     renderBrandPageLayout();
                 }
+
                 fetch(rootUrl + paramUrl)
-                    .then(res => res.text())
-                    .then(html => {
-                        if (path === "brand") {
-                            document.getElementById('loadingBrand').innerHTML = '';
-                            document.getElementById('brandContainer').innerHTML = html;
-                        } else {
-                            document.getElementById('main-content').innerHTML = html;
-                            // ADD HISTORY WEBSIDE
-                            if (push)
+                        .then(res => res.text())
+                        .then(html => {
+                            if (path === "brand") {
+                                document.getElementById('loadingBrand').innerHTML = '';
+                                document.getElementById('brandContainer').innerHTML = html;
+                            } else {
+                                document.getElementById('main-content').innerHTML = html;
+                            }
+
+                            if (push) {
                                 history.pushState({page: path}, '', '/admin/dashboard?view=' + path);
-                        }).then(() => {
+                            }
+
                             // LOAD CONTENT FOR EACH PAGE COMPONENT
-                    switch (path) {
-                        case 'product':
-                            let cId = 0;
-                            let page = 1
-                            if(params.length > 0){
-                                cId = params[0].value
-                                page = params[1].value
+                            switch (path) {
+                                case 'product':
+                                    let cId = 0;
+                                    let page = 1;
+                                    if (params.length > 0) {
+                                        cId = parseOptionNumber(params[0].value, 0);
+                                        page = parseOptionNumber(params[1]?.value, 1);
+                                    }
+                                    loadProductContentAndEvent(cId, page);
+                                    break;
+                                case 'staff':
+                                    let staffPage = 1;
+                                    if (params.length > 0) {
+                                        staffPage = parseOptionNumber(params[0].value, 1);
+                                    }
+                                    loadStaffContentAndEvent(staffPage);
+                                    break;
+                                case 'brand':
+                                    let brandPage = 1;
+                                    if (params.length > 0) {
+                                        brandPage = parseOptionNumber(params[0].value, 1);
+                                    }
+                                    loadBrandContentAndEvent(brandPage);
+                                    break;
+                                default:
+                                    break;
                             }
-                            loadProductContentAndEvent(parseOptionNumber(cId, 0), parseOptionNumber(page, 1))
-                            break;
-                        case 'staff':
-                            let staffPage = 1;
-                            if (params.length > 0) {
-                                staffPage = params[0].value;
-                            }
-                            loadStaffContentAndEvent(parseOptionNumber(staffPage, 1));
-                            break;
-                        default :
-                            break;
-                    }
-                });
-                        }
-                        if (push)
-                            history.pushState({page: path}, '', '/admin/dashboard?view=' + path);
-                    }).then(() => {
-                        switch (path) {
-                            case 'product':
-                                let cId = 0;
-                                let page = 1;
-                                if(params.length > 0){
-                                    cId = params[0].value
-                                    page = params[1].value
-                                }
-                                loadProductContentAndEvent(parseOptionNumber(cId, 0), parseOptionNumber(page, 1));
-                                break;
-                            case 'brand':
-                                let brandPage = 1;
-                                if(params.length > 0){
-                                    brandPage = params[0].value
-                                }
-                                loadBrandContentAndEvent(parseOptionNumber(brandPage, 1));
-                                break;
-                            default:
-                                break;
-                        }
-                    });
+                        });
             }
+
 
             const updateAvtiveSidebar = (page) => {
                 document.querySelectorAll(".nav-link").forEach((element) => {
@@ -162,7 +150,7 @@
                     case "product":
                         const categoryId = params.get('categoryId') || '0';
                         const page = params.get('page') || '1';
-                        loadContent(viewPage, false, [{name: 'categoryId', value: categoryId},{name: 'page', value: page}]);
+                        loadContent(viewPage, false, [{name: 'categoryId', value: categoryId}, {name: 'page', value: page}]);
                         break;
                     case "staff":
                         const staffPage = params.get('page') || '1';
