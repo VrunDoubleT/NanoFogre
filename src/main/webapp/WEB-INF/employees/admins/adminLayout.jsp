@@ -12,6 +12,7 @@
         <title>Admin</title>
         <script src="https://cdn.tailwindcss.com"></script>
         <script src="https://unpkg.com/lucide@latest"></script>
+        <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
     </head>
     <body>
         <%@ include file="adminHeader.jsp" %>
@@ -175,6 +176,6 @@
         <script src="../../../js/product.js"></script>    
         <script src="../../../js/brand.js"></script>       
         <script src="../../../js/category.js"></script>       
-        <script src="../../../js/staff.js"></script>       
+        <script src="../../../js/staff.js"></script> 
     </body>
 </html>
