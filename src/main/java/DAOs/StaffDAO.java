@@ -56,4 +56,24 @@ public class StaffDAO extends DB.DBContext {
         }
         return 0;
     }
+
+    public boolean createStaff(Employee staff) {
+        String query = "INSERT INTO Employees (employeeEmail, employeePassword, employeeName, employeeAvatar, roleId, isBlock, createdAt) "
+                + "VALUES (?, ?, ?, ?, 2, ?, GETDATE())";
+        Object[] params = {
+            staff.getEmail(),
+            staff.getPassword(),
+            staff.getName(),
+            staff.getAvatar(),
+            staff.isIsBlock() // boolean → bit
+        };
+
+        try {
+            int generatedId = execQueryReturnId(query, params);
+            return generatedId > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
 }
