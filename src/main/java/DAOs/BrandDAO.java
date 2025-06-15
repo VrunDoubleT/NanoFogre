@@ -9,43 +9,136 @@ import java.util.List;
 import DB.DBContext;
 import java.sql.Connection;
 
-public class BrandDAO extends DBContext {
 
+
+public class BrandDAO extends DBContext {
+    // CREATE 
+    public boolean createBrand(String name, String imageUrl) {
+        String query = "INSERT INTO Brands (brandName, image) VALUES (?, ?)";
+        try (Connection conn = this.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(query)) {
+            
+            stmt.setString(1, name);
+            stmt.setString(2, imageUrl);
+            return stmt.executeUpdate() > 0;
+            
+        } catch (SQLException e) {
+            handleException("Error creating brand", e);
+            return false;
+        }
+    }
+
+    // READ 
     public List<Brand> getAllBrands() {
         List<Brand> brands = new ArrayList<>();
-        String query = "SELECT * FROM Brands";
-        try ( Connection conn = this.getConnection();  PreparedStatement stmt = conn.prepareStatement(query);  ResultSet rs = stmt.executeQuery()) {
-
+        String query = "SELECT brandId, brandName, image FROM Brands";
+        
+        try (Connection conn = this.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(query);
+             ResultSet rs = stmt.executeQuery()) {
+            
             while (rs.next()) {
                 brands.add(mapResultSetToBrand(rs));
             }
         } catch (SQLException e) {
-            System.err.println("Error fetching all brands: " + e.getMessage());
+            handleException("Error fetching all brands", e);
         }
         return brands;
     }
 
-    public List<Brand> getBrandsByCategory(String category) {
+    // READ 
+    public List<Brand> getBrandsPaginated(int page, int pageSize) {
         List<Brand> brands = new ArrayList<>();
-        String query = "SELECT * FROM Brands WHERE category = ?";
-        try ( Connection conn = this.getConnection();  PreparedStatement stmt = conn.prepareStatement(query)) {
-            stmt.setString(1, category);
-            try ( ResultSet rs = stmt.executeQuery()) {
+        String query = "SELECT brandId, brandName, image FROM Brands ORDER BY brandId OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
+        
+        try (Connection conn = this.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(query)) {
+            
+            int offset = (page - 1) * pageSize;
+            stmt.setInt(1, offset);
+            stmt.setInt(2, pageSize);
+            
+            try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {
-                    Brand brand = mapResultSetToBrand(rs);
-                    brands.add(brand);
+                    brands.add(mapResultSetToBrand(rs));
                 }
             }
         } catch (SQLException e) {
-            handleException("Error fetching brands by category", e);
+            handleException("Error fetching paginated brands", e);
         }
         return brands;
     }
 
-    public int getTotalBrands() {
+    // UPDATE 
+    public boolean updateBrand(int id, String newName, String newImageUrl) {
+        String query = "UPDATE Brands SET brandName = ?, image = ? WHERE brandId = ?";
+        try (Connection conn = this.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(query)) {
+            
+            stmt.setString(1, newName);
+            stmt.setString(2, newImageUrl);
+            stmt.setInt(3, id);
+            return stmt.executeUpdate() > 0;
+            
+        } catch (SQLException e) {
+            handleException("Error updating brand", e);
+            return false;
+        }
+    }
+
+    // DELETE 
+    public boolean deleteBrand(int id) {
+        String query = "DELETE FROM Brands WHERE brandId = ?";
+        try (Connection conn = this.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(query)) {
+            
+            stmt.setInt(1, id);
+            return stmt.executeUpdate() > 0;
+            
+        } catch (SQLException e) {
+            handleException("Error deleting brand", e);
+            return false;
+        }
+    }
+
+    public boolean isBrandNameExists(String name) {
+        String query = "SELECT COUNT(*) FROM Brands WHERE brandName = ?";
+        try (Connection conn = this.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(query)) {
+            
+            stmt.setString(1, name);
+            try (ResultSet rs = stmt.executeQuery()) {
+                return rs.next() && rs.getInt(1) > 0;
+            }
+        } catch (SQLException e) {
+            handleException("Error checking brand name", e);
+            return false;
+        }
+    }
+
+    public boolean isBrandNameExistsExceptId(String name, int id) {
+        String query = "SELECT COUNT(*) FROM Brands WHERE brandName = ? AND brandId <> ?";
+        try (Connection conn = this.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(query)) {
+            
+            stmt.setString(1, name);
+            stmt.setInt(2, id);
+            try (ResultSet rs = stmt.executeQuery()) {
+                return rs.next() && rs.getInt(1) > 0;
+            }
+        } catch (SQLException e) {
+            handleException("Error checking brand name (update)", e);
+            return false;
+        }
+    }
+
+    public int getTotalBrandsForPagination() {
         int total = 0;
         String query = "SELECT COUNT(*) AS total FROM Brands";
-        try ( Connection conn = this.getConnection();  PreparedStatement stmt = conn.prepareStatement(query);  ResultSet rs = stmt.executeQuery()) {
+        try (Connection conn = this.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(query);
+             ResultSet rs = stmt.executeQuery()) {
+            
             if (rs.next()) {
                 total = rs.getInt("total");
             }
@@ -55,20 +148,19 @@ public class BrandDAO extends DBContext {
         return total;
     }
 
-    public int getTotalBrandsByCategory(String category) {
-        int total = 0;
-        String query = "SELECT COUNT(*) FROM Brands WHERE category = ?";
-        try ( Connection conn = this.getConnection();  PreparedStatement stmt = conn.prepareStatement(query)) {
-            stmt.setString(1, category);
-            try ( ResultSet rs = stmt.executeQuery()) {
-                if (rs.next()) {
-                    total = rs.getInt(1);
-                }
+    public Brand getBrandById(int id) {
+        String query = "SELECT * FROM Brands WHERE brandId = ?";
+        try (Connection conn = this.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(query)) {
+            
+            stmt.setInt(1, id);
+            try (ResultSet rs = stmt.executeQuery()) {
+                return rs.next() ? mapResultSetToBrand(rs) : null;
             }
         } catch (SQLException e) {
-            handleException("Error fetching total brands by category", e);
+            handleException("Error fetching brand by ID", e);
+            return null;
         }
-        return total;
     }
 
     private Brand mapResultSetToBrand(ResultSet rs) throws SQLException {
@@ -76,7 +168,6 @@ public class BrandDAO extends DBContext {
         brand.setId(rs.getInt("brandId"));
         brand.setName(rs.getString("brandName"));
         brand.setUrl(rs.getString("image"));
-        brand.setCategory(rs.getString("category"));
         return brand;
     }
 
@@ -85,3 +176,4 @@ public class BrandDAO extends DBContext {
         e.printStackTrace();
     }
 }
+
