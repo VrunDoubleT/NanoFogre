@@ -13,8 +13,17 @@
         <script src="https://cdn.tailwindcss.com"></script>
         <script src="https://unpkg.com/lucide@latest"></script>
         <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+        <!-- CSS of Toastify -->
+        <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+        <!-- JS of Toastify -->
+        <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+        <!-- SweetAlert2 CDN -->
+        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+
     </head>
     <body>
+        <%@ include file="../../common/loading.jsp" %>
         <%@ include file="adminHeader.jsp" %>
         <div id="modal" class="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50 hidden">
             <div id="modalContent" class="bg-white max-h-[90%] rounded-2xl overflow-y-auto">
@@ -43,6 +52,12 @@
                 modal.classList.remove("hidden");
                 modal.classList.add("flex");
                 document.body.classList.add('overflow-hidden')
+            }
+
+            const closeModal = () => {
+                document.getElementById("modal").classList.remove("flex")
+                document.body.classList.remove("overflow-hidden")
+                document.getElementById("modal").classList.add("hidden")
             }
 
             // Helper: Render Brand Page layout (title + loading + container)
@@ -177,5 +192,6 @@
         <script src="../../../js/brand.js"></script>       
         <script src="../../../js/category.js"></script>       
         <script src="../../../js/staff.js"></script> 
+        <script src="../../../js/loading.js"></script>
     </body>
 </html>

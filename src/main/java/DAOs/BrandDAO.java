@@ -76,7 +76,6 @@ public class BrandDAO extends DBContext {
         brand.setId(rs.getInt("brandId"));
         brand.setName(rs.getString("brandName"));
         brand.setUrl(rs.getString("image"));
-        brand.setCategory(rs.getString("category"));
         return brand;
     }
 

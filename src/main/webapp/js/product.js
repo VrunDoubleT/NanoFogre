@@ -57,6 +57,115 @@ const loadProductContentAndEvent = (categoryId, page) => {
             })
         })
 
+        // ADD EVENT FOR EDIT PRODUCT
+        document.querySelectorAll(".openEditProdctModal").forEach(element => {
+            element.addEventListener("click", (e) => {
+                const modal = document.getElementById("modal")
+                const clickedElement = e.target;
+                const buttonItem = clickedElement.closest('[data-product-id]');
+                const productId = buttonItem.getAttribute('data-product-id');
+                // OPEN AND LOAD CONTEND FOR MODAL
+                openModal(modal)
+                fetch(`/product/view?type=edit&productId=${productId}`)
+                        .then(res => res.text())
+                        .then(html => {
+                            document.getElementById("modalContent").innerHTML = html;
+                        }).then(() => {
+                    // AFTER OPEN MODAL, LOAD CONTENT FOR MODAL
+                    loadCreateProductEvent(categoryId, page)
+                });
+            })
+        })
+
+        function confirmDelete(productId) {
+            Swal.fire({
+                title: 'Are you sure you want to hide this product?',
+                text: "This product will no longer be visible to customers, but it will remain associated with existing orders and records in the system",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Yes, hide it',
+                cancelButtonText: 'Cancel'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    fetch(`/product/view?type=delete&productId=${productId}`, {
+                        method: 'POST'
+                    })
+                            .then(response => response.json())
+                            .then(data => {
+                                Toastify({
+                                    text: data.message,
+                                    duration: 5000,
+                                    gravity: "top",
+                                    position: "right",
+                                    style: {
+                                        background: data.isSuccess ? "#2196F3" : "#f44336"
+                                    },
+                                    close: true
+                                }).showToast();
+                                loadProductContentAndEvent(categoryId, page)
+                            });
+                }
+            })
+        }
+
+        function confirmEnable(productId) {
+            Swal.fire({
+                title: 'Are you sure you want to restore this product?',
+                text: "This product will become visible to customers again.",
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#28a745',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Yes, restore it',
+                cancelButtonText: 'Cancel'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    fetch(`/product/view?type=enable&productId=${productId}`, {
+                        method: 'POST'
+                    })
+                            .then(response => response.json())
+                            .then(data => {
+                                Toastify({
+                                    text: data.message,
+                                    duration: 5000,
+                                    gravity: "top",
+                                    position: "right",
+                                    style: {
+                                        background: data.isSuccess ? "#2196F3" : "#f44336"
+                                    },
+                                    close: true
+                                }).showToast();
+                                loadProductContentAndEvent(categoryId, page);
+                            });
+                }
+            })
+        }
+
+
+        // ADD EVENT FOR DISABLE PRODUCT
+        document.querySelectorAll(".openDisableProdct").forEach(element => {
+            element.addEventListener("click", (e) => {
+                const modal = document.getElementById("modal")
+                const clickedElement = e.target;
+                const buttonItem = clickedElement.closest('[data-product-id]');
+                const productId = buttonItem.getAttribute('data-product-id');
+                confirmDelete(productId)
+            })
+        })
+
+        // ADD EVENT FOR ENABLE PRODUCT
+        document.querySelectorAll(".openEnableProduct").forEach(element => {
+            element.addEventListener("click", (e) => {
+                const modal = document.getElementById("modal")
+                const clickedElement = e.target;
+                const buttonItem = clickedElement.closest('[data-product-id]');
+                const productId = buttonItem.getAttribute('data-product-id');
+                confirmEnable(productId)
+            })
+        })
+
         // UPDATE URL WHEN CLICK PAGE
         function updatePageUrl(page) {
             const url = new URL(window.location);
@@ -133,7 +242,7 @@ const loadProductContentAndEvent = (categoryId, page) => {
     document.getElementById("create-product-button").onclick = () => {
         const modal = document.getElementById("modal")
         openModal(modal);
-        updateModalContent(`/product/view?type=create`, loadCreateProductEvent)
+        updateModalContent(`/product/view?type=create`, () => loadCreateProductEvent(categoryId, page))
     }
 }
 
@@ -160,7 +269,7 @@ function loadProductDetailEvent() {
 }
 
 // LOAD CREATE PRODUCT EVENT
-function loadCreateProductEvent() {
+function loadCreateProductEvent(categoryIdURL, pageURL) {
     const MAX_FILES = 10;
 
     const imageInput = document.getElementById("image-files");
@@ -241,6 +350,7 @@ function loadCreateProductEvent() {
         uploadError.classList.remove("hidden");
         errorText.textContent = message;
     }
+
     function hiddenError() {
         uploadError.classList.add("hidden");
     }
@@ -269,6 +379,7 @@ function loadCreateProductEvent() {
             });
         }
     });
+
     // Validate function
     function required(value, message = "This field is required") {
         if (!value || value.trim() === "") {
@@ -276,7 +387,6 @@ function loadCreateProductEvent() {
         }
         return null;
     }
-
 
     const configValidate = [
         {
@@ -318,14 +428,16 @@ function loadCreateProductEvent() {
         {
             id: "height",
             validate: [required]
-        }, {
+        },
+        {
             id: "weight",
             validate: [required]
         },
         {
             id: "price",
             validate: [required]
-        }, {
+        },
+        {
             id: "quantity",
             validate: [required]
         }
@@ -391,6 +503,7 @@ function loadCreateProductEvent() {
             createProductCategoryElm.classList.add("border-red-500")
         }
     };
+
     createProductBrandElm.onchange = function () {
         const selectedOption = this.options[this.selectedIndex];
         const brandId = selectedOption.getAttribute("data-brand-id");
@@ -402,82 +515,247 @@ function loadCreateProductEvent() {
         }
     };
 
-
-    // Create new product
-    document.getElementById("create-product-btn").onclick = () => {
-        let isError = false;
-        configValidate.forEach(config => {
-            const isErrorValidate = checkValidate(config)
-            if (isErrorValidate)
-                isError = isErrorValidate
-        })
-
-        // Handle select category and brand
-        const selectCategory = document.getElementById("create-product-category");
-        const selectedOptionCategory = selectCategory.options[selectCategory.selectedIndex];
-        const categoryId = selectedOptionCategory.getAttribute("data-category-id");
-        const selectBrand = document.getElementById("create-product-brand");
-        const selectedOptionBrand = selectBrand.options[selectBrand.selectedIndex];
-        const brandId = selectedOptionBrand.getAttribute("data-brand-id");
-
-        if (categoryId === "0") {
-            selectCategory.classList.remove("border-gray-300")
-            selectCategory.classList.add("border-red-500")
-            isError = true
-        } else {
-            selectCategory.classList.remove("border-red-500")
-            selectCategory.classList.add("border-green-600")
-        }
-        if (brandId === "0") {
-            selectBrand.classList.remove("border-gray-300")
-            selectBrand.classList.add("border-red-500")
-            isError = true
-        } else {
-            selectBrand.classList.remove("border-red-500")
-            selectBrand.classList.add("border-green-600")
-        }
-
-        if (selectedImages.length === 0) {
-            showError("Must have at least one image selected")
-            isError = true
-        }
-        // Hanlde fetch servlet to create product
-        if (!isError) {
-            // Conver data to object
-            const formData = new FormData();
-
-            const isCheckedDestroy = document.getElementById("destroy").checked;
-//            const productObj = {}
+    // Update product
+    const updateProductButton = document.getElementById("update-product-btn")
+    if (updateProductButton) {
+        updateProductButton.onclick = () => {
+            let isError = false;
             configValidate.forEach(config => {
-                const value = document.getElementById(config.id).value
-//                productObj[config.id] = value.trim()
-                formData.append(config.id, value);
+                const isErrorValidate = checkValidate(config)
+                if (isErrorValidate)
+                    isError = isErrorValidate
             })
-            formData.append("categoryId", categoryId);
-            formData.append("brandId", brandId);
-            formData.append("destroy", isCheckedDestroy);
 
-            for (let i = 0; i < selectedImages.length; i++) {
-                formData.append("imageFiles", selectedImages[i]);
+            // Handle select category and brand
+            const selectCategory = document.getElementById("create-product-category");
+            const selectedOptionCategory = selectCategory.options[selectCategory.selectedIndex];
+            const categoryId = selectedOptionCategory.getAttribute("data-category-id");
+            const selectBrand = document.getElementById("create-product-brand");
+            const selectedOptionBrand = selectBrand.options[selectBrand.selectedIndex];
+            const brandId = selectedOptionBrand.getAttribute("data-brand-id");
+
+            if (categoryId === "0") {
+                selectCategory.classList.remove("border-gray-300")
+                selectCategory.classList.add("border-red-500")
+                isError = true
+            } else {
+                selectCategory.classList.remove("border-red-500")
+                selectCategory.classList.add("border-green-600")
+            }
+            if (brandId === "0") {
+                selectBrand.classList.remove("border-gray-300")
+                selectBrand.classList.add("border-red-500")
+                isError = true
+            } else {
+                selectBrand.classList.remove("border-red-500")
+                selectBrand.classList.add("border-green-600")
             }
 
-//            productObj.categoryId = categoryId
-//            productObj.brandId = brandId
-//            productObj.imageFiles = selectedImages
-//            productObj.destroy = isCheckedDestroy
-//            console.log(productObj);
-
-            // Fetch to serverlet
-            fetch('/product/view?type=create', {
-                method: 'POST',
-                body: formData
+            // Lấy imageId của những ảnh được tick
+            const selectedImageIds = []
+            document.querySelectorAll("#already-preview-grid input[type='checkbox']:checked").forEach(checkbox => {
+                const imageId = checkbox.getAttribute('data-image-id');
+                if (imageId) {
+                    selectedImageIds.push(imageId);
+                }
             })
-//                    .then(response => response.json())
-//                    .then(data => console.log(data));
-        } else {
-            console.log("Can't create product'");
+            console.log(selectedImageIds); // [1, 3, 5] - ví dụ
+
+            if (selectedImageIds.length === 0 && selectedImages.length === 0) {
+                showError("Must have at least one image selected")
+                isError = true
+            }
+
+            // Handle fetch servlet to create product
+            if (!isError) {
+                // Convert data to object
+                const formData = new FormData();
+
+                const isCheckedDestroy = document.getElementById("destroy").checked;
+                configValidate.forEach(config => {
+                    const value = document.getElementById(config.id).value
+                    formData.append(config.id, value);
+                })
+                const productId = document.getElementById("productIdUpdate").textContent.trim();
+                formData.append("productId", productId);
+                formData.append("categoryId", categoryId);
+                formData.append("brandId", brandId);
+                formData.append("destroy", isCheckedDestroy)
+                for (var i = 0; i < selectedImageIds.length; i++) {
+                    formData.append("urlsId", selectedImageIds[i])
+                }
+
+                for (let i = 0; i < selectedImages.length; i++) {
+                    formData.append("imageFiles", selectedImages[i]);
+                }
+
+                // Fetch to servlet
+                showLoading()
+                fetch('/product/view?type=update', {
+                    method: 'POST',
+                    body: formData
+                })
+                        .then(response => response.json())
+                        .then(data => {
+                            console.log(data);
+                            hiddenLoading()
+                            closeModal()
+                            Toastify({
+                                text: data.message,
+                                duration: 5000,
+                                gravity: "top",
+                                position: "right",
+                                style: {
+                                    background: data.isSuccess ? "#2196F3" : "#f44336"
+                                },
+                                close: true
+                            }).showToast();
+                            loadProductContentAndEvent(categoryIdURL, pageURL)
+                        });
+            } else {
+                console.log("Can't update product");
+            }
         }
     }
+
+    // Create new product
+    const createProductButton = document.getElementById("create-product-btn")
+    console.log(createProductButton);
+    if (createProductButton) {
+        createProductButton.onclick = () => {
+            console.log("create button click");
+            let isError = false;
+            configValidate.forEach(config => {
+                const isErrorValidate = checkValidate(config)
+                if (isErrorValidate)
+                    isError = isErrorValidate
+            })
+
+            // Handle select category and brand
+            const selectCategory = document.getElementById("create-product-category");
+            const selectedOptionCategory = selectCategory.options[selectCategory.selectedIndex];
+            const categoryId = selectedOptionCategory.getAttribute("data-category-id");
+            const selectBrand = document.getElementById("create-product-brand");
+            const selectedOptionBrand = selectBrand.options[selectBrand.selectedIndex];
+            const brandId = selectedOptionBrand.getAttribute("data-brand-id");
+
+            if (categoryId === "0") {
+                selectCategory.classList.remove("border-gray-300")
+                selectCategory.classList.add("border-red-500")
+                isError = true
+            } else {
+                selectCategory.classList.remove("border-red-500")
+                selectCategory.classList.add("border-green-600")
+            }
+            if (brandId === "0") {
+                selectBrand.classList.remove("border-gray-300")
+                selectBrand.classList.add("border-red-500")
+                isError = true
+            } else {
+                selectBrand.classList.remove("border-red-500")
+                selectBrand.classList.add("border-green-600")
+            }
+
+            if (selectedImages.length === 0) {
+                showError("Must have at least one image selected")
+                isError = true
+            }
+
+            // Handle fetch servlet to create product
+            if (!isError) {
+                // Convert data to object
+                const formData = new FormData();
+
+                const isCheckedDestroy = document.getElementById("destroy").checked;
+                configValidate.forEach(config => {
+                    const value = document.getElementById(config.id).value
+                    formData.append(config.id, value);
+                })
+                formData.append("categoryId", categoryId);
+                formData.append("brandId", brandId);
+                formData.append("destroy", isCheckedDestroy);
+
+                for (let i = 0; i < selectedImages.length; i++) {
+                    formData.append("imageFiles", selectedImages[i]);
+                }
+
+                // Fetch to servlet
+                showLoading()
+                fetch('/product/view?type=create', {
+                    method: 'POST',
+                    body: formData
+                })
+                        .then(response => response.json())
+                        .then(data => {
+                            console.log(data);
+                            console.log(data.isSuccess);
+                            hiddenLoading()
+                            closeModal()
+                            Toastify({
+                                text: data.message,
+                                duration: 5000,
+                                gravity: "top",
+                                position: "right",
+                                style: {
+                                    background: data.isSuccess ? "#2196F3" : "#f44336"
+                                },
+                                close: true
+                            }).showToast();
+                            loadProductContentAndEvent(categoryIdURL, pageURL)
+                        });
+            } else {
+                console.log("Can't create product");
+            }
+        }
+    }
+
+    function toggleImageOpacity(index, isChecked) {
+        const image = document.querySelector(`.image-${index}`);
+        const icon = document.querySelector(`.checkbox-icon-${index}`);
+
+        if (isChecked) {
+            // Được tick - ảnh bình thường
+            image.classList.remove('opacity-30', 'grayscale');
+            icon.classList.remove('opacity-0');
+            icon.classList.add('opacity-100');
+        } else {
+            // Bỏ tick - ảnh mờ đi
+            image.classList.add('opacity-30', 'grayscale');
+            icon.classList.remove('opacity-100');
+            icon.classList.add('opacity-0');
+        }
+    }
+
+    document.getElementById('already-preview-grid').addEventListener('change', function (event) {
+        if (event.target.type === 'checkbox' &&
+                event.target.hasAttribute('data-index') &&
+                event.target.id.startsWith('checkbox-')) {
+            const index = event.target.getAttribute('data-index');
+            toggleImageOpacity(index, event.target.checked);
+        }
+    });
+    document.getElementById('already-preview-grid').addEventListener('click', function (event) {
+        const group = event.target.closest('.group')
+        if (group) {
+            const checkbox = group.querySelector('input[type="checkbox"]');
+            if (checkbox && event.target !== checkbox) {
+                checkbox.checked = !checkbox.checked;
+                const index = checkbox.getAttribute('data-index');
+                toggleImageOpacity(index, checkbox.checked);
+            }
+        }
+
+    });
+
+    // Init all checkbox is ticked
+    const checkboxes = document.querySelectorAll('[data-index]');
+    checkboxes.forEach((checkbox) => {
+        const index = checkbox.getAttribute('data-index');
+        const icon = document.querySelector(`.checkbox-icon-${index}`);
+        if (checkbox.checked) {
+            icon.classList.add('opacity-100');
+        }
+    });
 }
 
 // HANDLE SHOW SELECT TAB
