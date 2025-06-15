@@ -15,7 +15,7 @@
             <div class="flex items-center justify-between pb-4">
                 <h2 class="text-lg font-semibold text-gray-900">Staff List (Total: <%= count%>)</h2>
                 <div class="flex items-center space-x-3">
-                    <button id="create-product-button" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-lg shadow-lg hover:shadow-xl transform transition-all duration-200 flex items-center space-x-2">
+                    <button id="create-staff-button" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-lg shadow-lg hover:shadow-xl transform transition-all duration-200 flex items-center space-x-2">
                         <span>Add New Staff</span>
                     </button>
                     <div class="flex items-center justify-center">

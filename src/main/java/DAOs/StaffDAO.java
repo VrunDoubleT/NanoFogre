@@ -4,8 +4,11 @@
  */
 package DAOs;
 
+import DB.DBContext;
 import Models.Employee;
 import Models.Role;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -16,6 +19,10 @@ import java.util.List;
  * @author Duong Tran Ngoc Chau - CE181040
  */
 public class StaffDAO extends DB.DBContext {
+
+    public StaffDAO() {
+        super(); // gọi constructor DBContext để mở connection
+    }
 
     public List<Employee> getAllStaff(int page, int limit) {
         int row = (page - 1) * limit;
@@ -65,12 +72,50 @@ public class StaffDAO extends DB.DBContext {
             staff.getPassword(),
             staff.getName(),
             staff.getAvatar(),
-            staff.isIsBlock() // boolean → bit
+            staff.isIsBlock()
         };
 
         try {
             int generatedId = execQueryReturnId(query, params);
             return generatedId > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public Employee getProductById(int id) {
+        Employee staff = new Employee();
+        String query = "SELECT * FROM Employees WHERE employeeId = ?";
+        Object[] obj = {id};
+        try ( ResultSet rs = execSelectQuery(query, obj)) {
+            while (rs.next()) {
+                int Id = rs.getInt("employeeId");
+                staff.setId(Id);
+                staff.setEmail(rs.getString("employeeEmail"));
+                staff.setPassword(rs.getString("employeePassword"));
+                staff.setName(rs.getString("employeeName"));
+                staff.setAvatar(rs.getString("employeeAvatar"));
+                Role role = new Role();
+                role.setId(rs.getInt("roleId"));
+                role.setName(rs.getString("roleName"));
+                staff.setRole(role);
+                staff.setIsBlock(rs.getBoolean("isBlock"));
+                staff.setCreatedAt(rs.getTimestamp("createdAt").toLocalDateTime());
+
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return staff;
+    }
+
+    public boolean deleteEmployeeById(int id) {
+        String query = "DELETE FROM Employees WHERE employeeId = ?";
+        Object[] params = {id};
+        try {
+            int rowsAffected = execQuery(query, params);
+            return rowsAffected > 0;
         } catch (SQLException e) {
             e.printStackTrace();
             return false;

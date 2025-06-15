@@ -55,6 +55,47 @@ public class StaffViewServlet extends HttpServlet {
                 request.setAttribute("page", p);
                 request.getRequestDispatcher("/WEB-INF/employees/teamplates/products/paginationTeamplate.jsp").forward(request, response);
                 break;
+            case "create":
+                request.getRequestDispatcher("/WEB-INF/employees/teamplates/staff/createStaffTemplate.jsp").forward(request, response);
+                break;
+            case "delete":
+                request.getRequestDispatcher("/WEB-INF/employees/teamplates/staff/deleteStaffTemplate.jsp").forward(request, response);
+                break;
+            default:
+                break;
+        }
+    }
+
+    @Override
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        String type = request.getParameter("type") != null ? request.getParameter("type") : "create";
+        StaffDAO sDao = new StaffDAO();
+
+        switch (type) {
+            case "create":
+                Employee staff = new Employee();
+                String email = request.getParameter("email");
+                String password = request.getParameter("password");
+                String name = request.getParameter("name");
+                String avatar = request.getParameter("avatar");
+                String isBlockedParam = request.getParameter("block");
+
+                staff.setEmail(email);
+                staff.setPassword(password);
+                staff.setName(name);
+                staff.setAvatar((avatar != null && !avatar.trim().isEmpty()) ? avatar : null);
+                staff.setIsBlock(isBlockedParam != null);
+                sDao.createStaff(staff);
+                break;
+            case "delete":
+            try {
+                int id = Integer.parseInt(request.getParameter("id"));
+                boolean deleted = sDao.deleteEmployeeById(id);
+                response.setStatus(deleted ? 200 : 500);
+            } catch (Exception e) {
+                response.setStatus(500);
+            }
+            break;
             default:
                 break;
         }

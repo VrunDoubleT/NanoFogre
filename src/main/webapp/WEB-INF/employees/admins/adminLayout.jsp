@@ -42,8 +42,8 @@
             const openModal = (modal) => {
                 modal.classList.remove("hidden");
                 modal.classList.add("flex");
-                document.body.classList.add('overflow-hidden')
-            }
+                document.body.classList.add('overflow-hidden');
+            };
 
             // Helper: Render Brand Page layout (title + loading + container)
             function renderBrandPageLayout() {
@@ -125,28 +125,28 @@
                         element.classList.remove("bg-gray-100", "text-blue-600", "border-r-4", "border-blue-600");
                     }
                 });
-            }
+            };
 
             window.onload = function () {
                 document.querySelectorAll('.nav-link').forEach(link => {
                     link.addEventListener('click', function (e) {
                         e.preventDefault();
                         const page = this.dataset.page;
-                        updateAvtiveSidebar(page)
+                        updateAvtiveSidebar(page);
                         loadContent(page, true);
                     });
                 });
                 document.getElementById("modal").onclick = () => {
-                    document.getElementById("modal").classList.remove("flex")
-                    document.body.classList.remove("overflow-hidden")
-                    document.getElementById("modal").classList.add("hidden")
-                }
+                    document.getElementById("modal").classList.remove("flex");
+                    document.body.classList.remove("overflow-hidden");
+                    document.getElementById("modal").classList.add("hidden");
+                };
                 document.getElementById("modalContent").addEventListener("click", function (event) {
                     event.stopPropagation();
                 });
                 const params = new URLSearchParams(window.location.search);
                 const viewPage = params.get('view') || 'dashboard';
-                updateAvtiveSidebar(viewPage)
+                updateAvtiveSidebar(viewPage);
                 switch (viewPage) {
                     case "product":
                         const categoryId = params.get('categoryId') || '0';
