@@ -66,6 +66,12 @@ public class StaffViewServlet extends HttpServlet {
             case "create":
                 request.getRequestDispatcher("/WEB-INF/employees/teamplates/staff/createStaffTemplate.jsp").forward(request, response);
                 break;
+            case "checkEmail":
+                String email = request.getParameter("email");
+                boolean exists = sDao.isEmailExists(email);
+                response.setContentType("text/plain");
+                response.getWriter().write(String.valueOf(exists));
+                break;
             case "delete":
                 request.getRequestDispatcher("/WEB-INF/employees/teamplates/staff/deleteStaffTemplate.jsp").forward(request, response);
                 break;
@@ -103,7 +109,19 @@ public class StaffViewServlet extends HttpServlet {
                 staff.setName(name);
                 staff.setAvatar((avatar != null && !avatar.trim().isEmpty()) ? avatar : null);
                 staff.setIsBlock(isBlockedParam != null);
-                sDao.createStaff(staff);
+                boolean created = sDao.createStaff(staff); // giả sử hàm createStaff trả về boolean
+
+                if (created) {
+                    int totalStaff = sDao.countStaff(); // tổng nhân viên mới sau khi thêm
+                    int limit = 5;
+                    int lastPage = (int) Math.ceil((double) totalStaff / limit);
+
+                    response.setContentType("text/plain");
+                    response.setCharacterEncoding("UTF-8");
+                    response.getWriter().write(String.valueOf(lastPage)); // Trả về số trang cuối
+                } else {
+                    response.setStatus(500); // tạo thất bại
+                }
                 break;
             case "delete":
                 try {

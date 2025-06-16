@@ -146,10 +146,10 @@ public class StaffDAO extends DB.DBContext {
         String query = "SELECT 1 FROM Employees WHERE employeeEmail = ?";
         Object[] params = {email};
         try ( ResultSet rs = execSelectQuery(query, params)) {
-            return rs.next(); // Nếu tồn tại bản ghi => email đã tồn tại
+            return rs.next(); 
         } catch (SQLException e) {
             e.printStackTrace();
-            return false; // hoặc có thể throw exception tùy logic
+            return false; 
         }
     }
 

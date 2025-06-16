@@ -1,5 +1,5 @@
+// Staff list
 const loadStaffContentAndEvent = (page) => {
-// SHOW LOADING WHEN CALL SERVLET GET HTML
     document.getElementById('tabelContainer').innerHTML = '';
     document.getElementById('loadingStaff').innerHTML = `
         <div class="flex w-full justify-center items-center h-32">
@@ -7,16 +7,13 @@ const loadStaffContentAndEvent = (page) => {
         </div>
     `;
     let paramUrl = '';
-    // Fetch servlet to get list staff HTML and pagination
     Promise.all([
         fetch("/staff/view?type=list&page=" + page + paramUrl).then(res => res.text()),
         fetch("/staff/view?type=pagination&page=" + page + paramUrl).then(res => res.text())
     ]).then(([staffHTML, paginationHTML]) => {
-// UPDATE HTML
         document.getElementById('tabelContainer').innerHTML = staffHTML;
         document.getElementById('pagination').innerHTML = paginationHTML;
         document.getElementById('loadingStaff').innerHTML = '';
-        // UPDATE URL WHEN CLICK PAGE
         function updatePageUrl(page) {
             const url = new URL(window.location);
             url.searchParams.delete('page');
@@ -24,7 +21,6 @@ const loadStaffContentAndEvent = (page) => {
             history.pushState(null, '', url.toString());
         }
 
-        // ADD EVENT FOR PAGINATION
         document.querySelectorAll("div.pagination").forEach(element => {
             element.addEventListener("click", function () {
                 const pageClick = this.getAttribute("page");
@@ -49,83 +45,80 @@ function loadCreateStaffEvent() {
     document.getElementById("generatedPassword").classList.remove("hidden");
     document.getElementById("passwordDisplay").textContent = password;
 
-    function required(value, message = "This field is required") {
-        if (!value || value.trim() === "")
-            return message;
-        return null;
+    const nameInput = document.getElementById("name");
+    const emailInput = document.getElementById("email");
+    const nameError = document.getElementById("nameError");
+    const emailError = document.getElementById("emailError");
+
+    // Validate name
+    function validateName() {
+        const name = nameInput.value.trim();
+        if (name === "") {
+            nameError.textContent = "Name is required";
+            nameInput.classList.add("border-red-500");
+            return false;
+        }
+        nameError.textContent = "";
+        nameInput.classList.remove("border-red-500");
+        nameInput.classList.add("ring-1", "ring-green-500");
+        return true;
     }
 
-    const configValidate = [
-        {
-            id: "name",
-            validate: [required]
-        },
-        {
-            id: "email",
-            validate: [
-                (value) => {
-                    if (!value.trim())
-                        return "Email is required";
-                    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-                    return re.test(value) ? null : "Invalid email format";
-                }
-            ]
-        }
-    ];
+    // Validate email
+    async function validateEmail() {
+        const email = emailInput.value.trim();
+        const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        console.log("Validating email:", email);
 
-    const checkValidate = (config) => {
-        const inputElement = document.getElementById(config.id);
-        const value = inputElement.value;
-        let errorMessage = null;
-        for (let i = 0; i < config.validate.length; i++) {
-            const error = config.validate[i](value);
-            if (error !== null) {
-                errorMessage = error;
-                break;
+        if (email === "") {
+            emailError.textContent = "Email is required";
+            emailInput.classList.add("border-red-500");
+            return false;
+        }
+        if (!re.test(email)) {
+            emailError.textContent = "Invalid email format";
+            emailInput.classList.add("border-red-500");
+            return false;
+        }
+
+        try {
+            const res = await fetch(`/staff/view?type=checkEmail&email=${encodeURIComponent(email)}`);
+            const exists = await res.text();
+            if (exists === "true") {
+                emailError.textContent = "Email already exists";
+                emailInput.classList.add("border-red-500");
+                return false;
             }
+        } catch (e) {
+            emailError.textContent = "Error checking email";
+            emailInput.classList.add("border-red-500");
+            return false;
         }
-        const errorElement = document.getElementById(config.id + "Error");
-        if (errorMessage !== null) {
-            errorElement.textContent = errorMessage;
-            errorElement.classList.add("text-red-500", "text-sm");
-            inputElement.classList.add("border-red-500");
-            return true;
-        } else {
-            errorElement.textContent = "";
-            inputElement.classList.remove("border-red-500");
-            inputElement.classList.add("ring-1", "ring-green-500");
-        }
-        return false;
+
+        emailError.textContent = "";
+        emailInput.classList.remove("border-red-500");
+        emailInput.classList.add("ring-1", "ring-green-500");
+        return true;
+    }
+
+    nameInput.onblur = validateName;
+    emailInput.onblur = validateEmail;
+    emailInput.oninput = () => {
+        emailError.textContent = "";
+        emailInput.classList.remove("border-red-500", "ring-1", "ring-green-500");
     };
 
-    configValidate.forEach(config => {
-        const inputElement = document.getElementById(config.id);
-        if (inputElement) {
-            inputElement.onfocus = () => {
-                const errorElement = document.getElementById(config.id + "Error");
-                errorElement.textContent = "";
-                inputElement.classList.remove("border-red-500", "ring-1", "ring-green-500");
-            };
-            inputElement.onblur = () => {
-                checkValidate(config);
-            };
-        }
-    });
+    document.getElementById("create-staff-btn").onclick = async () => {
+        const isNameValid = validateName();
+        const isEmailValid = await validateEmail();
 
-    document.getElementById("create-staff-btn").onclick = () => {
-        let isError = false;
-        configValidate.forEach(config => {
-            const isErrorValidate = checkValidate(config);
-            if (isErrorValidate)
-                isError = true;
-        });
-        if (isError)
+        if (!isNameValid || !isEmailValid)
             return;
 
         const formData = new URLSearchParams();
         formData.append("type", "create");
-        formData.append("name", document.getElementById("name").value.trim());
-        formData.append("email", document.getElementById("email").value.trim());
+        formData.append("name", nameInput.value.trim());
+        formData.append("email", emailInput.value.trim());
         formData.append("password", password);
         if (document.getElementById("block").checked) {
             formData.append("block", "on");
@@ -133,15 +126,16 @@ function loadCreateStaffEvent() {
 
         fetch("/staff/view", {
             method: "POST",
-            headers: {
-                "Content-Type": "application/x-www-form-urlencoded"
-            },
+            headers: {"Content-Type": "application/x-www-form-urlencoded"},
             body: formData
-        }).then(res => {
+        }).then(async res => {
             if (res.ok) {
+                const lastPage = await res.text(); // Nhận số trang chứa staff mới
                 resetCreateStaffForm();
                 showSuccessPopup("Staff created successfully!", () => {
-                    location.reload();
+                    const url = new URL(window.location);
+                    url.searchParams.set("page", lastPage);
+                    window.location.href = url.toString(); // Load đến trang chứa staff mới
                 });
             } else {
                 alert("Failed to create staff.");
@@ -150,6 +144,7 @@ function loadCreateStaffEvent() {
     };
 }
 
+// Random password
 function generatePassword() {
     const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789@#$!";
     let password = "";
@@ -159,6 +154,7 @@ function generatePassword() {
     return password;
 }
 
+// Reset form
 function resetCreateStaffForm() {
     document.getElementById("name").value = "";
     document.getElementById("email").value = "";
@@ -311,12 +307,13 @@ document.addEventListener("click", async function (e) {
     }
 });
 
-
+// Get URL from page
 function getCurrentPageFromURL() {
     const urlParams = new URLSearchParams(window.location.search);
     return parseInt(urlParams.get("page")) || 1;
 }
 
+// Pop up success action
 function showSuccessPopup(message, onConfirm) {
     const overlay = document.createElement("div");
     overlay.className = "fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50";
@@ -339,13 +336,3 @@ function showSuccessPopup(message, onConfirm) {
         }
     };
 }
-
-
-
-
-
-
-
-
-
-
