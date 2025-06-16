@@ -1,48 +1,72 @@
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
-<!-- Modal Edit Brand -->
-<div id="editBrandModal" class="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-40 hidden">
-  <div class="bg-white rounded-xl shadow-xl w-full max-w-md p-6 relative">
-    <h2 class="text-xl font-bold mb-2 text-gray-800">Edit Brand</h2>
-    <form onsubmit="event.preventDefault(); handleUpdateBrand();" class="space-y-4">
-      <input type="hidden" id="editBrandId">
-      <div>
-        <label for="editBrandName" class="block text-sm font-medium text-gray-700 mb-1">Brand Name</label>
-        <input type="text" id="editBrandName" placeholder="Enter brand name"
-               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition" required>
-      </div>
-      <div>
-        <label for="editBrandImage" class="block text-sm font-medium text-gray-700 mb-1">Image URL</label>
-        <input type="url" id="editBrandImage" placeholder="Enter image URL"
-               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition" required>
-      </div>
-      <div class="flex justify-end gap-2 pt-2">
-        <button type="button" onclick="closeEditModal()"
-                class="px-4 py-2 rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200 transition">Cancel</button>
-        <button type="submit"
-                class="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 shadow transition">Update</button>
-      </div>
-    </form>
-    <button type="button" onclick="closeEditModal()" class="absolute top-2 right-2 text-gray-400 hover:text-gray-600 text-xl">&times;</button>
-  </div>
+<!-- Modal Add Brand -->
+<div id="createBrandModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm transition-opacity duration-300 opacity-0 pointer-events-none">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md p-8 relative scale-95 opacity-0 translate-y-8 transition-all duration-300">
+        <h2 class="text-2xl font-bold mb-6 text-gray-800 flex items-center gap-2">
+            <i data-lucide="plus-circle" class="w-7 h-7 text-blue-500"></i> Add New Brand
+        </h2>
+        <form id="createBrandForm" onsubmit="event.preventDefault(); handleCreateBrand();" class="space-y-5" enctype="multipart/form-data">
+            <div>
+                <label for="newBrandName" class="block text-sm font-medium text-gray-700 mb-1">Brand Name</label>
+                <input type="text" id="newBrandName" placeholder="Enter brand name"
+                       class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition text-base" required>
+            </div>
+            <div>
+                <label for="newBrandImage" class="block text-sm font-medium text-gray-700 mb-1">Brand Image</label>
+                <input type="file" id="newBrandImage" name="image" accept="image/*"
+                       class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition text-base bg-white" required>
+                <p class="text-xs text-gray-500 mt-1">Chỉ chấp nhận PNG, JPG, JPEG, GIF. Dung lượng tối đa 10MB.</p>
+                <div id="addBrandImagePreview" class="flex justify-center mt-2"></div>
+            </div>
+            <div class="flex justify-end gap-3 pt-2">
+                <button type="button" onclick="closeCreateModal()"
+                        class="px-5 py-2 rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200 transition font-semibold">Cancel</button>
+                <button type="submit"
+                        class="flex items-center gap-2 px-5 py-2 rounded-lg bg-gradient-to-r from-blue-600 to-blue-400 text-white hover:from-blue-700 hover:to-blue-500 shadow-lg font-semibold transition-all duration-200">
+                    <svg id="loadingIconCreate" class="hidden animate-spin h-5 w-5 text-white" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path></svg>
+                    Create
+                </button>
+            </div>
+        </form>
+        <button type="button" onclick="closeCreateModal()" class="absolute top-3 right-4 text-gray-400 hover:text-gray-600 text-2xl transition-colors duration-200">&times;</button>
+    </div>
 </div>
-
-<!-- Modal Create Brand -->
-<div id="createBrandModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-    <div class="bg-white p-6 rounded-lg w-96">
-        <h3 class="text-xl font-bold mb-4">Add New Brand</h3>
-        <div class="space-y-4">
-            <input type="text" id="newBrandName" placeholder="Brand name" 
-                   class="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500">
-            <input type="url" id="newBrandImage" placeholder="Image URL" 
-                   class="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500">
-        </div>
-        <div class="mt-4 flex justify-end gap-2">
-            <button onclick="closeCreateModal()" 
-                    class="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600">Cancel</button>
-            <button onclick="handleCreateBrand()" 
-                    class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">Create</button>
-        </div>
+<!-- Modal Edit Brand -->
+<div id="editBrandModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm transition-opacity duration-300 opacity-0 pointer-events-none">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md p-8 relative scale-95 opacity-0 translate-y-8 transition-all duration-300">
+        <h2 class="text-2xl font-bold mb-6 text-gray-800 flex items-center gap-2">
+            <i data-lucide="edit-3" class="w-7 h-7 text-blue-500"></i> Edit Brand
+        </h2>
+        <form onsubmit="event.preventDefault(); handleUpdateBrand();" class="space-y-5" enctype="multipart/form-data">
+            <input type="hidden" id="editBrandId">
+            <div>
+                <label for="editBrandName" class="block text-sm font-medium text-gray-700 mb-1">Brand Name</label>
+                <input type="text" id="editBrandName" placeholder="Enter brand name"
+                       class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition text-base" required>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Current Image</label>
+                <div id="editBrandCurrentImageWrapper" class="flex items-center"></div>
+            </div>
+            <div>
+                <label for="editBrandImage" class="block text-sm font-medium text-gray-700 mb-1">Upload New Image (optional)</label>
+                <input type="file" id="editBrandImage" name="image" accept="image/*"
+                       class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition text-base bg-white">
+                <p class="text-xs text-gray-500 mt-1">Chỉ chấp nhận PNG, JPG, JPEG, GIF. Dung lượng tối đa 10MB.</p>
+                <div id="editBrandImagePreview" class="flex justify-center mt-2"></div>
+            </div>
+            <div class="flex justify-end gap-3 pt-2">
+                <button type="button" onclick="closeEditModal()"
+                        class="px-5 py-2 rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200 transition font-semibold">Cancel</button>
+                <button type="submit"
+                        class="flex items-center gap-2 px-5 py-2 rounded-lg bg-gradient-to-r from-blue-600 to-blue-400 text-white hover:from-blue-700 hover:to-blue-500 shadow-lg font-semibold transition-all duration-200">
+                    <svg id="loadingIconEdit" class="hidden animate-spin h-5 w-5 text-white" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path></svg>
+                    Update
+                </button>
+            </div>
+        </form>
+        <button type="button" onclick="closeEditModal()" class="absolute top-3 right-4 text-gray-400 hover:text-gray-600 text-2xl transition-colors duration-200">&times;</button>
     </div>
 </div>
 
@@ -53,7 +77,13 @@
         Add Brand
     </button>
 </div>
-
+<div id="loadingBrand" class="hidden"> <!-- Thêm class hidden để ẩn mặc định -->
+    <div class="animate-pulse space-y-4">
+        <div class="h-12 bg-gray-200 rounded"></div>
+        <div class="h-12 bg-gray-200 rounded"></div>
+        <div class="h-12 bg-gray-200 rounded"></div>
+    </div>
+</div>
 <c:choose>
     <c:when test="${empty brands}">
         <div class="text-center text-gray-500 py-8">No brands found in the database.</div>
@@ -98,11 +128,11 @@
                             </td>
                             <td class="py-3 px-6">
                                 <div class="flex gap-3">
-                                    <button class="text-blue-600 hover:text-blue-800 transition-colors"
+                                    <button class="text-blue-600 hover:text-blue-800 transition-colors hover:scale-110 active:scale-95"
                                             onclick="editBrand(${brand.id})">
                                         <i data-lucide="pen-square" class="w-5 h-5"></i>
                                     </button>
-                                    <button class="text-red-600 hover:text-red-800 transition-colors"
+                                    <button class="text-red-600 hover:text-red-800 transition-colors hover:scale-110 active:scale-95"
                                             onclick="deleteBrand(${brand.id})">
                                         <i data-lucide="trash-2" class="w-5 h-5"></i>
                                     </button>
@@ -128,7 +158,7 @@
                     <button class="px-3 py-2 text-sm rounded-lg border ${currentPage == 1 ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-white hover:bg-gray-50 text-gray-700'}"
                             onclick="loadBrandPage(${currentPage - 1})" ${currentPage == 1 ? 'disabled' : ''}>&lt;</button>
                     <c:forEach begin="1" end="${totalPages}" var="i">
-                        <button class="px-4 py-2 text-sm rounded-lg border ${currentPage == i ? 'bg-blue-600 text-white border-blue-600' : 'bg-white hover:bg-gray-50 text-gray-700'}"
+                        <button class="px-4 py-2 text-sm rounded-lg border ${currentPage == i ? 'bg-blue-600 text-white border-blue-600' : 'bg-white hover:bg-gray-50 text-gray-700'} transition-all duration-200 hover:-translate-y-0.5"
                                 onclick="loadBrandPage(${i})">${i}</button>
                     </c:forEach>
                     <button class="px-3 py-2 text-sm rounded-lg border ${currentPage == totalPages ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-white hover:bg-gray-50 text-gray-700'}"
@@ -140,3 +170,5 @@
         </div>
     </c:otherwise>
 </c:choose>
+        
+<div id="toast-container" class="fixed top-5 right-5 z-[9999] flex flex-col gap-3"></div>

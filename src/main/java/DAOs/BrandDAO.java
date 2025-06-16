@@ -149,27 +149,43 @@ public class BrandDAO extends DBContext {
     }
 
     public Brand getBrandById(int id) {
-        String query = "SELECT * FROM Brands WHERE brandId = ?";
-        try (Connection conn = this.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(query)) {
-            
-            stmt.setInt(1, id);
-            try (ResultSet rs = stmt.executeQuery()) {
-                return rs.next() ? mapResultSetToBrand(rs) : null;
+    String query = "SELECT brandId, brandName, image FROM Brands WHERE brandId = ?"; // Sửa tên cột
+    System.out.println("Executing query for ID: " + id);
+    
+    try (Connection conn = this.getConnection();
+         PreparedStatement stmt = conn.prepareStatement(query)) {
+        
+        stmt.setInt(1, id);
+        try (ResultSet rs = stmt.executeQuery()) {
+            if (rs.next()) {
+                Brand brand = new Brand();
+                brand.setId(rs.getInt("brandId"));
+                brand.setName(rs.getString("brandName")); // Đúng tên cột
+                brand.setUrl(rs.getString("image")); // Đúng tên cột
+                System.out.println("Found brand in DB: " + brand.getName());
+                return brand;
+            } else {
+                System.out.println("No brand found with ID: " + id);
             }
-        } catch (SQLException e) {
-            handleException("Error fetching brand by ID", e);
             return null;
         }
+    } catch (SQLException e) {
+        System.out.println("SQL Error: " + e.getMessage());
+        handleException("Lỗi truy vấn brand theo ID", e);
+        return null;
     }
+}
+
+
 
     private Brand mapResultSetToBrand(ResultSet rs) throws SQLException {
-        Brand brand = new Brand();
-        brand.setId(rs.getInt("brandId"));
-        brand.setName(rs.getString("brandName"));
-        brand.setUrl(rs.getString("image"));
-        return brand;
-    }
+    Brand brand = new Brand();
+    brand.setId(rs.getInt("brandId"));
+    brand.setName(rs.getString("brandName")); // Sửa thành brandName
+    brand.setUrl(rs.getString("image")); // Sửa thành image
+    return brand;
+}
+
 
     private void handleException(String message, SQLException e) {
         System.err.println(message + ": " + e.getMessage());
