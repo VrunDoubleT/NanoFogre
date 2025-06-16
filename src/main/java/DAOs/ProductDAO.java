@@ -3,6 +3,7 @@ package DAOs;
 import Models.Brand;
 import Models.Category;
 import Models.Product;
+import Models.ProductImage;
 import Models.ProductStat;
 import java.util.ArrayList;
 import java.util.List;
@@ -54,7 +55,7 @@ public class ProductDAO extends DB.DBContext {
         if (categoryId > 0) {
             query += "where p.categoryId = " + categoryId + "\n";
         }
-        query += "ORDER BY p.productId\n"
+        query += "ORDER BY p.productId desc\n"
                 + "OFFSET " + row + " ROWS FETCH NEXT " + limit + " ROWS ONLY;";
         try ( ResultSet rs = execSelectQuery(query)) {
             while (rs.next()) {
@@ -92,6 +93,24 @@ public class ProductDAO extends DB.DBContext {
         }
 
         return pros;
+    }
+
+    public List<ProductImage> getProductImagesByProductId(int productId) {
+        List<ProductImage> images = new ArrayList<>();
+        String query = "SELECT imageId, url FROM ProductImages WHERE productId = ?";
+        Object[] params = {productId};
+
+        try ( ResultSet rs = execSelectQuery(query, params)) {
+            while (rs.next()) {
+                int imageId = rs.getInt("imageId");
+                String url = rs.getString("url");
+                images.add(new ProductImage(imageId, url));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return images;
     }
 
     public Product getProductById(int id) {
@@ -159,6 +178,33 @@ public class ProductDAO extends DB.DBContext {
         return stat;
     }
 
+    public void deleteUnusedProductImages(int productId, String[] imageIds) {
+        if (imageIds == null || imageIds.length == 0) {
+            String deleteAllSql = "DELETE FROM ProductImages WHERE productId = ?";
+            try {
+                Object[] params = {productId};
+                execQuery(deleteAllSql, params);
+            } catch (SQLException ex) {
+                System.out.println("Error deleting all images: " + ex);
+            }
+        } else {
+            String placeholders = String.join(",", Collections.nCopies(imageIds.length, "?"));
+            String deleteSql = "DELETE FROM ProductImages WHERE productId = ? AND imageId NOT IN (" + placeholders + ")";
+            try {
+                Object[] params = new Object[1 + imageIds.length];
+                params[0] = productId;
+                for (int i = 0; i < imageIds.length; i++) {
+                    params[i + 1] = Integer.parseInt(imageIds[i]);
+                }
+                execQuery(deleteSql, params);
+            } catch (SQLException ex) {
+                System.out.println("Error deleting unused images: " + ex);
+            } catch (NumberFormatException ex) {
+                System.out.println("Invalid imageId in list: " + ex);
+            }
+        }
+    }
+
     public boolean createProduct(Product product) {
         String sql = "INSERT INTO Products (\n"
                 + "    productTitle, productDescription, scale, material, slug, productPrice, productQuantity,\n"
@@ -169,7 +215,7 @@ public class ProductDAO extends DB.DBContext {
                 + "    ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?\n"
                 + ")";
         String sqlUrls = "INSERT INTO ProductImages (productId, url) VALUES\n";
-                
+
         Object[] paramsObj = {
             product.getTitle(),
             product.getDescription(),
@@ -196,12 +242,12 @@ public class ProductDAO extends DB.DBContext {
                 if (product.getUrls().size() > 0) {
                     for (int i = 0; i < product.getUrls().size(); i++) {
                         sqlUrls += String.format("(%d, N'%s')", generateId, product.getUrls().get(i));
-                        if(i < product.getUrls().size() - 1){
+                        if (i < product.getUrls().size() - 1) {
                             sqlUrls += ",";
                         }
                     }
                     int rowEffect = execQuery(sqlUrls);
-                    if(rowEffect > 0){
+                    if (rowEffect > 0) {
                         return true;
                     }
                 }
@@ -212,4 +258,100 @@ public class ProductDAO extends DB.DBContext {
         }
         return false;
     }
+
+    public boolean updateProduct(Product product) {
+        String sql = "UPDATE Products SET\n"
+                + "    productTitle = ?,\n"
+                + "    productDescription = ?,\n"
+                + "    scale = ?,\n"
+                + "    material = ?,\n"
+                + "    slug = ?,\n"
+                + "    productPrice = ?,\n"
+                + "    productQuantity = ?,\n"
+                + "    paint = ?,\n"
+                + "    features = ?,\n"
+                + "    manufacturer = ?,\n"
+                + "    length = ?,\n"
+                + "    width = ?,\n"
+                + "    height = ?,\n"
+                + "    weight = ?,\n"
+                + "    _destroy = ?,\n"
+                + "    categoryId = ?,\n"
+                + "    brandId = ?\n"
+                + "WHERE productId = ?";
+
+        String sqlInsertImage = "INSERT INTO ProductImages (productId, url) VALUES (?, ?)";
+
+        Object[] paramsObj = {
+            product.getTitle(),
+            product.getDescription(),
+            product.getScale(),
+            product.getMaterial(),
+            product.getSlug(),
+            product.getPrice(),
+            product.getQuantity(),
+            product.getPaint(),
+            product.getFeatures(),
+            product.getManufacturer(),
+            product.getLength(),
+            product.getWidth(),
+            product.getHeight(),
+            product.getWeight(),
+            product.isDestroy(),
+            product.getCategory().getId(),
+            product.getBrand().getId(),
+            product.getProductId()
+        };
+
+        try {
+            int rowEffect = execQuery(sql, paramsObj);
+            if (rowEffect == 0) {
+                System.out.println("No product updated with ID: " + product.getProductId());
+                return false;
+            }
+
+            if (product.getUrls() != null && !product.getUrls().isEmpty()) {
+                for (String url : product.getUrls()) {
+                    Object[] imageParams = {product.getProductId(), url};
+                    System.out.println("Inserting: " + url + " with productId: " + product.getProductId());
+                    int row = execQuery(sqlInsertImage, imageParams);
+                    System.out.println("Row affected: " + row);
+                }
+            }
+            return true;
+        } catch (SQLException e) {
+            System.err.println("Error updating product: " + e.getMessage());
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public boolean hideProduct(int productId) {
+        String sql = "UPDATE Products SET _destroy = 1 WHERE productId = ?";
+        Object[] paramsObj = {productId};
+
+        try {
+            int rf = execQuery(sql, paramsObj);
+            return rf > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return false;
+    }
+
+    public boolean enableProduct(int productId) {
+        String sql = "UPDATE Products SET _destroy = 0 WHERE productId = ?";
+        Object[] paramsObj = {productId};
+
+        try {
+            int rf = execQuery(sql, paramsObj);
+            return rf > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return false;
+    }
+
 }

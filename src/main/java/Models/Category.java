@@ -5,9 +5,11 @@ package Models;
  * @author Tran Thanh Van - CE181019
  */
 public class Category {
+
     private int id;
     private String name;
-
+    private boolean isDeleted; // 0 = không xóa, 1 = đã xóa
+  
     public Category() {
     }
 
@@ -15,6 +17,14 @@ public class Category {
         this.id = id;
         this.name = name;
     }
+
+    public Category(int id, String name, boolean isDeleted) {
+        this.id = id;
+        this.name = name;
+        this.isDeleted = isDeleted;
+    }
+
+
 
     public int getId() {
         return id;
@@ -32,10 +42,18 @@ public class Category {
         this.name = name;
     }
 
+    public boolean isIsDeleted() {
+        return isDeleted;
+    }
+
+    public void setIsDeleted(boolean isDeleted) {
+        this.isDeleted = isDeleted;
+    }
+
+
+
     @Override
     public String toString() {
-        return "Category{" + "id=" + id + ", name=" + name + '}';
+        return "Category{" + "id=" + id + ", name=" + name + ", isDeleted=" + isDeleted + '}';
     }
-    
-    
 }

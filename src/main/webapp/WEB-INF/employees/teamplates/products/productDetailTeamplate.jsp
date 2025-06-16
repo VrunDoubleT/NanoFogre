@@ -76,7 +76,13 @@
                                 }
                             }
                         %>
-
+                    </div>
+                    <!-- Description Section -->
+                    <div class="mt-8 bg-gray-50 rounded-xl p-6">
+                        <h3 class="text-xl font-semibold text-gray-900 mb-4 flex items-center">
+                            Product Description
+                        </h3>
+                        <p class="text-gray-700 leading-relaxed">${product.description}</p>
                     </div>
                 </div>
 
@@ -102,7 +108,7 @@
                         <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
                             Specifications
                         </h3>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="grid grid-cols-1 gap-4">
                             <div class="space-y-3">
                                 <div class="flex justify-between">
                                     <span class="text-gray-600">Scale:</span><span class="font-medium">${product.scale}</span>
@@ -143,14 +149,6 @@
 
                     </div>
                 </div>
-            </div>
-
-            <!-- Description Section -->
-            <div class="mt-8 bg-gray-50 rounded-xl p-6">
-                <h3 class="text-xl font-semibold text-gray-900 mb-4 flex items-center">
-                    Product Description
-                </h3>
-                <p class="text-gray-700 leading-relaxed">${product.description}</p>
             </div>
         </div>
 

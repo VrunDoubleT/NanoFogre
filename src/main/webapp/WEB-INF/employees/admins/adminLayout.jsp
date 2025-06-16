@@ -13,8 +13,17 @@
         <script src="https://cdn.tailwindcss.com"></script>
         <script src="https://unpkg.com/lucide@latest"></script>
         <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+        <!-- CSS of Toastify -->
+        <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+        <!-- JS of Toastify -->
+        <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+        <!-- SweetAlert2 CDN -->
+        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+
     </head>
     <body>
+        <%@ include file="../../common/loading.jsp" %>
         <%@ include file="adminHeader.jsp" %>
         <div id="modal" class="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50 hidden">
             <div id="modalContent" class="bg-white max-h-[90%] rounded-2xl overflow-y-auto">
@@ -30,7 +39,6 @@
 
         <script>
             lucide.createIcons();
-
             function parseOptionNumber(input, min) {
                 const num = Number(input);
                 if (isNaN(num) || num < min) {
@@ -44,6 +52,12 @@
                 modal.classList.add("flex");
                 document.body.classList.add('overflow-hidden');
             };
+
+            const closeModal = () => {
+                document.getElementById("modal").classList.remove("flex")
+                document.body.classList.remove("overflow-hidden")
+                document.getElementById("modal").classList.add("hidden")
+            }
 
             // Helper: Render Brand Page layout (title + loading + container)
             function renderBrandPageLayout() {
@@ -59,7 +73,6 @@
             function loadContent(path, push, params = []) {
                 const rootUrl = '/admin/view?viewPage=' + path;
                 let paramUrl = '';
-
                 if (params.length > 0) {
                     params.forEach(objParam => {
                         paramUrl += '&' + objParam.name + '=' + objParam.value;
@@ -109,6 +122,13 @@
                                         brandPage = parseOptionNumber(params[0].value, 1);
                                     }
                                     loadBrandContentAndEvent(brandPage);
+                                    break;
+                                case 'category':
+                                    let categoryPage = 1;
+                                    if (params.length > 0) {
+                                        categoryPage = parseOptionNumber(params[0].value, 1);
+                                    }
+                                    loadCategoryContentAndEvent(categoryPage);
                                     break;
                                 default:
                                     break;
@@ -161,12 +181,16 @@
                         const brandPage = params.get('page') || '1';
                         loadContent(viewPage, false, [{name: 'page', value: brandPage}]);
                         break;
+                    case "category":
+                        const categoryPage = params.get('page') || '1';
+                        loadContent(viewPage, false, [{name: 'page', value: categoryPage}]);
+                        break;
                     default:
+
                         loadContent(viewPage, false);
                         break;
                 }
             };
-
             window.onpopstate = function (e) {
                 if (e.state && e.state.page) {
                     loadContent(e.state.page, false);
@@ -177,5 +201,6 @@
         <script src="../../../js/brand.js"></script>       
         <script src="../../../js/category.js"></script>       
         <script src="../../../js/staff.js"></script> 
+        <script src="../../../js/loading.js"></script>
     </body>
 </html>
