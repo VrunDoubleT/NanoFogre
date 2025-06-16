@@ -14,7 +14,7 @@
             <div class="flex items-center justify-between">
                 <div>
                     <p class="text-sm font-medium text-gray-600">Total products</p>
-                    <p class="text-3xl font-bold text-gray-900">${productStat.totalProducts+""}</p>
+                    <p id="totalProduct" class="text-3xl font-bold text-gray-900">${productStat.totalProducts+""}</p>
                 </div>
                 <div class="h-12 w-12 bg-blue-100 rounded-lg flex items-center justify-center">
                     <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -28,7 +28,7 @@
             <div class="flex items-center justify-between">
                 <div>
                     <p class="text-sm font-medium text-gray-600">Total Inventory</p>
-                    <p class="text-3xl font-bold text-gray-900">${productStat.inventory+""}</p>
+                    <p id="totalInventory" class="text-3xl font-bold text-gray-900">${productStat.inventory+""}</p>
                 </div>
                 <div class="h-12 w-12 bg-green-100 rounded-lg flex items-center justify-center">
                     <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -42,7 +42,7 @@
             <div class="flex items-center justify-between">
                 <div>
                     <p class="text-sm font-medium text-gray-600">Inventory Value</p>
-                    <p class="text-3xl font-bold text-gray-900">${productStat.getInventoryValueFormat()}</p>
+                    <p id="inventoryValue" class="text-3xl font-bold text-gray-900">${productStat.getInventoryValueFormat()}</p>
                 </div>
                 <div class="h-12 w-12 bg-yellow-100 rounded-lg flex items-center justify-center">
                     <svg class="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -56,7 +56,7 @@
             <div class="flex items-center justify-between">
                 <div>
                     <p class="text-sm font-medium text-gray-600">Out of stocks</p>
-                    <p class="text-3xl font-bold text-gray-900">${product.outOfStockProducts+""}</p>
+                    <p id="outOfStock" class="text-3xl font-bold text-gray-900">${productStat.outOfStockProducts+""}</p>
                 </div>
                 <div class="h-12 w-12 bg-purple-100 rounded-lg flex items-center justify-center">
                     <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -72,7 +72,7 @@
                 <h2 class="text-lg font-semibold text-gray-900">Product List</h2>
                 <div class="flex items-center space-x-3">
                     <button id="create-product-button" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-lg shadow-lg hover:shadow-xl transform transition-all duration-200 flex items-center space-x-2">
-                        <!--                        <i data-lucide="diamond-plus" class="w-5 h-5"></i>-->
+                        <i data-lucide="diamond-plus" class="w-5 h-5"></i>
                         <span>Add Product</span>
                     </button>
                     <select id="categorySelect" class="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent">

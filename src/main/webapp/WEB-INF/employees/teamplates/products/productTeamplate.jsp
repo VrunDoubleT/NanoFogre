@@ -4,6 +4,7 @@
     Author     : Tran Thanh Van - CE181019
 --%>
 
+<%@page import="Utils.Converter"%>
 <%@page import="Models.Product"%>
 <%@page import="java.util.List"%>
 <%
@@ -23,7 +24,7 @@
                      src="<%= product.getUrls().get(0)%>" alt="<%= product.getTitle()%>">
             </div>
             <div class="ml-4">
-                <div class="text-sm font-medium text-gray-900 line-clamp-1"><%= product.getTitle()%></div>
+                <div class="text-sm font-medium text-gray-900"><%= product.getTitle().length() > 30 ? product.getTitle().substring(0, 27) + "..." : product.getTitle() %></div>
 
                 <div class="flex items-center mt-1">
                     <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800"><%= product.getScale()%></span>
@@ -42,7 +43,7 @@
     </td>
 
     <td class="px-4 py-4 whitespace-nowrap">
-        <div class="text-lg font-semibold text-gray-900">$<%= product.getPrice()%></div>
+        <div class="text-lg font-semibold text-gray-900"><%= Converter.formatVietNamCurrency(product.getPrice()) %></div>
     </td>
 
     <td class="px-4 py-4 whitespace-nowrap">

@@ -63,7 +63,7 @@ public class AdminViewServerlet extends HttpServlet {
                 viewPath = "/WEB-INF/employees/components/adminDashboardComponent.jsp";
                 break;
             default:
-                viewPath = "/WEB-INF/employees/components/dashboard.jsp";
+                viewPath = "/WEB-INF/employees/components/adminDashboardComponent.jsp";
         }
 
         System.out.println("View Path: " + viewPath);

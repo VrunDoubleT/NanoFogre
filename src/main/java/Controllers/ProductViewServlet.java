@@ -7,6 +7,7 @@ import Models.Brand;
 import Models.Category;
 import Models.Product;
 import Models.ProductImage;
+import Models.ProductStat;
 import Utils.CloudinaryConfig;
 import Utils.Common;
 import Utils.Converter;
@@ -26,6 +27,8 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -46,7 +49,7 @@ public class ProductViewServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        int limit = 5;
+        int limit = 10;
         ProductDAO pDao = new ProductDAO();
         CategoryDAO categoryDao = new CategoryDAO();
         BrandDAO brandDao = new BrandDAO();
@@ -94,13 +97,66 @@ public class ProductViewServlet extends HttpServlet {
                 request.setAttribute("categories", cas);
                 request.setAttribute("brands", bras);
                 request.setAttribute("type", "edit");
-                request.setAttribute("product", productToEdit);                
+                request.setAttribute("product", productToEdit);
                 request.setAttribute("productImages", productImages);
                 request.getRequestDispatcher("/WEB-INF/employees/teamplates/products/createProductTeamplate.jsp").forward(request, response);
                 break;
+            case "stat":
+                ProductStat productStat = pDao.getProductStat();
+                responseJson(response, true, "Success", "Error", productStat);
             default:
                 break;
         }
+    }
+
+    private Product getProductByRequest(HttpServletRequest request)throws ServletException, IOException {
+        Product product = new Product();
+        List<Part> imageParts = Common.extractImageParts(request.getParts(), "imageFiles");
+        List<String> urls = CloudinaryConfig.uploadImages(imageParts);
+        product.setProductId(Converter.parseOption(request.getParameter("productId"), 0));
+        product.setTitle(request.getParameter("title"));
+        product.setSlug(request.getParameter("title"));
+        product.setDescription(request.getParameter("description"));
+        product.setScale(request.getParameter("scale"));
+        product.setMaterial(request.getParameter("material"));
+        product.setPrice(Double.parseDouble(request.getParameter("price")));
+        product.setQuantity(Integer.parseInt(request.getParameter("quantity")));
+        product.setPaint(request.getParameter("paint"));
+        product.setFeatures(request.getParameter("features"));
+        product.setManufacturer(request.getParameter("manufacturer"));
+        product.setLength(Double.parseDouble(request.getParameter("length")));
+        product.setWidth(Double.parseDouble(request.getParameter("width")));
+        product.setHeight(Double.parseDouble(request.getParameter("height")));
+        product.setWeight(Double.parseDouble(request.getParameter("weight")));
+        product.setDestroy(Boolean.parseBoolean(request.getParameter("destroy")));
+        product.setBrand(new Brand(Integer.parseInt(request.getParameter("brandId")), null, null));
+        product.setCategory(new Category(Integer.parseInt(request.getParameter("categoryId")), null));
+        product.setUrls(urls);
+
+        return product;
+    }
+
+    public void responseJson(HttpServletResponse response, boolean isSuccess, String successMessage, String errorMessage) throws ServletException, IOException {
+        response.setContentType("application/json");
+        response.setCharacterEncoding("UTF-8");
+        Map<String, Object> returnData = new HashMap<>();
+        returnData.put("isSuccess", isSuccess);
+        returnData.put("message", isSuccess ? successMessage : errorMessage);
+        Gson gson = new Gson();
+        String json = gson.toJson(returnData);
+        response.getWriter().write(json);
+    }
+    
+    public void responseJson(HttpServletResponse response, boolean isSuccess, String successMessage, String errorMessage, Object data) throws ServletException, IOException {
+        response.setContentType("application/json");
+        response.setCharacterEncoding("UTF-8");
+        Map<String, Object> returnData = new HashMap<>();
+        returnData.put("isSuccess", isSuccess);
+        returnData.put("message", isSuccess ? successMessage : errorMessage);
+        returnData.put("data", data);
+        Gson gson = new Gson();
+        String json = gson.toJson(returnData);
+        response.getWriter().write(json);
     }
 
     @Override
@@ -110,98 +166,26 @@ public class ProductViewServlet extends HttpServlet {
 
         switch (type) {
             case "create":
-                Product product = new Product();
-                List<Part> imageParts = Common.extractImageParts(request.getParts(), "imageFiles");
-                List<String> urls = CloudinaryConfig.uploadImages(imageParts);
-                product.setProductId(0);
-                product.setTitle(request.getParameter("title"));
-                product.setSlug(request.getParameter("title"));
-                product.setDescription(request.getParameter("description"));
-                product.setScale(request.getParameter("scale"));
-                product.setMaterial(request.getParameter("material"));
-                product.setPrice(Double.parseDouble(request.getParameter("price")));
-                product.setQuantity(Integer.parseInt(request.getParameter("quantity")));
-                product.setPaint(request.getParameter("paint"));
-                product.setFeatures(request.getParameter("features"));
-                product.setManufacturer(request.getParameter("manufacturer"));
-                product.setLength(Double.parseDouble(request.getParameter("length")));
-                product.setWidth(Double.parseDouble(request.getParameter("width")));
-                product.setHeight(Double.parseDouble(request.getParameter("height")));
-                product.setWeight(Double.parseDouble(request.getParameter("weight")));
-                product.setDestroy(Boolean.parseBoolean(request.getParameter("destroy")));
-                product.setBrand(new Brand(Integer.parseInt(request.getParameter("brandId")), null, null));
-                product.setCategory(new Category(Integer.parseInt(request.getParameter("categoryId")), null));
-                product.setUrls(urls);
+                Product product = getProductByRequest(request);
                 boolean isSuccess = pDao.createProduct(product);
-
-                response.setContentType("application/json");
-                response.setCharacterEncoding("UTF-8");
-                Map<String, Object> returnData = new HashMap<>();
-                returnData.put("isSuccess", isSuccess);
-                returnData.put("message", isSuccess ? "Product has been created successfully" : "An error occurred while creating the product");
-                Gson gson = new Gson();
-                String json = gson.toJson(returnData);
-                response.getWriter().write(json);
+                responseJson(response, isSuccess, "Product has been created successfully", "An error occurred while creating the product");
                 break;
             case "update":
-                Product productToUpdate = new Product();
-                int productIdToUpdate = Integer.parseInt(request.getParameter("productId"));
-                List<Part> imagePartsToUpdate = Common.extractImageParts(request.getParts(), "imageFiles");
-                List<String> urlsToUpdate = CloudinaryConfig.uploadImages(imagePartsToUpdate);
-                productToUpdate.setProductId(productIdToUpdate);
-                productToUpdate.setTitle(request.getParameter("title"));
-                productToUpdate.setSlug(request.getParameter("title"));
-                productToUpdate.setDescription(request.getParameter("description"));
-                productToUpdate.setScale(request.getParameter("scale"));
-                productToUpdate.setMaterial(request.getParameter("material"));
-                productToUpdate.setPrice(Double.parseDouble(request.getParameter("price")));
-                productToUpdate.setQuantity(Integer.parseInt(request.getParameter("quantity")));
-                productToUpdate.setPaint(request.getParameter("paint"));
-                productToUpdate.setFeatures(request.getParameter("features"));
-                productToUpdate.setManufacturer(request.getParameter("manufacturer"));
-                productToUpdate.setLength(Double.parseDouble(request.getParameter("length")));
-                productToUpdate.setWidth(Double.parseDouble(request.getParameter("width")));
-                productToUpdate.setHeight(Double.parseDouble(request.getParameter("height")));
-                productToUpdate.setWeight(Double.parseDouble(request.getParameter("weight")));
-                productToUpdate.setDestroy(Boolean.parseBoolean(request.getParameter("destroy")));
-                productToUpdate.setBrand(new Brand(Integer.parseInt(request.getParameter("brandId")), null, null));
-                productToUpdate.setCategory(new Category(Integer.parseInt(request.getParameter("categoryId")), null));
-                productToUpdate.setUrls(urlsToUpdate);
+                Product productToUpdate = getProductByRequest(request);
                 String[] alreadyUrlsId = request.getParameterValues("urlsId");
-                pDao.deleteUnusedProductImages(productIdToUpdate, alreadyUrlsId);
-                pDao.updateProduct(productToUpdate);
-                response.setContentType("application/json");
-                response.setCharacterEncoding("UTF-8");
-                Map<String, Object> returnDataUpdate = new HashMap<>();
-                returnDataUpdate.put("isSuccess", true);
-                returnDataUpdate.put("message", true ? "Product has been created successfully" : "An error occurred while creating the product");
-                Gson gsonUpdate = new Gson();
-                String jsonUpdate = gsonUpdate.toJson(returnDataUpdate);
-                response.getWriter().write(jsonUpdate);
+                pDao.deleteUnusedProductImages(productToUpdate.getProductId(), alreadyUrlsId);
+                boolean isUpdateSuccess = pDao.updateProduct(productToUpdate);
+                responseJson(response, isUpdateSuccess, "Product has been updated successfully", "An error occurred while update the product");
                 break;
             case "delete":
                 int productIdToHide = Integer.parseInt(request.getParameter("productId"));
                 boolean isHidden = pDao.hideProduct(productIdToHide);
-                response.setContentType("application/json");
-                response.setCharacterEncoding("UTF-8");
-                Map<String, Object> returnDataDelete = new HashMap<>();
-                returnDataDelete.put("isSuccess", isHidden);
-                returnDataDelete.put("message", isHidden ? "The product has been successfully hidden" : "An error occurred while hide the product");
-                Gson gsonDelete = new Gson();
-                String jsonDelete = gsonDelete.toJson(returnDataDelete);
-                response.getWriter().write(jsonDelete);
+                responseJson(response, isHidden, "The product has been successfully hidden", "An error occurred while hide the product");
                 break;
             case "enable":
                 int productIdToEnable = Integer.parseInt(request.getParameter("productId"));
                 boolean isEnable = pDao.enableProduct(productIdToEnable);
-                response.setContentType("application/json");
-                response.setCharacterEncoding("UTF-8");
-                Map<String, Object> returnDataEnable = new HashMap<>();
-                returnDataEnable.put("isSuccess", isEnable);
-                returnDataEnable.put("message", isEnable ? "The product has been successfully restored" : "An error occurred while restoring the product");
-                Gson gsonEnable = new Gson();
-                String jsonEnable = gsonEnable.toJson(returnDataEnable);
-                response.getWriter().write(jsonEnable);
+                responseJson(response, isEnable, "The product has been successfully restored", "An error occurred while restoring the product"); 
                 break;
             default:
                 break;

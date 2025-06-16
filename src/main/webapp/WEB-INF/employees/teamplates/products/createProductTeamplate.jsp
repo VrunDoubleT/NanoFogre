@@ -34,16 +34,21 @@
             <div class="flex items-center space-x-4">
                 <c:choose>
                     <c:when test="${type == 'create'}">
-                        <button id="create-product-btn" class="px-4 py-2 bg-green-500 rounded-lg text-white hover:bg-green-600 transition-all">
-                            <i class="fas fa-save mr-2"></i>Create
+                        <button id="create-product-btn" class="px-4 py-2 bg-emerald-500 rounded-lg text-white hover:bg-emerald-600 transition-all flex items-center gap-2">
+                            <!-- Lucide icon: Plus -->
+                            <i data-lucide="plus"></i>
+                            Create
                         </button>
                     </c:when>
                     <c:otherwise>
-                        <button id="update-product-btn" class="px-4 py-2 bg-blue-500 rounded-lg text-white hover:bg-blue-600 transition-all">
-                            <i class="fas fa-edit mr-2"></i>Update
+                        <button id="update-product-btn" class="px-4 py-2 bg-sky-500 rounded-lg text-white hover:bg-sky-600 transition-all flex items-center gap-2">
+                            <!-- Lucide icon: Pencil -->
+                            <i data-lucide="pencil"></i>
+                            Update
                         </button>
                     </c:otherwise>
                 </c:choose>
+
             </div>
         </div>
 
