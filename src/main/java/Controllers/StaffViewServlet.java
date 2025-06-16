@@ -47,6 +47,14 @@ public class StaffViewServlet extends HttpServlet {
                 request.setAttribute("limit", limit);
                 request.getRequestDispatcher("/WEB-INF/employees/teamplates/staff/staffTemplate.jsp").forward(request, response);
                 break;
+            case "detail":
+                int did = Integer.parseInt(request.getParameter("id"));
+                Employee item = sDao.getStaffById(did);
+                int orderCount = sDao.countOrdersByEmployeeId(did);
+                request.setAttribute("staff", item);
+                request.setAttribute("orderCount", orderCount);
+                request.getRequestDispatcher("/WEB-INF/employees/teamplates/staff/staffDetailsTemplate.jsp").forward(request, response);
+                break;
             case "pagination":
                 int p = Converter.parseOption(request.getParameter("page"), 1);
                 int t = sDao.countStaff();
@@ -61,6 +69,16 @@ public class StaffViewServlet extends HttpServlet {
             case "delete":
                 request.getRequestDispatcher("/WEB-INF/employees/teamplates/staff/deleteStaffTemplate.jsp").forward(request, response);
                 break;
+            case "update":
+                try {
+                int id = Integer.parseInt(request.getParameter("id"));
+                Employee staffToUpdate = sDao.getStaffById(id);
+                request.setAttribute("staff", staffToUpdate);
+                request.getRequestDispatcher("/WEB-INF/employees/teamplates/staff/updateStaffTemplate.jsp").forward(request, response);
+            } catch (Exception e) {
+                response.setStatus(500);
+            }
+            break;
             default:
                 break;
         }
@@ -88,10 +106,27 @@ public class StaffViewServlet extends HttpServlet {
                 sDao.createStaff(staff);
                 break;
             case "delete":
-            try {
+                try {
                 int id = Integer.parseInt(request.getParameter("id"));
-                boolean deleted = sDao.deleteEmployeeById(id);
+                boolean deleted = sDao.deleteStaffById(id);
                 response.setStatus(deleted ? 200 : 500);
+            } catch (Exception e) {
+                response.setStatus(500);
+            }
+            break;
+            case "update":
+                try {
+                int id = Integer.parseInt(request.getParameter("id"));
+                String status = request.getParameter("status");
+                boolean isBlocked = "Block".equalsIgnoreCase(status);
+
+                boolean updated = sDao.updateStaffStatus(id, isBlocked);
+
+                if (updated) {
+                    response.setStatus(200);
+                } else {
+                    response.setStatus(500);
+                }
             } catch (Exception e) {
                 response.setStatus(500);
             }

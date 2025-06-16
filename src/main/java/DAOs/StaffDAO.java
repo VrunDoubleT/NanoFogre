@@ -11,6 +11,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -84,33 +85,52 @@ public class StaffDAO extends DB.DBContext {
         }
     }
 
-    public Employee getProductById(int id) {
-        Employee staff = new Employee();
+    public Employee getStaffById(int id) {
         String query = "SELECT * FROM Employees WHERE employeeId = ?";
-        Object[] obj = {id};
-        try ( ResultSet rs = execSelectQuery(query, obj)) {
-            while (rs.next()) {
-                int Id = rs.getInt("employeeId");
-                staff.setId(Id);
+        Object[] params = {id};
+
+        try ( ResultSet rs = execSelectQuery(query, params)) {
+            if (rs.next()) {
+                Employee staff = new Employee();
+                staff.setId(rs.getInt("employeeId"));
                 staff.setEmail(rs.getString("employeeEmail"));
                 staff.setPassword(rs.getString("employeePassword"));
                 staff.setName(rs.getString("employeeName"));
                 staff.setAvatar(rs.getString("employeeAvatar"));
+
                 Role role = new Role();
                 role.setId(rs.getInt("roleId"));
-                role.setName(rs.getString("roleName"));
                 staff.setRole(role);
-                staff.setIsBlock(rs.getBoolean("isBlock"));
-                staff.setCreatedAt(rs.getTimestamp("createdAt").toLocalDateTime());
 
+                Timestamp ts = rs.getTimestamp("createdAt");
+                if (ts != null) {
+                    staff.setCreatedAt(ts.toLocalDateTime());
+                }
+
+                staff.setIsBlock(rs.getBoolean("isBlock"));
+                return staff;
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        return staff;
+
+        return null;
     }
 
-    public boolean deleteEmployeeById(int id) {
+    public boolean updateStaffStatus(int id, boolean isBlock) {
+        String query = "UPDATE Employees SET isBlock = ? WHERE employeeId = ?";
+        Object[] params = {isBlock, id};
+
+        try {
+            int rowsAffected = execQuery(query, params);
+            return rowsAffected > 0;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public boolean deleteStaffById(int id) {
         String query = "DELETE FROM Employees WHERE employeeId = ?";
         Object[] params = {id};
         try {
@@ -120,5 +140,31 @@ public class StaffDAO extends DB.DBContext {
             e.printStackTrace();
             return false;
         }
+    }
+
+    public boolean isEmailExists(String email) {
+        String query = "SELECT 1 FROM Employees WHERE employeeEmail = ?";
+        Object[] params = {email};
+        try ( ResultSet rs = execSelectQuery(query, params)) {
+            return rs.next(); // Nếu tồn tại bản ghi => email đã tồn tại
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false; // hoặc có thể throw exception tùy logic
+        }
+    }
+
+    public int countOrdersByEmployeeId(int employeeId) {
+        String query = "SELECT COUNT(*) as total FROM Orders WHERE employeeId = ?";
+        Object[] params = {employeeId};
+
+        try ( ResultSet rs = execSelectQuery(query, params)) {
+            if (rs.next()) {
+                return rs.getInt("total");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return 0;
     }
 }

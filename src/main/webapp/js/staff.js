@@ -175,31 +175,6 @@ function resetCreateStaffForm() {
     });
 }
 
-function showSuccessPopup(message, onConfirm) {
-    const overlay = document.createElement("div");
-    overlay.className = "fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50";
-
-    const popup = document.createElement("div");
-    popup.className = "bg-white rounded-xl shadow-xl p-6 max-w-sm w-full text-center";
-
-    popup.innerHTML = `
-        <p class="text-lg font-semibold text-green-600 mb-4">${message}</p>
-        <button class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">OK</button>
-    `;
-
-    overlay.appendChild(popup);
-    document.body.appendChild(overlay);
-
-    popup.querySelector("button").onclick = () => {
-        document.body.removeChild(overlay);
-        if (typeof onConfirm === "function") {
-            onConfirm();
-        }
-    };
-}
-
-
-
 // Delete staff
 document.addEventListener("click", async function (e) {
     const modal = document.getElementById("modal");
@@ -233,11 +208,9 @@ document.addEventListener("click", async function (e) {
                         if (res.ok) {
                             const currentPage = getCurrentPageFromURL();
 
-                            // Đếm số dòng staff (trừ header)
                             const rowCount = document.querySelectorAll("tbody tr").length;
 
                             showSuccessPopup("Staff deleted successfully!", () => {
-                                // Nếu chỉ còn 1 dòng (và đã xóa) → quay về trang trước
                                 if (rowCount === 1 && currentPage > 1) {
                                     const prevPageUrl = new URL(window.location.href);
                                     prevPageUrl.searchParams.set("page", currentPage - 1);
@@ -256,14 +229,115 @@ document.addEventListener("click", async function (e) {
             }
 
         } catch (err) {
-            alert("❌ Cannot open delete dialog.");
+            alert("Cannot open delete dialog.");
         }
     }
 });
 
+// Update staff
+document.addEventListener("click", async function (e) {
+    const modal = document.getElementById("modal");
+    const modalContent = document.getElementById("modalContent");
+
+    const updateBtn = e.target.closest(".update-staff-button");
+    if (updateBtn) {
+        const id = updateBtn.dataset.id;
+
+        try {
+            const response = await fetch(`/staff/view?type=update&id=${id}`);
+            const html = await response.text();
+
+            modalContent.innerHTML = html;
+            modal.classList.remove("hidden");
+            modal.classList.add("flex");
+            document.body.classList.add("overflow-hidden");
+
+            const form = modalContent.querySelector("form");
+            if (form) {
+                form.addEventListener("submit", async function (event) {
+                    event.preventDefault();
+
+                    const formData = new FormData(form);
+                    const status = formData.get("status");
+
+                    try {
+                        const res = await fetch("/staff/view", {
+                            method: "POST",
+                            headers: {
+                                "Content-Type": "application/x-www-form-urlencoded"
+                            },
+                            body: `type=update&id=${id}&status=${encodeURIComponent(status)}`
+                        });
+
+                        if (res.ok) {
+                            showSuccessPopup("Status updated successfully!", () => {
+                                window.location.reload();
+                            });
+                        } else {
+                            alert("Update failed.");
+                        }
+                    } catch (err) {
+                        alert("An error occurred while updating.");
+                    }
+                });
+            }
+
+        } catch (err) {
+            alert("Cannot open update dialog.");
+        }
+    }
+});
+
+// Staff details
+document.addEventListener("click", async function (e) {
+    const modal = document.getElementById("modal");
+    const modalContent = document.getElementById("modalContent");
+
+    const detailBtn = e.target.closest(".detail-staff-button");
+    if (detailBtn) {
+        const id = detailBtn.dataset.id;
+
+        try {
+            const response = await fetch(`/staff/view?type=detail&id=${id}`);
+            const html = await response.text();
+
+            modalContent.innerHTML = html;
+            modal.classList.remove("hidden");
+            modal.classList.add("flex");
+            document.body.classList.add("overflow-hidden");
+        } catch (err) {
+            alert("Cannot open details dialog.");
+        }
+    }
+});
+
+
 function getCurrentPageFromURL() {
     const urlParams = new URLSearchParams(window.location.search);
     return parseInt(urlParams.get("page")) || 1;
+}
+
+function showSuccessPopup(message, onConfirm) {
+    const overlay = document.createElement("div");
+    overlay.className = "fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50";
+
+    const popup = document.createElement("div");
+    popup.className = "bg-white rounded-xl shadow-xl p-6 max-w-sm w-full text-center";
+
+    popup.innerHTML = `
+        <p class="text-lg font-semibold text-green-600 mb-4">${message}</p>
+        <button class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">OK</button>
+    `;
+
+    overlay.appendChild(popup);
+    document.body.appendChild(overlay);
+
+    popup.querySelector("button").onclick = () => {
+        document.body.removeChild(overlay);
+        if (typeof onConfirm === "function") {
+            onConfirm();
+        }
+    };
 }
 
 
