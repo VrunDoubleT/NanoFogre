@@ -5,63 +5,75 @@
 --%>
 
 
+<%-- 
+    Document   : categoryComponent
+    Created on : Jun 10, 2025, 6:17:46 PM
+    Author     : Tran Thanh Van - CE181019
+--%>
+
+
+
+<%-- 
+    Document   : CategoryComponnent
+    Created on : Jun 15, 2025, 7:27:04 PM
+    Author     : iphon
+--%>
+
+<%@page import="Models.Category"%>
 <%@page import="Models.Category"%>
 <%@page import="java.util.List"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 
 <%
-
-    List<Category> categories = (List<Category>) request.getAttribute("categories");
-
+    Integer count = (Integer) request.getAttribute("total");
 %>
 
-<table class="min-w-full bg-white shadow-md rounded-lg overflow-hidden">
-    <thead>
-       <div class="bg-white w-full rounded-xl shadow-sm border border-gray-100">
-        <div class="px-6 py-4 border-b border-gray-200">
-            <div class="flex items-center justify-between">
-                <h2 class="text-lg font-semibold text-gray-900 ">Category List</h2>
+<div class="">
+    <div class="bg-white w-full rounded-xl shadow-sm border border-gray-100">
 
+
+        <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+            <div class="flex items-center justify-center space-x-4">
+                <div>
+                    <p class="text-3xl font-bold text-gray-900">Total Category: <%= count%></p>
+                </div>
+                <div class="h-12 w-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                    <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
+                    </svg>
+                </div>
             </div>
+
+            <button id="create-category-button" data-category-id="${category.id} class="openEditCategoryModal" class="bg-blue-100 text-blue-700 hover:bg-blue-200 px-3 py-2 rounded-lg transition-colors flex items-center space-x-2" title="Add Category">
+
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v14m7-7H5" />
+                </svg>
+                <span class="text-lg font-semibold">Add Category</span>
+
+
+            </button>
+
+
         </div>
-        <tr class="bg-gray-100">
-            <th class="px-6 py-4 text-left text-sm font-semibold text-gray-800">Category ID</th>
-            <th class="px-6 py-4 text-left text-sm font-semibold text-gray-800">Category Name</th>
-            <th class="px-6 py-4 text-left text-sm font-semibold text-gray-800">Actions</th>
-        </tr>
-    </thead>
-    <tbody>
-        <% if (categories != null) {
-            for (Category category : categories) { %>
-        <tr class="border-t hover:bg-gray-50">
-            <td class="px-6 py-4 text-sm text-gray-700"><%= category.getId() %></td>
-            <td class="px-6 py-4 text-sm text-gray-700">
-                <div class="flex items-center">
-                    <div class="ml-4">
-                        <div class="text-sm font-semibold text-gray-800"><%= category.getName() %></div>
-                        <div class="text-xs text-gray-500">Category ID: <%= category.getId() %></div>
-                    </div>
-                </div>
-            </td>
- 
-            <td class="px-6 py-4 text-sm text-gray-700">
-  
 
-                    <button data-category-id="<%= category.getId() %>" class="editCategoryBtn bg-yellow-100 text-yellow-700 hover:bg-yellow-200 px-4 py-2 rounded-lg transition-all duration-300" title="Edit Category">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
-                        </svg>
-                    </button>
 
-                    <button data-category-id="<%= category.getId() %>" class="deleteCategoryBtn bg-red-100 text-red-700 hover:bg-red-200 px-4 py-2 rounded-lg transition-all duration-300" title="Delete Category">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                        </svg>
-                    </button>
-                </div>
-            </td>
-        </tr>
-        <% } } %>
-    </tbody>
-</table>
+        <div class="w-full">
+            <table class="w-full max-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">#</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category Name</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider text-center">Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="tabelContainer" class="bg-white divide-y divide-gray-200">
+
+                </tbody>
+            </table>
+            <div id="loadingCategory"></div>
+        </div>
+    </div>
+    <div id="pagination"></div> 
+</div>

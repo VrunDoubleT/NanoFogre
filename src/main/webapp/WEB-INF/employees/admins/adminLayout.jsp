@@ -39,7 +39,6 @@
 
         <script>
             lucide.createIcons();
-
             function parseOptionNumber(input, min) {
                 const num = Number(input);
                 if (isNaN(num) || num < min) {
@@ -74,7 +73,6 @@
             function loadContent(path, push, params = []) {
                 const rootUrl = '/admin/view?viewPage=' + path;
                 let paramUrl = '';
-
                 if (params.length > 0) {
                     params.forEach(objParam => {
                         paramUrl += '&' + objParam.name + '=' + objParam.value;
@@ -124,6 +122,13 @@
                                         brandPage = parseOptionNumber(params[0].value, 1);
                                     }
                                     loadBrandContentAndEvent(brandPage);
+                                    break;
+                                case 'category':
+                                    let categoryPage = 1;
+                                    if (params.length > 0) {
+                                        categoryPage = parseOptionNumber(params[0].value, 1);
+                                    }
+                                    loadCategoryContentAndEvent(categoryPage);
                                     break;
                                 default:
                                     break;
@@ -176,12 +181,16 @@
                         const brandPage = params.get('page') || '1';
                         loadContent(viewPage, false, [{name: 'page', value: brandPage}]);
                         break;
+                    case "category":
+                        const categoryPage = params.get('page') || '1';
+                        loadContent(viewPage, false, [{name: 'page', value: categoryPage}]);
+                        break;
                     default:
+
                         loadContent(viewPage, false);
                         break;
                 }
             };
-
             window.onpopstate = function (e) {
                 if (e.state && e.state.page) {
                     loadContent(e.state.page, false);
