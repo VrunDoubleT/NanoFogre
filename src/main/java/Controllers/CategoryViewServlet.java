@@ -60,14 +60,6 @@ public class CategoryViewServlet extends HttpServlet {
                 request.setAttribute("category", category);
                 request.getRequestDispatcher("/WEB-INF/employees/teamplates/category/editCategoryTeamplate.jsp").forward(request, response);
                 break;
-//            case "delete":
-//                request.getRequestDispatcher("/WEB-INF/employees/teamplates/category/deleteCategoryTeamplate.jsp").forward(request, response);
-//                break;
-//
-//            case "enable":
-//                request.getRequestDispatcher("/WEB-INF/employees/teamplates/category/enableCategoryTemplate.jsp").forward(request, response);
-//                break;
-
             default:
                 break;
         }
@@ -99,24 +91,18 @@ public class CategoryViewServlet extends HttpServlet {
                     return; // Exit if validation fails
                 }
 
-                // Don't set categoryId manually, let the DB auto-generate it
                 category.setName(categoryName);
 
-                // Log the category details for debugging purposes
                 System.out.println("Creating category with name: " + category.getName());
 
-                // Try to create the category
                 boolean isCreated = categoryDAO.createCategory(category);
 
-                // Log the result of category creation
                 System.out.println("Category creation result: " + isCreated);
 
-                // Prepare response
                 Map<String, Object> returnData = new HashMap<>();
                 returnData.put("isSuccess", isCreated);
                 returnData.put("message", isCreated ? "Category created successfully" : "An error occurred while creating the category");
 
-                // Send response
                 response.setContentType("application/json");
                 response.setCharacterEncoding("UTF-8");
                 String jsonResponse = new Gson().toJson(returnData);
@@ -144,17 +130,14 @@ public class CategoryViewServlet extends HttpServlet {
 
             case "delete":
                 int categoryIdToHide = Integer.parseInt(request.getParameter("categoryId"));
-                boolean isHidden = categoryDAO.hideCategory(categoryIdToHide);
-                response.setContentType("application/json");
-                response.setCharacterEncoding("UTF-8");
-                Map<String, Object> returnDataDelete = new HashMap<>();
-                returnDataDelete.put("isSuccess", isHidden);
-                returnDataDelete.put("message", isHidden ? "The category has been successfully hidden" : "An error occurred while hide the category");
-                Gson gsonDelete = new Gson();
-                String jsonDelete = gsonDelete.toJson(returnDataDelete);
-                response.getWriter().write(jsonDelete);
+                boolean updateNull = categoryDAO.updateCategoryInProducts(categoryIdToHide);
+                boolean deleteCategory = categoryDAO.deleteCategoryById(categoryIdToHide);
+                if (updateNull && deleteCategory) {
+                    response.getWriter().write("Category deleted successfully");
+                } else {
+                    response.getWriter().write("Failed to delete category");
+                }
                 break;
-
         }
     }
 

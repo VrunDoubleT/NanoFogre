@@ -8,6 +8,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -31,24 +33,6 @@ public class CategoryDAO extends DB.DBContext {
         }
         return categories;
     }
-//    public List<Category> getCategories() {
-//        List<Category> categories = new ArrayList<>();
-//        String query = "SELECT * FROM Categories WHERE isDeleted = 0";  // Lấy chỉ những danh mục chưa bị xóa
-//
-//        try ( ResultSet rs = execSelectQuery(query)) {
-//            while (rs.next()) {
-//                Category category = new Category();
-//                category.setId(rs.getInt("categoryId"));
-//                category.setName(rs.getString("categoryName"));
-//                category.setIsDeleted(rs.getInt("isDeleted"));  // Sử dụng setIsDeleted thay vì setDeleted
-//                categories.add(category);
-//            }
-//        } catch (SQLException e) {
-//            e.printStackTrace();
-//        }
-//
-//        return categories;
-//    }
 
     public List<Category> getCategories(int page, int limit) {
         int row = (page - 1) * limit;
@@ -71,30 +55,28 @@ public class CategoryDAO extends DB.DBContext {
         String query = "SELECT COUNT(*) FROM Categories"; // SQL query to get the total count of categories
         try ( ResultSet rs = execSelectQuery(query)) {
             if (rs.next()) {
-                return rs.getInt(1); // Return the count
+                return rs.getInt(1);
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        return 0; // Default to 0 if there's an error
+        return 0;
     }
 
     public boolean createCategory(Category category) {
         String query = "INSERT INTO Categories (categoryName) VALUES (?)";
 
         try ( Connection conn = getConnection();  PreparedStatement stmt = conn.prepareStatement(query)) {
-            stmt.setString(1, category.getName());  // Set the category name
+            stmt.setString(1, category.getName());
 
-            // Log the query and the data before execution (for debugging)
             System.out.println("Executing query: " + query + " with categoryName: " + category.getName());
 
-            int rowsAffected = stmt.executeUpdate();  // Execute the update
+            int rowsAffected = stmt.executeUpdate();
 
-            // Return true if at least one row was affected (category inserted successfully)
             return rowsAffected > 0;
         } catch (SQLException e) {
-            e.printStackTrace();  // Log any SQL exceptions for debugging
-            return false;  // Return false if there was an error
+            e.printStackTrace();
+            return false;
         }
     }
 
@@ -116,7 +98,7 @@ public class CategoryDAO extends DB.DBContext {
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        return category; // Return the category, or null if not found
+        return category;
     }
 
     public boolean updateCategory(Category category) {
@@ -132,33 +114,37 @@ public class CategoryDAO extends DB.DBContext {
         return false;
     }
 
-    public boolean hideCategory(int categoryId) {
-        String sql = "UPDATE Categories SET isDeleted = 1 WHERE categoryId = ?";
-        Object[] paramsObj = {categoryId};
+    // Method to update Products table, setting categoryId to NULL
+    public boolean updateCategoryInProducts(int categoryId) {
+        String updateProductsSql = "UPDATE Products SET categoryId = NULL WHERE categoryId = ?";
 
-        try {
-            int rf = execQuery(sql, paramsObj);
-            return rf > 0;
+        try ( Connection conn = getConnection()) {
+            try ( PreparedStatement stmt = conn.prepareStatement(updateProductsSql)) {
+                stmt.setInt(1, categoryId);
+                int rowsAffected = stmt.executeUpdate();
+
+                return rowsAffected > 0;
+            }
         } catch (SQLException e) {
             e.printStackTrace();
         }
-
         return false;
     }
 
-    public boolean enableCategory(int categoryId) {
-        String sql = "UPDATE Categories SET isDeleted = 0 WHERE categoryId = ?";
-        Object[] paramsObj = {categoryId};
+// Method to delete a category by its categoryId
+    public boolean deleteCategoryById(int categoryId) {
+        String deleteCategorySql = "DELETE FROM Categories WHERE categoryId = ?";
 
-        try {
-            int rf = execQuery(sql, paramsObj);
-            return rf > 0;
+        try ( Connection conn = getConnection()) {
+            try ( PreparedStatement stmt = conn.prepareStatement(deleteCategorySql)) {
+                stmt.setInt(1, categoryId);
+                int rowsAffected = stmt.executeUpdate();
+
+                return rowsAffected > 0;
+            }
         } catch (SQLException e) {
             e.printStackTrace();
         }
-
-        return false;
+        return false; // Handle error while deleting category
     }
-
-
 }
