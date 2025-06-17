@@ -76,33 +76,23 @@ public class CategoryViewServlet extends HttpServlet {
 
         switch (type) {
             case "create":
-                // Validate category name
-                if (categoryName == null || categoryName.trim().isEmpty()) {
+                // Kiểm tra xem tên danh mục có trùng lặp không
+                if (categoryDAO.isCategoryNameExists(categoryName)) {
                     response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-
                     Map<String, Object> errorResponse = new HashMap<>();
                     errorResponse.put("isSuccess", false);
-                    errorResponse.put("message", "Category name is required.");
-
+                    errorResponse.put("message", "Category name already exists.");
                     response.setContentType("application/json");
                     response.setCharacterEncoding("UTF-8");
                     response.getWriter().write(new Gson().toJson(errorResponse));
-
-                    return; // Exit if validation fails
+                    return; // Dừng lại nếu tên danh mục đã tồn tại
                 }
 
                 category.setName(categoryName);
-
-                System.out.println("Creating category with name: " + category.getName());
-
                 boolean isCreated = categoryDAO.createCategory(category);
-
-                System.out.println("Category creation result: " + isCreated);
-
                 Map<String, Object> returnData = new HashMap<>();
                 returnData.put("isSuccess", isCreated);
                 returnData.put("message", isCreated ? "Category created successfully" : "An error occurred while creating the category");
-
                 response.setContentType("application/json");
                 response.setCharacterEncoding("UTF-8");
                 String jsonResponse = new Gson().toJson(returnData);
@@ -111,21 +101,29 @@ public class CategoryViewServlet extends HttpServlet {
 
             case "update":
                 int categoryId = Integer.parseInt(request.getParameter("categoryId"));
-
                 category.setId(categoryId);
                 category.setName(categoryName);
 
-                boolean isUpdated = categoryDAO.updateCategory(category);
-                response.setContentType("application/json");
-                response.setCharacterEncoding("UTF-8");
+                // Kiểm tra xem tên danh mục đã tồn tại chưa (ngoài chính danh mục đang sửa)
+                if (categoryDAO.isCategoryNameExists(categoryName)) {
+                    response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                    Map<String, Object> errorResponseUpdate = new HashMap<>();
+                    errorResponseUpdate.put("isSuccess", false);
+                    errorResponseUpdate.put("message", "Category name already exists.");
+                    response.setContentType("application/json");
+                    response.setCharacterEncoding("UTF-8");
+                    response.getWriter().write(new Gson().toJson(errorResponseUpdate));
+                    return; // Dừng lại nếu tên danh mục đã tồn tại
+                } else {
 
-                Map<String, Object> returnDataUpdate = new HashMap<>();
-                returnDataUpdate.put("isSuccess", isUpdated);
-                returnDataUpdate.put("message", isUpdated ? "Category updated successfully" : "An error occurred while updating the category");
-
-                Gson gsonUpdate = new Gson();
-                String jsonUpdate = gsonUpdate.toJson(returnDataUpdate);
-                response.getWriter().write(jsonUpdate);
+                    boolean isUpdated = categoryDAO.updateCategory(category);
+                    Map<String, Object> returnDataUpdate = new HashMap<>();
+                    returnDataUpdate.put("isSuccess", isUpdated);
+                    returnDataUpdate.put("message", isUpdated ? "Category updated successfully" : "An error occurred while updating the category");
+                    Gson gsonUpdate = new Gson();
+                    String jsonUpdate = gsonUpdate.toJson(returnDataUpdate);
+                    response.getWriter().write(jsonUpdate);
+                }
                 break;
 
             case "delete":

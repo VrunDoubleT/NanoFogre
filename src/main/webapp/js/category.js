@@ -123,7 +123,7 @@ const loadCreateCategoryEvent = (categoryId, currentPage) => {
         })
                 .then(res => {
                     if (!res.ok) {
-                        throw new Error(`Server responded with status ${res.status}`);
+                        throw new Error(`Category name already exists.`);
                     }
                     return res.text();  // Parse as text first
                 })

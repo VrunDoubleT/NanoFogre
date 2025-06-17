@@ -94,7 +94,7 @@ public class ProductViewServlet extends HttpServlet {
                 request.setAttribute("categories", cas);
                 request.setAttribute("brands", bras);
                 request.setAttribute("type", "edit");
-                request.setAttribute("product", productToEdit);                
+                request.setAttribute("product", productToEdit);
                 request.setAttribute("productImages", productImages);
                 request.getRequestDispatcher("/WEB-INF/employees/teamplates/products/createProductTeamplate.jsp").forward(request, response);
                 break;
