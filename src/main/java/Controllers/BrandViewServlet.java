@@ -34,17 +34,13 @@ public class BrandViewServlet extends HttpServlet {
         if ("getBrand".equals(request.getParameter("action"))) {
             try {
                 String idParam = request.getParameter("id");
-                System.out.println("Received ID parameter: " + idParam); // Debug log
-
+                System.out.println("Received ID parameter: " + idParam);
                 int id = Integer.parseInt(idParam);
-                System.out.println("Parsed ID: " + id); // Debug log
-
+                System.out.println("Parsed ID: " + id);
                 Brand brand = brandDao.getBrandById(id);
-                System.out.println("Found brand: " + (brand != null ? brand.getName() : "null")); // Debug log
-
+                System.out.println("Found brand: " + (brand != null ? brand.getName() : "null"));
                 response.setContentType("application/json");
                 response.setCharacterEncoding("UTF-8");
-
                 if (brand != null) {
                     String jsonResponse = String.format(
                             "{\"success\":true,\"brand\":{\"id\":%d,\"name\":\"%s\",\"image\":\"%s\"}}",
@@ -66,19 +62,17 @@ public class BrandViewServlet extends HttpServlet {
             }
             return;
         }
-
         int page = Converter.parseOption(request.getParameter("page"), 1);
         int limit = 5;
-
         List<Brand> brands = brandDao.getBrandsPaginated(page, limit);
         int totalBrands = brandDao.getTotalBrandsForPagination();
         int totalPages = (int) Math.ceil((double) totalBrands / limit);
-
+        // Set attribute
         request.setAttribute("brands", brands);
-        request.setAttribute("totalBrands", totalBrands);
-        request.setAttribute("currentPage", page);
+        request.setAttribute("total", totalBrands);
+        request.setAttribute("limit", limit);
         request.setAttribute("totalPages", totalPages);
-
+        request.setAttribute("page", page);
         String viewPath = (String) request.getAttribute("viewPath");
         request.getRequestDispatcher(viewPath).forward(request, response);
     }
@@ -88,12 +82,13 @@ public class BrandViewServlet extends HttpServlet {
             throws ServletException, IOException {
         request.setCharacterEncoding("UTF-8");
         response.setContentType("application/json");
-
         String action = request.getParameter("action");
         boolean success = false;
         String message = "Invalid action";
-
         try {
+            if (action == null) {
+                throw new RuntimeException("Missing action parameter");
+            }
             switch (action.toLowerCase()) {
                 case "create":
                     success = handleCreate(request);
@@ -110,9 +105,14 @@ public class BrandViewServlet extends HttpServlet {
                 default:
                     message = "Invalid action";
             }
+        } catch (RuntimeException e) {
+            message = e.getMessage() != null ? e.getMessage() : "System error";
+            success = false;
+            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
         } catch (Exception e) {
-            message = e.getMessage() != null ? e.getMessage() : "System error: " + e.getMessage();
-            e.printStackTrace();
+            message = e.getMessage() != null ? e.getMessage() : "System error";
+            success = false;
+            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
         }
 
         response.getWriter().write(String.format(
@@ -122,26 +122,21 @@ public class BrandViewServlet extends HttpServlet {
     private boolean handleCreate(HttpServletRequest request) throws IOException, ServletException {
         String name = request.getParameter("name").trim();
         Part imagePart = request.getPart("image");
-
         if (name.isEmpty() || imagePart == null || imagePart.getSize() == 0) {
             return false;
         }
 
-        // Tạo thư mục lưu ảnh trong webapp (public)
         String uploadPath = getServletContext().getRealPath("/") + "uploads/brands";
         File uploadDir = new File(uploadPath);
         if (!uploadDir.exists()) {
             uploadDir.mkdirs();
         }
 
-        // Tạo tên file unique để tránh trùng
         String fileName = System.currentTimeMillis() + "_" + Paths.get(imagePart.getSubmittedFileName()).getFileName().toString();
         String filePath = uploadPath + File.separator + fileName;
         imagePart.write(filePath);
 
-        // Đường dẫn hiển thị phải bắt đầu bằng /
         String imageUrl = "/uploads/brands/" + fileName;
-
         if (brandDao.isBrandNameExists(name)) {
             throw new RuntimeException("Brand name already exists");
         }
@@ -152,37 +147,42 @@ public class BrandViewServlet extends HttpServlet {
         int id = Integer.parseInt(request.getParameter("id"));
         String name = request.getParameter("name").trim();
 
-        // Lấy ảnh cũ từ DB (hoặc từ request nếu bạn truyền lên)
         Brand oldBrand = brandDao.getBrandById(id);
         String imageUrl = oldBrand != null ? oldBrand.getUrl() : "";
 
         Part imagePart = request.getPart("image");
-        // Nếu người dùng upload ảnh mới thì xử lý upload
         if (imagePart != null && imagePart.getSize() > 0) {
             String uploadPath = getServletContext().getRealPath("/") + "uploads/brands";
             File uploadDir = new File(uploadPath);
             if (!uploadDir.exists()) {
                 uploadDir.mkdirs();
             }
-
             String fileName = System.currentTimeMillis() + "_" + Paths.get(imagePart.getSubmittedFileName()).getFileName().toString();
             String filePath = uploadPath + File.separator + fileName;
             imagePart.write(filePath);
-
             imageUrl = "/uploads/brands/" + fileName;
         }
-
         if (name.isEmpty() || imageUrl.isEmpty()) {
-            return false;
+            throw new RuntimeException("Missing brand name or image");
         }
         if (brandDao.isBrandNameExistsExceptId(name, id)) {
-            throw new RuntimeException("Brand name already exists");
+            throw new RuntimeException("The brand has existed.");
         }
         return brandDao.updateBrand(id, name, imageUrl);
     }
 
     private boolean handleDelete(HttpServletRequest request) {
         int id = Integer.parseInt(request.getParameter("id"));
-        return brandDao.deleteBrand(id);
+        // Kiểm tra brand có tồn tại không
+        Brand brand = brandDao.getBrandById(id);
+        if (brand == null) {
+            throw new RuntimeException("Brand does not exist");
+        }
+        // Thực hiện xóa
+        boolean success = brandDao.deleteBrand(id);
+        if (!success) {
+            throw new RuntimeException("Cannot delete brand due to system error");
+        }
+        return true;
     }
 }

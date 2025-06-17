@@ -88,29 +88,57 @@ function editBrand(id) {
 
 
 
-function deleteBrand(id) {
-    if (typeof Swal === "undefined") {
-        if (confirm('Are you sure you want to delete this brand?')) {
-            handleDeleteBrand(id);
-        }
-        return;
-    }
+let brandIdToDelete = null;
 
-    Swal.fire({
-        title: 'Confirm deletion',
-        text: 'Are you sure you want to delete this brand?',
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#d33',
-        cancelButtonColor: '#3085d6',
-        confirmButtonText: 'Delete',
-        cancelButtonText: 'Cancel'
-    }).then((result) => {
-        if (result.isConfirmed) {
-            handleDeleteBrand(id);
-        }
-    });
+function showConfirmDeleteModal() {
+    const overlay = document.getElementById('confirmDeleteModal');
+    overlay.classList.remove('opacity-0', 'pointer-events-none');
+    overlay.classList.add('opacity-100', 'pointer-events-auto');
 }
+
+function closeConfirmDeleteModal() {
+    const overlay = document.getElementById('confirmDeleteModal');
+    overlay.classList.remove('opacity-100', 'pointer-events-auto');
+    overlay.classList.add('opacity-0', 'pointer-events-none');
+    brandIdToDelete = null;
+}
+
+function deleteBrand(id) {
+    brandIdToDelete = id;
+    showConfirmDeleteModal();
+}
+
+// Event delegation: hoạt động cả khi modal render động
+document.addEventListener('click', function(e) {
+    if (e.target && e.target.id === 'confirmDeleteBtn') {
+        if (brandIdToDelete !== null) {
+            handleDeleteBrand(brandIdToDelete);
+            closeConfirmDeleteModal();
+        }
+    }
+    if (e.target && e.target.id === 'cancelDeleteBtn') {
+        closeConfirmDeleteModal();
+    }
+    if (e.target && e.target.id === 'closeDeleteModalBtn') {
+        closeConfirmDeleteModal();
+    }
+    if (e.target && e.target.id === 'confirmDeleteModal') {
+        closeConfirmDeleteModal();
+    }
+});
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') closeConfirmDeleteModal();
+});
+
+
+// Xử lý phím ESC
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        closeConfirmDeleteModal();
+    }
+});
+
+
 
 function handleCreateBrand() {
     const name = document.getElementById('newBrandName').value.trim();
@@ -121,7 +149,7 @@ function handleCreateBrand() {
     submitBtn.disabled = true;
     loadingIcon.classList.remove('hidden');
     if (!name || !imageInput.files.length) {
-    showToast('Vui lòng nhập đầy đủ thông tin');
+    showToast('Please enter complete information');
     submitBtn.disabled = false;
     loadingIcon.classList.add('hidden');
     return;
@@ -155,41 +183,67 @@ function handleUpdateBrand() {
     const id = document.getElementById('editBrandId').value;
     const name = document.getElementById('editBrandName').value.trim();
     const imageInput = document.getElementById('editBrandImage');
-    
+
     if (!name) {
-        showToast('Vui lòng nhập tên thương hiệu');
+        showToast('Please enter brand name');
         return;
     }
-    
+
     const formData = new FormData();
     formData.append('action', 'update');
     formData.append('id', id);
     formData.append('name', name);
-    
-    // Chỉ append file nếu người dùng đã chọn file mới
+
     if (imageInput.files.length > 0) {
         formData.append('image', imageInput.files[0]);
     }
-    
+
     fetch('/brand', {
         method: 'POST',
-        body: formData
+        body: formData // KHÔNG set Content-Type khi dùng FormData
     })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            showToast(data.message);
-            closeEditModal();
-            loadBrandContentAndEvent(1); // Refresh danh sách
-        } else {
-            showToast(data.message);
+    .then(async response => {
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok) {
+            throw new Error(data.message || 'Có lỗi xảy ra');
         }
+        return data;
+    })
+    .then(data => {
+        showToast(data.message, 'success');
+        loadBrandContentAndEvent(1);
     })
     .catch(error => {
-        console.error('Error:', error);
-        showToast('Lỗi kết nối server');
+        showToast(error.message, 'error');
     });
 }
+
+// Gán sự kiện khi DOM load xong
+document.addEventListener('DOMContentLoaded', function() {
+    // Xử lý nút Yes
+    document.getElementById('confirmDeleteBtn').addEventListener('click', function() {
+        if (brandIdToDelete !== null) {
+            handleDeleteBrand(brandIdToDelete);
+            closeConfirmDeleteModal();
+        }
+    });
+
+    // Xử lý nút Cancel
+    document.getElementById('cancelDeleteBtn').addEventListener('click', closeConfirmDeleteModal);
+
+    // Xử lý nút đóng (X)
+    document.getElementById('closeDeleteModalBtn').addEventListener('click', closeConfirmDeleteModal);
+
+    // Xử lý click ra ngoài modal
+    document.getElementById('confirmDeleteModal').addEventListener('click', function(e) {
+        if (e.target === this) closeConfirmDeleteModal();
+    });
+
+    // Xử lý phím ESC
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') closeConfirmDeleteModal();
+    });
+});
 
 
 function handleDeleteBrand(id) {
@@ -211,19 +265,10 @@ function handleDeleteBrand(id) {
 }
 
 function validateBrandData(name, image) {
-    const nameRegex = /^[a-zA-Z0-9\sÀ-ỹ]{3,50}$/;
     const imageRegex = /^(https?:\/\/)?([\w\-]+\.)+[\w\-]+(\/\S+\.(jpg|jpeg|png|gif|webp|svg))$/i;
 
     if (!name || !image) {
          showToast('Please fill in all information');
-        return false;
-    }
-    if (name.length < 3 || name.length > 50) {
-         showToast('The brand name must be between 3 and 50 characters');
-        return false;
-    }
-    if (!nameRegex.test(name)) {
-         showToast('The brand name can only contain letters, numbers, and spaces');
         return false;
     }
     if (!imageRegex.test(image)) {
@@ -232,7 +277,6 @@ function validateBrandData(name, image) {
     }
     return true;
 }
-
 function showSuccessAlert(message) {
     if (typeof Swal !== "undefined") {
         Swal.fire({
@@ -260,7 +304,17 @@ function showErrorAlert(message) {
     }
 }
 
-function loadBrandContentAndEvent(page = 1) {
+// Biến toàn cục để lưu tổng số trang, sẽ được cập nhật sau mỗi lần fetch
+let totalPages = 1;
+
+// Lấy tham số trên URL
+function getQueryParam(param) {
+    const urlParams = new URLSearchParams(window.location.search);
+    return urlParams.get(param);
+}
+
+// Hàm tải lại nội dung brand và phân trang
+function loadBrandContentAndEvent(page = 1, updateUrl = true) {
     document.getElementById('brandContainer').innerHTML = '';
     document.getElementById('loadingBrand').innerHTML = `
         <div class="flex justify-center items-center py-8">
@@ -273,23 +327,103 @@ function loadBrandContentAndEvent(page = 1) {
     `;
 
     fetch(`/admin/view?viewPage=brand&page=${page}`)
-            .then(res => res.text())
-            .then(html => {
-                document.getElementById('loadingBrand').innerHTML = '';
-                document.getElementById('brandContainer').innerHTML = html;
-                lucide.createIcons();
-                setBrandActionEvents();
-                history.pushState({page: page}, '', `/admin/dashboard?view=brand&page=${page}`);
-            })
-            .catch(error => console.error('Error loading brands:', error));
+        .then(res => res.text())
+        .then(html => {
+            document.getElementById('loadingBrand').innerHTML = '';
+            document.getElementById('brandContainer').innerHTML = html;
+            lucide.createIcons && lucide.createIcons();
+
+            // Cập nhật totalPages từ hidden input
+            const totalPagesInput = document.getElementById('totalPages');
+            if (totalPagesInput) {
+                totalPages = parseInt(totalPagesInput.value);
+            }
+
+            if (updateUrl) {
+                let url;
+                if (page === 1) {
+                    if (window.location.search !== '?view=brand') {
+                        url = '/admin/dashboard?view=brand&page=1';
+                        window.history.pushState({page: page}, '', url);
+                    }
+                } else {
+                    url = `/admin/dashboard?view=brand&page=${page}`;
+                    window.history.pushState({page: page}, '', url);
+                }
+            }
+
+            initPaginationAccessibility();
+        })
+        .catch(error => {
+            document.getElementById('loadingBrand').innerHTML = '';
+            document.getElementById('brandContainer').innerHTML = `
+                <div class="text-center text-red-600 py-8">⚠️ Error loading data</div>
+            `;
+            console.error('Error:', error);
+        });
 }
 
 function loadBrandPage(page) {
-    if (page < 1)
-        return;
+    if (page < 1 || page > totalPages) return;
+    document.querySelectorAll('[page]').forEach(btn => {
+        btn.style.pointerEvents = 'none';
+        btn.style.opacity = '0.7';
+    });
     loadBrandContentAndEvent(page);
 }
-// Preview ảnh khi chọn file ở modal Add Brand và Edit Brand
+
+function initPaginationAccessibility() {
+    document.querySelectorAll('[page]').forEach(btn => {
+        btn.setAttribute('role', 'button');
+        btn.setAttribute('tabindex', '0');
+        btn.style.pointerEvents = '';
+        btn.style.opacity = '';
+    });
+}
+
+document.addEventListener('click', function(e) {
+    const paginationBtn = e.target.closest('.pagination, [page]');
+    if (paginationBtn && paginationBtn.hasAttribute('page')) {
+        const isDisabled = paginationBtn.classList.contains('pointer-events-none') ||
+            paginationBtn.getAttribute('aria-disabled') === 'true' ||
+            paginationBtn.style.pointerEvents === 'none';
+        if (isDisabled) return;
+        const page = parseInt(paginationBtn.getAttribute('page'));
+        if (!isNaN(page)) loadBrandPage(page);
+    }
+});
+
+document.addEventListener('keydown', function(e) {
+    if ((e.key === 'Enter' || e.key === ' ') && document.activeElement && document.activeElement.hasAttribute('page')) {
+        const btn = document.activeElement;
+        const isDisabled = btn.classList.contains('pointer-events-none') ||
+            btn.getAttribute('aria-disabled') === 'true' ||
+            btn.style.pointerEvents === 'none';
+        if (isDisabled) return;
+        const page = parseInt(btn.getAttribute('page'));
+        if (!isNaN(page)) {
+            e.preventDefault();
+            loadBrandPage(page);
+        }
+    }
+});
+
+document.addEventListener('DOMContentLoaded', function() {
+    initPaginationAccessibility();
+
+    let pageParam = getQueryParam('page');
+    let page = 1;
+    if (pageParam) {
+        page = parseInt(pageParam) || 1;
+    }
+    if (page === 1 && window.location.search === '?view=brand&page=1') {
+        window.history.replaceState({page: 1}, '', '/admin/dashboard?view=brand');
+    }
+    loadBrandContentAndEvent(page, false); // Không update URL lần đầu
+});
+
+
+
 document.addEventListener('DOMContentLoaded', function() {
     // Add Brand
     const addImageInput = document.getElementById('newBrandImage');
@@ -338,7 +472,6 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
-// Đóng modal khi nhấn ESC hoặc click ra ngoài modal content
 document.addEventListener('keydown', function(e) {
     if (e.key === "Escape") {
         closeCreateModal();
