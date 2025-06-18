@@ -1,4 +1,5 @@
 const loadCategoryContentAndEvent = (page) => {
+       lucide.createIcons();
 
     // SHOW LOADING WHEN CALL SERVLET GET HTML
     document.getElementById('tabelContainer').innerHTML = '';
