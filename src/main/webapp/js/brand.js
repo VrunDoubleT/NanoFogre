@@ -1,36 +1,16 @@
 function openCreateModal() {
     const overlay = document.getElementById('createBrandModal');
     const modal = overlay.querySelector('.shadow-2xl');
-    overlay.classList.remove('opacity-0', 'pointer-events-none');
-    overlay.classList.add('opacity-100', 'pointer-events-auto');
+    overlay.classList.remove('hidden');
     setTimeout(() => {
         modal.classList.remove('scale-95', 'opacity-0', 'translate-y-8');
         modal.classList.add('scale-100', 'opacity-100', 'translate-y-0');
     }, 10);
+    document.body.classList.add('overflow-hidden');
+    // Reset form
     document.getElementById('newBrandName').value = '';
     document.getElementById('newBrandImage').value = '';
     document.getElementById('addBrandImagePreview').innerHTML = '';
-}
-
-function openEditModal(id, name, imageUrl) {
-    const overlay = document.getElementById('editBrandModal');
-    const modal = overlay.querySelector('.shadow-2xl');
-    overlay.classList.remove('opacity-0', 'pointer-events-none');
-    overlay.classList.add('opacity-100', 'pointer-events-auto');
-    setTimeout(() => {
-        modal.classList.remove('scale-95', 'opacity-0', 'translate-y-8');
-        modal.classList.add('scale-100', 'opacity-100', 'translate-y-0');
-    }, 10);
-    document.getElementById('editBrandId').value = id;
-    document.getElementById('editBrandName').value = name;
-    document.getElementById('editBrandImage').value = '';
-    document.getElementById('editBrandImagePreview').innerHTML = '';
-    const currentImageWrapper = document.getElementById('editBrandCurrentImageWrapper');
-    if (imageUrl && imageUrl.trim() !== '') {
-        currentImageWrapper.innerHTML = `<img src="${imageUrl}" alt="Current Image" class="max-h-20 rounded shadow border">`;
-    } else {
-        currentImageWrapper.innerHTML = '<p class="text-gray-500 text-sm">Không có ảnh hiện tại</p>';
-    }
 }
 
 function closeCreateModal() {
@@ -39,12 +19,35 @@ function closeCreateModal() {
     modal.classList.remove('scale-100', 'opacity-100', 'translate-y-0');
     modal.classList.add('scale-95', 'opacity-0', 'translate-y-8');
     setTimeout(() => {
-        overlay.classList.remove('opacity-100', 'pointer-events-auto');
-        overlay.classList.add('opacity-0', 'pointer-events-none');
+        overlay.classList.add('hidden');
+        document.body.classList.remove('overflow-hidden');
+        // Reset form
+        document.getElementById('newBrandName').value = '';
+        document.getElementById('newBrandImage').value = '';
+        document.getElementById('addBrandImagePreview').innerHTML = '';
     }, 300);
-    document.getElementById('newBrandName').value = '';
-    document.getElementById('newBrandImage').value = '';
-    document.getElementById('addBrandImagePreview').innerHTML = '';
+}
+
+function openEditModal(id, name, imageUrl) {
+    const overlay = document.getElementById('editBrandModal');
+    const modal = overlay.querySelector('.shadow-2xl');
+    overlay.classList.remove('hidden');
+    setTimeout(() => {
+        modal.classList.remove('scale-95', 'opacity-0', 'translate-y-8');
+        modal.classList.add('scale-100', 'opacity-100', 'translate-y-0');
+    }, 10);
+    document.body.classList.add('overflow-hidden');
+    // Fill form
+    document.getElementById('editBrandId').value = id;
+    document.getElementById('editBrandName').value = name;
+    document.getElementById('editBrandImage').value = '';
+    document.getElementById('editBrandImagePreview').innerHTML = '';
+    const currentImageWrapper = document.getElementById('editBrandCurrentImageWrapper');
+    if (imageUrl && imageUrl.trim() !== '') {
+        currentImageWrapper.innerHTML = `<img src="${imageUrl}" alt="Current Image" class="max-h-20 rounded shadow border">`;
+    } else {
+        currentImageWrapper.innerHTML = '<p class="text-gray-500 text-sm">No current image</p>';
+    }
 }
 
 function closeEditModal() {
@@ -53,36 +56,36 @@ function closeEditModal() {
     modal.classList.remove('scale-100', 'opacity-100', 'translate-y-0');
     modal.classList.add('scale-95', 'opacity-0', 'translate-y-8');
     setTimeout(() => {
-        overlay.classList.remove('opacity-100', 'pointer-events-auto');
-        overlay.classList.add('opacity-0', 'pointer-events-none');
+        overlay.classList.add('hidden');
+        document.body.classList.remove('overflow-hidden');
+        document.getElementById('editBrandName').value = '';
+        document.getElementById('editBrandImage').value = '';
+        document.getElementById('editBrandImagePreview').innerHTML = '';
+        document.getElementById('editBrandCurrentImageWrapper').innerHTML = '';
     }, 300);
-    document.getElementById('editBrandName').value = '';
-    document.getElementById('editBrandImage').value = '';
-    document.getElementById('editBrandImagePreview').innerHTML = '';
-    document.getElementById('editBrandCurrentImageWrapper').innerHTML = '';
 }
 
 
 function editBrand(id) {
-    console.log('Editing brand with ID:', id); // Debug log
+    console.log('Editing brand with ID:', id); 
     
     fetch(`/brand?action=getBrand&id=${id}`)
         .then(res => {
-            console.log('Response status:', res.status); // Debug log
+            console.log('Response status:', res.status);
             if (!res.ok) throw new Error('HTTP error');
             return res.json();
         })
         .then(data => {
-            console.log('Response data:', data); // Debug log
+            console.log('Response data:', data);
             if (data.success) {
                 openEditModal(data.brand.id, data.brand.name, data.brand.image);
             } else {
-                 showToast(data.message || 'Không tìm thấy thương hiệu!');
+                 showToast(data.message || 'Brand not found!');
             }
         })
         .catch((error) => {
             console.error('Error:', error); // Debug log
-             showToast('Lỗi xử lý dữ liệu: ' + error.message);
+             showToast('Data processing error: ' + error.message);
         });
 }
 
@@ -92,15 +95,25 @@ let brandIdToDelete = null;
 
 function showConfirmDeleteModal() {
     const overlay = document.getElementById('confirmDeleteModal');
-    overlay.classList.remove('opacity-0', 'pointer-events-none');
-    overlay.classList.add('opacity-100', 'pointer-events-auto');
+    const modal = overlay.querySelector('.shadow-2xl');
+    overlay.classList.remove('hidden');
+    setTimeout(() => {
+        modal.classList.remove('scale-95', 'opacity-0', 'translate-y-8');
+        modal.classList.add('scale-100', 'opacity-100', 'translate-y-0');
+    }, 10);
+    document.body.classList.add('overflow-hidden');
 }
 
 function closeConfirmDeleteModal() {
     const overlay = document.getElementById('confirmDeleteModal');
-    overlay.classList.remove('opacity-100', 'pointer-events-auto');
-    overlay.classList.add('opacity-0', 'pointer-events-none');
-    brandIdToDelete = null;
+    const modal = overlay.querySelector('.shadow-2xl');
+    modal.classList.remove('scale-100', 'opacity-100', 'translate-y-0');
+    modal.classList.add('scale-95', 'opacity-0', 'translate-y-8');
+    setTimeout(() => {
+        overlay.classList.add('hidden');
+        document.body.classList.remove('overflow-hidden');
+        brandIdToDelete = null;
+    }, 300);
 }
 
 function deleteBrand(id) {
@@ -108,7 +121,6 @@ function deleteBrand(id) {
     showConfirmDeleteModal();
 }
 
-// Event delegation: hoạt động cả khi modal render động
 document.addEventListener('click', function(e) {
     if (e.target && e.target.id === 'confirmDeleteBtn') {
         if (brandIdToDelete !== null) {
@@ -130,13 +142,6 @@ document.addEventListener('keydown', function(e) {
     if (e.key === 'Escape') closeConfirmDeleteModal();
 });
 
-
-// Xử lý phím ESC
-document.addEventListener('keydown', function(e) {
-    if (e.key === 'Escape') {
-        closeConfirmDeleteModal();
-    }
-});
 
 
 
@@ -200,7 +205,7 @@ function handleUpdateBrand() {
 
     fetch('/brand', {
         method: 'POST',
-        body: formData // KHÔNG set Content-Type khi dùng FormData
+        body: formData
     })
     .then(async response => {
         const data = await response.json().catch(() => ({}));
@@ -218,28 +223,30 @@ function handleUpdateBrand() {
     });
 }
 
-// Gán sự kiện khi DOM load xong
 document.addEventListener('DOMContentLoaded', function() {
-    // Xử lý nút Yes
-    document.getElementById('confirmDeleteBtn').addEventListener('click', function() {
-        if (brandIdToDelete !== null) {
-            handleDeleteBrand(brandIdToDelete);
-            closeConfirmDeleteModal();
-        }
-    });
-
-    // Xử lý nút Cancel
-    document.getElementById('cancelDeleteBtn').addEventListener('click', closeConfirmDeleteModal);
-
-    // Xử lý nút đóng (X)
-    document.getElementById('closeDeleteModalBtn').addEventListener('click', closeConfirmDeleteModal);
-
-    // Xử lý click ra ngoài modal
-    document.getElementById('confirmDeleteModal').addEventListener('click', function(e) {
-        if (e.target === this) closeConfirmDeleteModal();
-    });
-
-    // Xử lý phím ESC
+    var confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
+    if (confirmDeleteBtn) {
+        confirmDeleteBtn.addEventListener('click', function() {
+            if (brandIdToDelete !== null) {
+                handleDeleteBrand(brandIdToDelete);
+                closeConfirmDeleteModal();
+            }
+        });
+    }
+    var cancelDeleteBtn = document.getElementById('cancelDeleteBtn');
+    if (cancelDeleteBtn) {
+        cancelDeleteBtn.addEventListener('click', closeConfirmDeleteModal);
+    }
+    var closeDeleteModalBtn = document.getElementById('closeDeleteModalBtn');
+    if (closeDeleteModalBtn) {
+        closeDeleteModalBtn.addEventListener('click', closeConfirmDeleteModal);
+    }
+    var confirmDeleteModal = document.getElementById('confirmDeleteModal');
+    if (confirmDeleteModal) {
+        confirmDeleteModal.addEventListener('click', function(e) {
+            if (e.target === this) closeConfirmDeleteModal();
+        });
+    }
     document.addEventListener('keydown', function(e) {
         if (e.key === 'Escape') closeConfirmDeleteModal();
     });
@@ -303,20 +310,21 @@ function showErrorAlert(message) {
         alert(message);
     }
 }
-
-// Biến toàn cục để lưu tổng số trang, sẽ được cập nhật sau mỗi lần fetch
 let totalPages = 1;
 
-// Lấy tham số trên URL
 function getQueryParam(param) {
     const urlParams = new URLSearchParams(window.location.search);
     return urlParams.get(param);
 }
 
-// Hàm tải lại nội dung brand và phân trang
 function loadBrandContentAndEvent(page = 1, updateUrl = true) {
-    document.getElementById('brandContainer').innerHTML = '';
-    document.getElementById('loadingBrand').innerHTML = `
+    var brandContainer = document.getElementById('brandContainer');
+    if (brandContainer) {
+        brandContainer.innerHTML = '';
+    }
+    var loadingBrand = document.getElementById('loadingBrand');
+    if (loadingBrand) {
+        loadingBrand.innerHTML = `
         <div class="flex justify-center items-center py-8">
             <svg class="animate-spin h-8 w-8 text-blue-600" viewBox="0 0 24 24">
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none"></circle>
@@ -324,13 +332,17 @@ function loadBrandContentAndEvent(page = 1, updateUrl = true) {
             </svg>
             <span class="ml-2 text-blue-600 font-medium">Loading brands...</span>
         </div>
-    `;
-
+        `;
+    }
     fetch(`/admin/view?viewPage=brand&page=${page}`)
         .then(res => res.text())
         .then(html => {
-            document.getElementById('loadingBrand').innerHTML = '';
-            document.getElementById('brandContainer').innerHTML = html;
+            var loadingBrand = document.getElementById('loadingBrand');
+            if (loadingBrand) loadingBrand.innerHTML = '';
+
+            var brandContainer = document.getElementById('brandContainer');
+            if (brandContainer) brandContainer.innerHTML = html;
+
             lucide.createIcons && lucide.createIcons();
 
             // Cập nhật totalPages từ hidden input
@@ -355,13 +367,19 @@ function loadBrandContentAndEvent(page = 1, updateUrl = true) {
             initPaginationAccessibility();
         })
         .catch(error => {
-            document.getElementById('loadingBrand').innerHTML = '';
-            document.getElementById('brandContainer').innerHTML = `
+            var loadingBrand = document.getElementById('loadingBrand');
+            if (loadingBrand) loadingBrand.innerHTML = '';
+
+            var brandContainer = document.getElementById('brandContainer');
+            if (brandContainer) {
+                brandContainer.innerHTML = `
                 <div class="text-center text-red-600 py-8">⚠️ Error loading data</div>
-            `;
+                `;
+            }
             console.error('Error:', error);
         });
 }
+
 
 function loadBrandPage(page) {
     if (page < 1 || page > totalPages) return;
@@ -419,7 +437,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (page === 1 && window.location.search === '?view=brand&page=1') {
         window.history.replaceState({page: 1}, '', '/admin/dashboard?view=brand');
     }
-    loadBrandContentAndEvent(page, false); // Không update URL lần đầu
+    loadBrandContentAndEvent(page, false); 
 });
 
 

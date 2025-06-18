@@ -63,7 +63,6 @@
             function renderBrandPageLayout() {
                 document.getElementById('main-content').innerHTML = `
                     <div class="mb-8">
-                        <h2 class="text-2xl font-bold mb-6 text-gray-800">Brand List</h2>
                         <div id="loadingBrand"></div>
                         <div id="brandContainer"></div>
                     </div>

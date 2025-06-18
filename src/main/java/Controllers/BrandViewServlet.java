@@ -20,9 +20,9 @@ import java.util.Map;
 
 @WebServlet(name = "BrandViewServlet", urlPatterns = {"/brand"})
 @MultipartConfig(
-        fileSizeThreshold = 1024 * 1024 * 1, // 1 MB
-        maxFileSize = 1024 * 1024 * 10, // 10 MB
-        maxRequestSize = 1024 * 1024 * 15 // 15 MB
+        fileSizeThreshold = 1024 * 1024 * 1,
+        maxFileSize = 1024 * 1024 * 10,
+        maxRequestSize = 1024 * 1024 * 15
 )
 public class BrandViewServlet extends HttpServlet {
 
@@ -173,12 +173,10 @@ public class BrandViewServlet extends HttpServlet {
 
     private boolean handleDelete(HttpServletRequest request) {
         int id = Integer.parseInt(request.getParameter("id"));
-        // Kiểm tra brand có tồn tại không
         Brand brand = brandDao.getBrandById(id);
         if (brand == null) {
             throw new RuntimeException("Brand does not exist");
         }
-        // Thực hiện xóa
         boolean success = brandDao.deleteBrand(id);
         if (!success) {
             throw new RuntimeException("Cannot delete brand due to system error");
