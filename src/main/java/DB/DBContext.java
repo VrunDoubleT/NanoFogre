@@ -18,6 +18,7 @@ public class DBContext {
     private static final String DB_USER = "sa";
     private static final String DB_PWD = "sa";
 
+
     public DBContext() {
         try {
             Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");

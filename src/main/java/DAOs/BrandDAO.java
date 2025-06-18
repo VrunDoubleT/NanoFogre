@@ -11,41 +11,173 @@ import java.sql.Connection;
 
 public class BrandDAO extends DBContext {
 
+    // READ 
     public List<Brand> getAllBrands() {
         List<Brand> brands = new ArrayList<>();
-        String query = "SELECT * FROM Brands";
+        String query = "SELECT brandId, brandName, image FROM Brands";
+
         try ( Connection conn = this.getConnection();  PreparedStatement stmt = conn.prepareStatement(query);  ResultSet rs = stmt.executeQuery()) {
 
             while (rs.next()) {
                 brands.add(mapResultSetToBrand(rs));
             }
         } catch (SQLException e) {
-            System.err.println("Error fetching all brands: " + e.getMessage());
+            handleException("Error fetching all brands", e);
         }
         return brands;
     }
 
-    public List<Brand> getBrandsByCategory(String category) {
+    // READ 
+    public List<Brand> getBrandsPaginated(int page, int pageSize) {
         List<Brand> brands = new ArrayList<>();
-        String query = "SELECT * FROM Brands WHERE category = ?";
+        String query = "SELECT brandId, brandName, image FROM Brands ORDER BY brandId OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
+
         try ( Connection conn = this.getConnection();  PreparedStatement stmt = conn.prepareStatement(query)) {
-            stmt.setString(1, category);
+
+            int offset = (page - 1) * pageSize;
+            stmt.setInt(1, offset);
+            stmt.setInt(2, pageSize);
+
             try ( ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {
-                    Brand brand = mapResultSetToBrand(rs);
-                    brands.add(brand);
+                    brands.add(mapResultSetToBrand(rs));
                 }
             }
         } catch (SQLException e) {
-            handleException("Error fetching brands by category", e);
+            handleException("Error fetching paginated brands", e);
         }
         return brands;
     }
 
-    public int getTotalBrands() {
+    // CREATE 
+    public boolean createBrand(String name, String imageUrl) {
+        String query = "INSERT INTO Brands (brandName, image) VALUES (?, ?)";
+        try ( Connection conn = this.getConnection();  PreparedStatement stmt = conn.prepareStatement(query)) {
+
+            stmt.setString(1, name);
+            stmt.setString(2, imageUrl);
+            return stmt.executeUpdate() > 0;
+
+        } catch (SQLException e) {
+            handleException("Error creating brand", e);
+            return false;
+        }
+    }
+
+    // UPDATE 
+    public boolean updateBrand(int id, String newName, String newImageUrl) {
+        String query = "UPDATE Brands SET brandName = ?, image = ? WHERE brandId = ?";
+        try ( Connection conn = this.getConnection();  PreparedStatement stmt = conn.prepareStatement(query)) {
+
+            stmt.setString(1, newName);
+            stmt.setString(2, newImageUrl);
+            stmt.setInt(3, id);
+            return stmt.executeUpdate() > 0;
+
+        } catch (SQLException e) {
+            handleException("Error updating brand", e);
+            return false;
+        }
+    }
+
+    // Thêm phương thức kiểm tra brand có đang được dùng không
+    public boolean isBrandInUse(int brandId) {
+        String query = "SELECT COUNT(*) FROM Products WHERE brandId = ?";
+        try ( Connection conn = this.getConnection();  PreparedStatement stmt = conn.prepareStatement(query)) {
+            stmt.setInt(1, brandId);
+            try ( ResultSet rs = stmt.executeQuery()) {
+                return rs.next() && rs.getInt(1) > 0;
+            }
+        } catch (SQLException e) {
+            handleException("Error checking brand usage", e);
+            return false;
+        }
+    }
+
+// Sửa lại hàm deleteBrand để xử lý transaction
+    public boolean deleteBrand(int id) {
+        Connection conn = null;
+        try {
+            conn = this.getConnection();
+            conn.setAutoCommit(false); // Bắt đầu transaction
+
+            // Bước 1: Cập nhật tất cả sản phẩm thuộc brand này về NULL
+            String updateProductsSql = "UPDATE Products SET brandId = NULL WHERE brandId = ?";
+            try ( PreparedStatement updateStmt = conn.prepareStatement(updateProductsSql)) {
+                updateStmt.setInt(1, id);
+                updateStmt.executeUpdate();
+            }
+
+            // Bước 2: Xóa brand
+            String deleteBrandSql = "DELETE FROM Brands WHERE brandId = ?";
+            try ( PreparedStatement deleteStmt = conn.prepareStatement(deleteBrandSql)) {
+                deleteStmt.setInt(1, id);
+                int rowsAffected = deleteStmt.executeUpdate();
+
+                if (rowsAffected > 0) {
+                    conn.commit(); // Commit transaction nếu thành công
+                    return true;
+                } else {
+                    conn.rollback(); // Rollback nếu brand không tồn tại
+                    return false;
+                }
+            }
+        } catch (SQLException e) {
+            if (conn != null) {
+                try {
+                    conn.rollback(); // Rollback khi có lỗi
+                } catch (SQLException ex) {
+                    ex.printStackTrace();
+                }
+            }
+            handleException("Error deleting brand", e);
+            return false;
+        } finally {
+            if (conn != null) {
+                try {
+                    conn.setAutoCommit(true); // Reset auto-commit
+                    conn.close();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+
+    public boolean isBrandNameExists(String name) {
+        String query = "SELECT COUNT(*) FROM Brands WHERE brandName = ?";
+        try ( Connection conn = this.getConnection();  PreparedStatement stmt = conn.prepareStatement(query)) {
+
+            stmt.setString(1, name);
+            try ( ResultSet rs = stmt.executeQuery()) {
+                return rs.next() && rs.getInt(1) > 0;
+            }
+        } catch (SQLException e) {
+            handleException("Error checking brand name", e);
+            return false;
+        }
+    }
+
+    public boolean isBrandNameExistsExceptId(String name, int id) {
+        String query = "SELECT COUNT(*) FROM Brands WHERE brandName = ? AND brandId <> ?";
+        try ( Connection conn = this.getConnection();  PreparedStatement stmt = conn.prepareStatement(query)) {
+
+            stmt.setString(1, name);
+            stmt.setInt(2, id);
+            try ( ResultSet rs = stmt.executeQuery()) {
+                return rs.next() && rs.getInt(1) > 0;
+            }
+        } catch (SQLException e) {
+            handleException("Error checking brand name (update)", e);
+            return false;
+        }
+    }
+
+    public int getTotalBrandsForPagination() {
         int total = 0;
         String query = "SELECT COUNT(*) AS total FROM Brands";
         try ( Connection conn = this.getConnection();  PreparedStatement stmt = conn.prepareStatement(query);  ResultSet rs = stmt.executeQuery()) {
+
             if (rs.next()) {
                 total = rs.getInt("total");
             }
@@ -55,20 +187,31 @@ public class BrandDAO extends DBContext {
         return total;
     }
 
-    public int getTotalBrandsByCategory(String category) {
-        int total = 0;
-        String query = "SELECT COUNT(*) FROM Brands WHERE category = ?";
+    public Brand getBrandById(int id) {
+        String query = "SELECT brandId, brandName, image FROM Brands WHERE brandId = ?";
+        System.out.println("Executing query for ID: " + id);
+
         try ( Connection conn = this.getConnection();  PreparedStatement stmt = conn.prepareStatement(query)) {
-            stmt.setString(1, category);
+
+            stmt.setInt(1, id);
             try ( ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
-                    total = rs.getInt(1);
+                    Brand brand = new Brand();
+                    brand.setId(rs.getInt("brandId"));
+                    brand.setName(rs.getString("brandName"));
+                    brand.setUrl(rs.getString("image"));
+                    System.out.println("Found brand in DB: " + brand.getName());
+                    return brand;
+                } else {
+                    System.out.println("No brand found with ID: " + id);
                 }
+                return null;
             }
         } catch (SQLException e) {
-            handleException("Error fetching total brands by category", e);
+            System.out.println("SQL Error: " + e.getMessage());
+            handleException("Lỗi truy vấn brand theo ID", e);
+            return null;
         }
-        return total;
     }
 
     private Brand mapResultSetToBrand(ResultSet rs) throws SQLException {
