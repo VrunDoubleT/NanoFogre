@@ -15,6 +15,8 @@ const updateModalContent = (path, loadEvent) => {
  * @param {int} page 
  * */
 const loadProductContentAndEvent = (categoryId, page) => {
+    //
+    lucide.createIcons()
     // SHOW LOADING WHEN CALL SERVLET GET HTML
     document.getElementById('tabelContainer').innerHTML = '';
     document.getElementById('loadingProduct').innerHTML = `
@@ -72,12 +74,13 @@ const loadProductContentAndEvent = (categoryId, page) => {
                             document.getElementById("modalContent").innerHTML = html;
                         }).then(() => {
                     // AFTER OPEN MODAL, LOAD CONTENT FOR MODAL
-                    loadCreateProductEvent(categoryId, page)
+                    loadCreateOrUpdateProductEvent(categoryId, page)
                 });
             })
         })
 
-        function confirmDelete(productId) {
+        // Hanlde if confirm hide product
+        function confirmHide(productId) {
             Swal.fire({
                 title: 'Are you sure you want to hide this product?',
                 text: "This product will no longer be visible to customers, but it will remain associated with existing orders and records in the system",
@@ -109,7 +112,7 @@ const loadProductContentAndEvent = (categoryId, page) => {
                 }
             })
         }
-
+        // Handle enale for product
         function confirmEnable(productId) {
             Swal.fire({
                 title: 'Are you sure you want to restore this product?',
@@ -151,7 +154,7 @@ const loadProductContentAndEvent = (categoryId, page) => {
                 const clickedElement = e.target;
                 const buttonItem = clickedElement.closest('[data-product-id]');
                 const productId = buttonItem.getAttribute('data-product-id');
-                confirmDelete(productId)
+                confirmHide(productId)
             })
         })
 
@@ -238,11 +241,11 @@ const loadProductContentAndEvent = (categoryId, page) => {
             }
     }
     })
-
+    // Hanlde click new product button
     document.getElementById("create-product-button").onclick = () => {
         const modal = document.getElementById("modal")
         openModal(modal);
-        updateModalContent(`/product/view?type=create`, () => loadCreateProductEvent(categoryId, page))
+        updateModalContent(`/product/view?type=create`, () => loadCreateOrUpdateProductEvent(categoryId, page))
     }
 }
 
@@ -269,19 +272,18 @@ function loadProductDetailEvent() {
 }
 
 // LOAD CREATE PRODUCT EVENT
-function loadCreateProductEvent(categoryIdURL, pageURL) {
+function loadCreateOrUpdateProductEvent(categoryIdURL, pageURL) {
+    lucide.createIcons()
     const MAX_FILES = 10;
-
     const imageInput = document.getElementById("image-files");
     const previewGrid = document.getElementById("image-preview-grid");
     const uploadStatus = document.getElementById("upload-status");
     const uploadError = document.getElementById("upload-error");
     const statusText = document.getElementById("status-text");
     const errorText = document.getElementById("error-text");
-
     // File[]
     let selectedImages = [];
-
+    // Hanlde select image
     imageInput.onchange = function (event) {
         const files = Array.from(event.target.files);
         let newImages = [];
@@ -306,8 +308,8 @@ function loadCreateProductEvent(categoryIdURL, pageURL) {
 
     function updatePreview() {
         previewGrid.innerHTML = "";
-
-        selectedImages.forEach((file, index) => {
+        // Render preview image
+        selectedImages.forEach((file) => {
             const reader = new FileReader();
             reader.onload = function (e) {
                 const wrapper = document.createElement("div");
@@ -388,6 +390,56 @@ function loadCreateProductEvent(categoryIdURL, pageURL) {
         return null;
     }
 
+    function parsePositiveDouble(value, message = "Please enter a valid positive number") {
+        const normalized = value.replace(',', '.');
+        const number = parseFloat(normalized);
+        if (isNaN(number) || number <= 0) {
+            return message;
+        }
+        return null;
+    }
+
+    function parsePositiveInteger(value, message = "Please enter a valid positive integer") {
+        const number = Number(value);
+        if (!Number.isInteger(number) || number <= 0) {
+            return message;
+        }
+        return null;
+    }
+
+    function validateRatio(value, message = "Please enter a valid ratio like '1:64' where the first number is smaller") {
+        if (!value || value.trim() === "") {
+            return message;
+        }
+        const parts = value.split(':');
+        if (parts.length !== 2) {
+            return message;
+        }
+        const [left, right] = parts.map(part => Number(part.trim()));
+        if (!Number.isInteger(left) || !Number.isInteger(right) || left <= 0 || right <= 0) {
+            return message;
+        }
+        if (left >= right) {
+            return message;
+        }
+        return null;
+    }
+
+    function validateMin(min, message = `Value must be greater than or equal to ${min}`) {
+        return function (value) {
+            if (value === null || value === undefined || value === '') {
+                return message;
+            }
+            const number = Number(value);
+            if (isNaN(number) || number < min) {
+                return message;
+            }
+            return null;
+        };
+    }
+
+
+
     const configValidate = [
         {
             id: "title",
@@ -403,7 +455,7 @@ function loadCreateProductEvent(categoryIdURL, pageURL) {
         },
         {
             id: "scale",
-            validate: [required]
+            validate: [required, validateRatio]
         },
         {
             id: "material",
@@ -419,30 +471,31 @@ function loadCreateProductEvent(categoryIdURL, pageURL) {
         },
         {
             id: "length",
-            validate: [required]
+            validate: [required, parsePositiveDouble]
         },
         {
             id: "width",
-            validate: [required]
+            validate: [required, parsePositiveDouble]
         },
         {
             id: "height",
-            validate: [required]
+            validate: [required, parsePositiveDouble]
         },
         {
             id: "weight",
-            validate: [required]
+            validate: [required, parsePositiveDouble]
         },
         {
             id: "price",
-            validate: [required]
+            validate: [required, parsePositiveDouble, validateMin(1000)]
         },
         {
             id: "quantity",
-            validate: [required]
+            validate: [required, validateMin(0)]
         }
     ];
-
+    ]
+    // Handle config validate for input
     const checkValidate = (config) => {
         const inputElement = document.getElementById(config.id);
         const value = inputElement.value;
@@ -489,9 +542,9 @@ function loadCreateProductEvent(categoryIdURL, pageURL) {
         }
     });
 
-    const createProductCategoryElm = document.getElementById("create-product-category");
-    const createProductBrandElm = document.getElementById("create-product-brand");
-
+    const createProductCategoryElm = document.getElementById("create-product-category")
+    const createProductBrandElm = document.getElementById("create-product-brand")
+    // Validate for category
     createProductCategoryElm.onchange = function () {
         const selectedOption = this.options[this.selectedIndex];
         const categoryId = selectedOption.getAttribute("data-category-id");
@@ -503,7 +556,7 @@ function loadCreateProductEvent(categoryIdURL, pageURL) {
             createProductCategoryElm.classList.add("border-red-500");
         }
     };
-
+    // Validate for brand
     createProductBrandElm.onchange = function () {
         const selectedOption = this.options[this.selectedIndex];
         const brandId = selectedOption.getAttribute("data-brand-id");
@@ -514,73 +567,6 @@ function loadCreateProductEvent(categoryIdURL, pageURL) {
             createProductBrandElm.classList.add("border-red-500");
         }
     };
-<<<<<<< HEAD
-    
-    // Create new product
-    document.getElementById("create-product-btn").onclick = () => {
-        let isError = false;
-        configValidate.forEach(config => {
-            const isErrorValidate = checkValidate(config);
-            if (isErrorValidate)
-                isError = isErrorValidate;
-        });
-
-        // Handle select category and brand
-        const selectCategory = document.getElementById("create-product-category");
-        const selectedOptionCategory = selectCategory.options[selectCategory.selectedIndex];
-        const categoryId = selectedOptionCategory.getAttribute("data-category-id");
-        const selectBrand = document.getElementById("create-product-brand");
-        const selectedOptionBrand = selectBrand.options[selectBrand.selectedIndex];
-        const brandId = selectedOptionBrand.getAttribute("data-brand-id");
-
-        if (categoryId === "0") {
-            selectCategory.classList.remove("border-gray-300");
-            selectCategory.classList.add("border-red-500");
-            isError = true;
-        } else {
-            selectCategory.classList.remove("border-red-500");
-            selectCategory.classList.add("border-green-600");
-        }
-        if (brandId === "0") {
-            selectBrand.classList.remove("border-gray-300");
-            selectBrand.classList.add("border-red-500");
-            isError = true;
-        } else {
-            selectBrand.classList.remove("border-red-500");
-            selectBrand.classList.add("border-green-600");
-        }
-
-        if (selectedImages.length === 0) {
-            showError("Must have at least one image selected");
-            isError = true;
-        }
-        // Hanlde fetch servlet to create product
-        if (!isError) {
-            // Conver data to object
-            const formData = new FormData();
-
-            const isCheckedDestroy = document.getElementById("destroy").checked;
-//            const productObj = {}
-            configValidate.forEach(config => {
-                const value = document.getElementById(config.id).value;
-//                productObj[config.id] = value.trim()
-                formData.append(config.id, value);
-            });
-            formData.append("categoryId", categoryId);
-            formData.append("brandId", brandId);
-            formData.append("destroy", isCheckedDestroy);
-
-    const updateProductButton = document.getElementById("update-product-btn")
-    if (updateProductButton) {
-        updateProductButton.onclick = () => {
-            let isError = false;
-            configValidate.forEach(config => {
-                const isErrorValidate = checkValidate(config)
-                if (isErrorValidate)
-                    isError = isErrorValidate
-            })
-
-=======
 
     // Update product
     const updateProductButton = document.getElementById("update-product-btn")
@@ -592,8 +578,6 @@ function loadCreateProductEvent(categoryIdURL, pageURL) {
                 if (isErrorValidate)
                     isError = isErrorValidate
             })
-
->>>>>>> feature/category-full
             // Handle select category and brand
             const selectCategory = document.getElementById("create-product-category");
             const selectedOptionCategory = selectCategory.options[selectCategory.selectedIndex];
@@ -618,24 +602,6 @@ function loadCreateProductEvent(categoryIdURL, pageURL) {
                 selectBrand.classList.remove("border-red-500")
                 selectBrand.classList.add("border-green-600")
             }
-
-<<<<<<< HEAD
-//            productObj.categoryId = categoryId
-//            productObj.brandId = brandId
-//            productObj.imageFiles = selectedImages
-//            productObj.destroy = isCheckedDestroy
-//            console.log(productObj);
-
-            // Fetch to serverlet
-            fetch('/product/view?type=create', {
-                method: 'POST',
-                body: formData
-            });
-//                    .then(response => response.json())
-//                    .then(data => console.log(data));
-        } else {
-            console.log("Can't create product'");
-=======
             // Lấy imageId của những ảnh được tick
             const selectedImageIds = []
             document.querySelectorAll("#already-preview-grid input[type='checkbox']:checked").forEach(checkbox => {
@@ -700,7 +666,6 @@ function loadCreateProductEvent(categoryIdURL, pageURL) {
             } else {
                 console.log("Can't update product");
             }
->>>>>>> feature/category-full
         }
     };
             // Lấy imageId của những ảnh được tick
@@ -711,10 +676,14 @@ function loadCreateProductEvent(categoryIdURL, pageURL) {
                     selectedImageIds.push(imageId);
                 }
             })
-            console.log(selectedImageIds); // [1, 3, 5] - ví dụ
 
             if (selectedImageIds.length === 0 && selectedImages.length === 0) {
                 showError("Must have at least one image selected")
+                isError = true
+            }
+
+            if (selectedImageIds.length + selectedImages.length > MAX_FILES) {
+                showError("A maximum of 10 images is allowed")
                 isError = true
             }
 
@@ -762,6 +731,7 @@ function loadCreateProductEvent(categoryIdURL, pageURL) {
                                 },
                                 close: true
                             }).showToast();
+                            updateProductStat()
                             loadProductContentAndEvent(categoryIdURL, pageURL)
                         });
             } else {
@@ -853,6 +823,7 @@ function loadCreateProductEvent(categoryIdURL, pageURL) {
                                 },
                                 close: true
                             }).showToast();
+                            updateProductStat()
                             loadProductContentAndEvent(categoryIdURL, pageURL)
                         });
             } else {
@@ -860,24 +831,21 @@ function loadCreateProductEvent(categoryIdURL, pageURL) {
             }
         }
     }
-
+    // Add opacity for producat
     function toggleImageOpacity(index, isChecked) {
         const image = document.querySelector(`.image-${index}`);
         const icon = document.querySelector(`.checkbox-icon-${index}`);
-
         if (isChecked) {
-            // Được tick - ảnh bình thường
             image.classList.remove('opacity-30', 'grayscale');
             icon.classList.remove('opacity-0');
             icon.classList.add('opacity-100');
         } else {
-            // Bỏ tick - ảnh mờ đi
             image.classList.add('opacity-30', 'grayscale');
             icon.classList.remove('opacity-100');
             icon.classList.add('opacity-0');
         }
     }
-
+    // Hanlde checkbox change
     document.getElementById('already-preview-grid').addEventListener('change', function (event) {
         if (event.target.type === 'checkbox' &&
                 event.target.hasAttribute('data-index') &&
@@ -886,6 +854,7 @@ function loadCreateProductEvent(categoryIdURL, pageURL) {
             toggleImageOpacity(index, event.target.checked);
         }
     });
+    // Handle click or no click with already image
     document.getElementById('already-preview-grid').addEventListener('click', function (event) {
         const group = event.target.closest('.group')
         if (group) {
@@ -898,7 +867,6 @@ function loadCreateProductEvent(categoryIdURL, pageURL) {
         }
 
     });
-
     // Init all checkbox is ticked
     const checkboxes = document.querySelectorAll('[data-index]');
     checkboxes.forEach((checkbox) => {
@@ -908,6 +876,39 @@ function loadCreateProductEvent(categoryIdURL, pageURL) {
             icon.classList.add('opacity-100');
         }
     });
+}
+
+
+
+const updateProductStat = () => {
+    const totalProductELm = document.getElementById("totalProduct")
+    const totalInventoryELm = document.getElementById("totalInventory")
+    const inventoryValueELm = document.getElementById("inventoryValue")
+    const outOfStockELm = document.getElementById("outOfStock")
+
+    function formatCurrencyShort(amount) {
+        if (amount >= 1000000000) {
+            return (amount / 1000000000).toFixed(2) + "B";
+        } else if (amount >= 1000000) {
+            return (amount / 1000000).toFixed(2) + "M";
+        } else if (amount >= 1000) {
+            return (amount / 1000).toFixed(2) + "K";
+        } else {
+            return Math.floor(amount).toString();
+        }
+    }
+
+
+    fetch('/product/view?type=stat', {
+        method: 'GET'
+    })
+            .then(response => response.json())
+            .then(data => {
+                totalProductELm.textContent = data.data.totalProducts + ""
+                totalInventoryELm.textContent = data.data.inventory + ""
+                inventoryValueELm.textContent = formatCurrencyShort(data.data.inventoryValue)
+                outOfStockELm.textContent = data.data.outOfStockProducts + ""
+            });
 }
 
 // HANDLE SHOW SELECT TAB
