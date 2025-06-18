@@ -27,10 +27,4 @@ public class Converter {
             return df.format(price);
         }
     }
-    
-    public static String formatVietNamCurrency(double price) {
-        Locale vietnam = new Locale("vi", "VN");
-        NumberFormat formatter = NumberFormat.getInstance(vietnam);
-        return formatter.format(price);
-    }
 }

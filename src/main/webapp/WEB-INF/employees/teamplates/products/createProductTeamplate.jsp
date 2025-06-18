@@ -191,8 +191,8 @@
                             <div class="bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl p-6 border border-blue-100">
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-2">Price ($)</label>
-                                        <input value="${not empty product ? product.price : ''}" type="number" step="0.01" name="price" id="price" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none" required>
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">Price</label>
+                                        <input value="${not empty product ? product.price : ''}" type="number" step="1000" name="price" id="price" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none" required>
                                         <span id="priceError"></span>
                                     </div>
 

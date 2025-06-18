@@ -107,6 +107,7 @@ const loadProductContentAndEvent = (categoryId, page) => {
                                     },
                                     close: true
                                 }).showToast();
+                                updateProductStat()
                                 loadProductContentAndEvent(categoryId, page)
                             });
                 }
@@ -141,6 +142,7 @@ const loadProductContentAndEvent = (categoryId, page) => {
                                     },
                                     close: true
                                 }).showToast();
+                                updateProductStat()
                                 loadProductContentAndEvent(categoryId, page);
                             });
                 }
@@ -420,6 +422,18 @@ function loadCreateOrUpdateProductEvent(categoryIdURL, pageURL) {
         return null;
     }
 
+    function validateInteger(value, message = 'Value must be an integer') {
+        if (value === null || value === undefined || value === '') {
+            return message;
+        }
+        const number = Number(value);
+        if (isNaN(number) || !Number.isInteger(number)) {
+            return message;
+        }
+        return null;
+    }
+
+
     function validateMin(min, message = `Value must be greater than or equal to ${min}`) {
         return function (value) {
             if (value === null || value === undefined || value === '') {
@@ -484,7 +498,7 @@ function loadCreateOrUpdateProductEvent(categoryIdURL, pageURL) {
         },
         {
             id: "quantity",
-            validate: [required, validateMin(0)]
+            validate: [required, validateMin(0), validateInteger]
         }
     ];
 
@@ -534,35 +548,6 @@ function loadCreateOrUpdateProductEvent(categoryIdURL, pageURL) {
             };
         }
     });
-
-    const createProductCategoryElm = document.getElementById("create-product-category")
-    const createProductBrandElm = document.getElementById("create-product-brand")
-
-    // Validate for category
-    createProductCategoryElm.onchange = function () {
-        const selectedOption = this.options[this.selectedIndex];
-        const categoryId = selectedOption.getAttribute("data-category-id");
-
-        createProductCategoryElm.classList.remove("border-gray-300", "border-red-500", "ring-1", "ring-green-500");
-        if (categoryId !== "0") {
-            createProductCategoryElm.classList.add("ring-1", "ring-green-500");
-        } else {
-            createProductCategoryElm.classList.add("border-red-500");
-        }
-    };
-
-    // Validate for brand
-    createProductBrandElm.onchange = function () {
-        const selectedOption = this.options[this.selectedIndex];
-        const brandId = selectedOption.getAttribute("data-brand-id");
-        createProductBrandElm.classList.remove("border-gray-300", "border-red-500", "ring-1", "ring-green-500");
-        if (brandId !== "0") {
-            createProductBrandElm.classList.add("ring-1", "ring-green-500");
-        } else {
-            createProductBrandElm.classList.add("border-red-500");
-        }
-    };
-
     // Update product
     const updateProductButton = document.getElementById("update-product-btn")
     if (updateProductButton) {
@@ -584,18 +569,16 @@ function loadCreateOrUpdateProductEvent(categoryIdURL, pageURL) {
 
             if (categoryId === "0") {
                 selectCategory.classList.remove("border-gray-300")
-                selectCategory.classList.add("border-red-500")
-                isError = true
+                selectCategory.classList.add("border-yellow-400")
             } else {
-                selectCategory.classList.remove("border-red-500")
+                selectCategory.classList.remove("border-red-500", "border-yellow-400")
                 selectCategory.classList.add("border-green-600")
             }
             if (brandId === "0") {
                 selectBrand.classList.remove("border-gray-300")
-                selectBrand.classList.add("border-red-500")
-                isError = true
+                selectBrand.classList.add("border-yellow-400")
             } else {
-                selectBrand.classList.remove("border-red-500")
+                selectBrand.classList.remove("border-red-500", "border-yellow-400")
                 selectBrand.classList.add("border-green-600")
             }
 
@@ -607,7 +590,6 @@ function loadCreateOrUpdateProductEvent(categoryIdURL, pageURL) {
                     selectedImageIds.push(imageId);
                 }
             })
-            console.log(selectedImageIds); // [1, 3, 5] - example
 
             if (selectedImageIds.length === 0 && selectedImages.length === 0) {
                 showError("Must have at least one image selected")
@@ -677,7 +659,6 @@ function loadCreateOrUpdateProductEvent(categoryIdURL, pageURL) {
     console.log(createProductButton);
     if (createProductButton) {
         createProductButton.onclick = () => {
-            console.log("create button click");
             let isError = false;
             configValidate.forEach(config => {
                 const isErrorValidate = checkValidate(config)
@@ -695,18 +676,16 @@ function loadCreateOrUpdateProductEvent(categoryIdURL, pageURL) {
 
             if (categoryId === "0") {
                 selectCategory.classList.remove("border-gray-300")
-                selectCategory.classList.add("border-red-500")
-                isError = true
+                selectCategory.classList.add("border-yellow-400")
             } else {
-                selectCategory.classList.remove("border-red-500")
+                selectCategory.classList.remove("border-red-500", "border-yellow-400")
                 selectCategory.classList.add("border-green-600")
             }
             if (brandId === "0") {
                 selectBrand.classList.remove("border-gray-300")
-                selectBrand.classList.add("border-red-500")
-                isError = true
+                selectBrand.classList.add("border-yellow-400")
             } else {
-                selectBrand.classList.remove("border-red-500")
+                selectBrand.classList.remove("border-red-500", "border-yellow-400")
                 selectBrand.classList.add("border-green-600")
             }
 
@@ -836,6 +815,7 @@ const updateProductStat = () => {
     })
             .then(response => response.json())
             .then(data => {
+                console.log(data);
                 totalProductELm.textContent = data.data.totalProducts + ""
                 totalInventoryELm.textContent = data.data.inventory + ""
                 inventoryValueELm.textContent = formatCurrencyShort(data.data.inventoryValue)

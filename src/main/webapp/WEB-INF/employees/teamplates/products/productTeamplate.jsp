@@ -4,6 +4,7 @@
     Author     : Tran Thanh Van - CE181019
 --%>
 
+<%@page import="Utils.CurrencyFormatter"%>
 <%@page import="Utils.Converter"%>
 <%@page import="Models.Product"%>
 <%@page import="java.util.List"%>
@@ -13,10 +14,11 @@
         for (Product product : products) {
 %>
 <tr>
-    <td class="px-4 py-4 whitespace-nowrap">
+    <%-- 
+        <td class="px-4 py-4 whitespace-nowrap">
         <span class="font-bold text-[20px] text-gray-500"><%= product.getProductId()%></span>
     </td>
-
+    --%>
     <td class="px-6 py-4 whitespace-nowrap">
         <div class="flex items-center">
             <div class="flex-shrink-0 h-16 w-16">
@@ -24,7 +26,7 @@
                      src="<%= product.getUrls().get(0)%>" alt="<%= product.getTitle()%>">
             </div>
             <div class="ml-4">
-                <div class="text-sm font-medium text-gray-900"><%= product.getTitle().length() > 30 ? product.getTitle().substring(0, 27) + "..." : product.getTitle() %></div>
+                <div class="text-sm font-medium text-gray-900"><%= product.getTitle().length() > 30 ? product.getTitle().substring(0, 27) + "..." : product.getTitle()%></div>
 
                 <div class="flex items-center mt-1">
                     <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800"><%= product.getScale()%></span>
@@ -43,11 +45,11 @@
     </td>
 
     <td class="px-4 py-4 whitespace-nowrap">
-        <div class="text-lg font-semibold text-gray-900"><%= Converter.formatVietNamCurrency(product.getPrice()) %></div>
+        <div class="text-lg font-semibold text-gray-900"><%= CurrencyFormatter.formatVietNamCurrency(product.getPrice())%></div>
     </td>
 
     <td class="px-4 py-4 whitespace-nowrap">
-        <div class="text-sm text-center font-medium text-gray-900"><%= product.getQuantity()%></div>
+        <div class="text-sm font-medium text-gray-900 text-center"><%= product.getQuantity()%></div>
     </td>
 
     <td class="px-4 py-4 whitespace-nowrap">
@@ -59,7 +61,7 @@
     </td>
 
     <td class="px-4 py-4 whitespace-nowrap text-sm font-medium">
-        <div class="flex items-center space-x-2">
+        <div class="flex justify-center items-center space-x-2">
             <button data-product-id="<%= product.getProductId()%>" class="openViewModal bg-blue-100 text-blue-700 hover:bg-blue-200 px-3 py-1.5 rounded-lg transition-colors">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
