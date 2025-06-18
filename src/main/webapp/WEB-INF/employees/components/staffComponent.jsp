@@ -11,8 +11,8 @@
 %>
 <div class="">
     <div class="bg-white w-full rounded-xl shadow-sm border border-gray-100">
-        <div class="px-6 py-4 border-b border-gray-200">
-            <div class="flex items-center justify-between pb-4">
+<!--        <div class="px-6 py-4 border-b border-gray-200">-->
+            <div class="flex items-center justify-between p-6">
                 <h2 class="text-lg font-semibold text-gray-900">Staff List (Total: <%= count%>)</h2>
                 <div class="flex items-center space-x-3">
                     <button id="create-staff-button" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-lg shadow-lg hover:shadow-xl transform transition-all duration-200 flex items-center space-x-2">
