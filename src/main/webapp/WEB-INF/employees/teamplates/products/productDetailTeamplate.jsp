@@ -6,14 +6,15 @@
 
 <%@page import="Models.Product"%>
 <%@page import="java.util.List"%>
+<%@page import="Utils.CurrencyFormatter"%>
 <div class="w-[1120px] h-[90vh] flex flex-col bg-white shadow-2xl overflow-hidden">
     <div class="">
         <!-- Header Section -->
         <div class="bg-gradient-to-r flex justify-between from-blue-600 to-purple-600 px-8 py-3">
             <h1 class="text-3xl font-bold text-white mb-2">#${product.productId}</h1>
             <div class="flex items-center space-x-4 text-blue-100">
-                <span class="px-3 py-1 bg-white/20 rounded-full text-sm">${product.category.name}</span>
-                <span class="px-3 py-1 bg-white/20 rounded-full text-sm">${product.brand.name}</span>
+                <span class="px-3 py-1 bg-white/20 rounded-full text-sm">${product.category != null ? product.category : "No category"}</span>
+                <span class="px-3 py-1 bg-white/20 rounded-full text-sm">${product.brand != null ? product.brand : "No brand"}</span>
             </div>
         </div>
 
@@ -38,7 +39,7 @@
                 <!-- Product Images -->
                 <div class="space-y-4">
                     <div class="relative">
-                        <img id="main-image" src="${product.urls[0]}" alt="${product.title}" class="w-full h-96 object-cover rounded-xl shadow-lg">
+                        <img id="main-image" src="${product.urls[0]}" alt="${product.title}" class="w-full h-96 border object-contain rounded-xl">
                         <div class="absolute top-4 right-4">
                             <%
                                 Product product = (Product) request.getAttribute("product");
@@ -71,7 +72,7 @@
                         <img onclick="changeMainImage('<%= url%>')"
                              src="<%= url%>" 
                              alt="Image" 
-                             class="w-20 h-20 object-cover rounded-lg cursor-pointer overflow-hidden hover:ring-2 hover:ring-blue-500 transition-all duration-200 flex-shrink-0">
+                             class="w-20 h-20 object-contain rounded-lg cursor-pointer overflow-hidden hover:ring-2 hover:ring-blue-500 transition-all duration-200 flex-shrink-0">
                         <%
                                 }
                             }
@@ -94,7 +95,7 @@
                         <div class="flex items-center justify-between">
                             <div>
                                 <p class="text-sm text-gray-600 mb-1">Price</p>
-                                <p class="text-3xl font-bold text-blue-600">$${product.price}</p>
+                                <p class="text-3xl font-bold text-blue-600">${CurrencyFormatter.formatVietNamCurrency(product.price)}</p>
                             </div>
                             <div class="text-right">
                                 <p class="text-sm text-gray-600 mb-1">Quantity</p>

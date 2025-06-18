@@ -25,9 +25,9 @@ public class ProductDAO extends DB.DBContext {
     public int getTotalPagination(int categoryId) {
         String query = "select COUNT(p.productId) as total \n"
                 + "from Products p\n"
-                + "join Categories c\n"
+                + "left join Categories c\n"
                 + "on p.categoryId = c.categoryId\n"
-                + "join Brands b\n"
+                + "left join Brands b\n"
                 + "on p.brandId = b.brandId\n";
         if (categoryId > 0) {
             query += "where p.categoryId = " + categoryId + "\n";
@@ -48,9 +48,9 @@ public class ProductDAO extends DB.DBContext {
         List<Product> pros = new ArrayList<>();
         String query = "select p.*, c.categoryName, b.brandName\n"
                 + "from Products p\n"
-                + "join Categories c\n"
+                + "left join Categories c\n"
                 + "on p.categoryId = c.categoryId\n"
-                + "join Brands b\n"
+                + "left join Brands b\n"
                 + "on p.brandId = b.brandId\n";
         if (categoryId > 0) {
             query += "where p.categoryId = " + categoryId + "\n";
@@ -77,8 +77,22 @@ public class ProductDAO extends DB.DBContext {
                 product.setHeight(rs.getDouble("height"));
                 product.setWeight(rs.getDouble("length"));
                 product.setDestroy(rs.getBoolean("_destroy"));
-                product.setBrand(new Brand(rs.getInt("brandId"), rs.getString("categoryName"), null));
-                product.setCategory(new Category(rs.getInt("categoryId"), rs.getString("brandName")));
+                Object brandIdObj = rs.getObject("brandId");
+                if (brandIdObj != null) {
+                    int brandId = (int) brandIdObj;
+                    String brandName = rs.getString("brandName");
+                    product.setBrand(new Brand(brandId, brandName, null));
+                } else {
+                    product.setBrand(null);
+                }
+                Object categoryIdObj = rs.getObject("categoryId");
+                if (categoryIdObj != null) {
+                    int categoryIdRs = (int) categoryIdObj;
+                    String categoryName = rs.getString("categoryName");
+                    product.setCategory(new Category(categoryIdRs, categoryName));
+                } else {
+                    product.setCategory(null);
+                }
                 Object[] params = {productId};
                 ResultSet urlsResult = execSelectQuery("select * from ProductImages pi where pi.productId = ?", params);
                 List<String> urls = new ArrayList<>();
@@ -117,9 +131,9 @@ public class ProductDAO extends DB.DBContext {
         Product product = new Product();
         String query = "select p.*, c.categoryName, b.brandName\n"
                 + "from Products p\n"
-                + "join Categories c\n"
+                + "left join Categories c\n"
                 + "on p.categoryId = c.categoryId\n"
-                + "join Brands b\n"
+                + "left join Brands b\n"
                 + "on p.brandId = b.brandId\n"
                 + "where p.productId = ?";
         Object[] obj = {id};
@@ -142,8 +156,22 @@ public class ProductDAO extends DB.DBContext {
                 product.setHeight(rs.getDouble("height"));
                 product.setWeight(rs.getDouble("length"));
                 product.setDestroy(rs.getBoolean("_destroy"));
-                product.setBrand(new Brand(rs.getInt("brandId"), rs.getString("categoryName"), null));
-                product.setCategory(new Category(rs.getInt("categoryId"), rs.getString("brandName")));
+                Object brandIdObj = rs.getObject("brandId");
+                if (brandIdObj != null) {
+                    int brandId = (int) brandIdObj;
+                    String brandName = rs.getString("brandName");
+                    product.setBrand(new Brand(brandId, brandName, null));
+                } else {
+                    product.setBrand(null);
+                }
+                Object categoryIdObj = rs.getObject("categoryId");
+                if (categoryIdObj != null) {
+                    int categoryIdRs = (int) categoryIdObj;
+                    String categoryName = rs.getString("categoryName");
+                    product.setCategory(new Category(categoryIdRs, categoryName));
+                } else {
+                    product.setCategory(null);
+                }
                 Object[] params = {productId};
                 ResultSet urlsResult = execSelectQuery("select * from ProductImages pi where pi.productId = ?", params);
                 List<String> urls = new ArrayList<>();
@@ -174,7 +202,7 @@ public class ProductDAO extends DB.DBContext {
         } catch (SQLException e) {
             e.printStackTrace();
         }
-
+        System.out.println(stat);
         return stat;
     }
 
@@ -215,7 +243,8 @@ public class ProductDAO extends DB.DBContext {
                 + "    ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?\n"
                 + ")";
         String sqlUrls = "INSERT INTO ProductImages (productId, url) VALUES\n";
-
+        Object categoryIdConvert = product.getCategory().getId() == 0 ? null : product.getCategory().getId();
+        Object brandIdConvert = product.getBrand().getId() == 0 ? null : product.getBrand().getId();
         Object[] paramsObj = {
             product.getTitle(),
             product.getDescription(),
@@ -232,8 +261,8 @@ public class ProductDAO extends DB.DBContext {
             product.getHeight(),
             product.getWeight(),
             product.isDestroy(),
-            product.getCategory().getId(),
-            product.getBrand().getId()
+            categoryIdConvert,
+            brandIdConvert
         };
 
         try {
@@ -281,7 +310,8 @@ public class ProductDAO extends DB.DBContext {
                 + "WHERE productId = ?";
 
         String sqlInsertImage = "INSERT INTO ProductImages (productId, url) VALUES (?, ?)";
-
+        Object categoryIdConvert = product.getCategory().getId() == 0 ? null : product.getCategory().getId();
+        Object brandIdConvert = product.getBrand().getId() == 0 ? null : product.getBrand().getId();
         Object[] paramsObj = {
             product.getTitle(),
             product.getDescription(),
@@ -298,8 +328,8 @@ public class ProductDAO extends DB.DBContext {
             product.getHeight(),
             product.getWeight(),
             product.isDestroy(),
-            product.getCategory().getId(),
-            product.getBrand().getId(),
+            categoryIdConvert,
+            brandIdConvert,
             product.getProductId()
         };
 
