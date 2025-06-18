@@ -514,6 +514,7 @@ function loadCreateProductEvent(categoryIdURL, pageURL) {
             createProductBrandElm.classList.add("border-red-500");
         }
     };
+<<<<<<< HEAD
     
     // Create new product
     document.getElementById("create-product-btn").onclick = () => {
@@ -579,6 +580,20 @@ function loadCreateProductEvent(categoryIdURL, pageURL) {
                     isError = isErrorValidate
             })
 
+=======
+
+    // Update product
+    const updateProductButton = document.getElementById("update-product-btn")
+    if (updateProductButton) {
+        updateProductButton.onclick = () => {
+            let isError = false;
+            configValidate.forEach(config => {
+                const isErrorValidate = checkValidate(config)
+                if (isErrorValidate)
+                    isError = isErrorValidate
+            })
+
+>>>>>>> feature/category-full
             // Handle select category and brand
             const selectCategory = document.getElementById("create-product-category");
             const selectedOptionCategory = selectCategory.options[selectCategory.selectedIndex];
@@ -604,6 +619,7 @@ function loadCreateProductEvent(categoryIdURL, pageURL) {
                 selectBrand.classList.add("border-green-600")
             }
 
+<<<<<<< HEAD
 //            productObj.categoryId = categoryId
 //            productObj.brandId = brandId
 //            productObj.imageFiles = selectedImages
@@ -619,6 +635,72 @@ function loadCreateProductEvent(categoryIdURL, pageURL) {
 //                    .then(data => console.log(data));
         } else {
             console.log("Can't create product'");
+=======
+            // Lấy imageId của những ảnh được tick
+            const selectedImageIds = []
+            document.querySelectorAll("#already-preview-grid input[type='checkbox']:checked").forEach(checkbox => {
+                const imageId = checkbox.getAttribute('data-image-id');
+                if (imageId) {
+                    selectedImageIds.push(imageId);
+                }
+            })
+            console.log(selectedImageIds); // [1, 3, 5] - ví dụ
+
+            if (selectedImageIds.length === 0 && selectedImages.length === 0) {
+                showError("Must have at least one image selected")
+                isError = true
+            }
+
+            // Handle fetch servlet to create product
+            if (!isError) {
+                // Convert data to object
+                const formData = new FormData();
+
+                const isCheckedDestroy = document.getElementById("destroy").checked;
+                configValidate.forEach(config => {
+                    const value = document.getElementById(config.id).value
+                    formData.append(config.id, value);
+                })
+                const productId = document.getElementById("productIdUpdate").textContent.trim();
+                formData.append("productId", productId);
+                formData.append("categoryId", categoryId);
+                formData.append("brandId", brandId);
+                formData.append("destroy", isCheckedDestroy)
+                for (var i = 0; i < selectedImageIds.length; i++) {
+                    formData.append("urlsId", selectedImageIds[i])
+                }
+
+                for (let i = 0; i < selectedImages.length; i++) {
+                    formData.append("imageFiles", selectedImages[i]);
+                }
+
+                // Fetch to servlet
+                showLoading()
+                fetch('/product/view?type=update', {
+                    method: 'POST',
+                    body: formData
+                })
+                        .then(response => response.json())
+                        .then(data => {
+                            console.log(data);
+                            hiddenLoading()
+                            closeModal()
+                            Toastify({
+                                text: data.message,
+                                duration: 5000,
+                                gravity: "top",
+                                position: "right",
+                                style: {
+                                    background: data.isSuccess ? "#2196F3" : "#f44336"
+                                },
+                                close: true
+                            }).showToast();
+                            loadProductContentAndEvent(categoryIdURL, pageURL)
+                        });
+            } else {
+                console.log("Can't update product");
+            }
+>>>>>>> feature/category-full
         }
     };
             // Lấy imageId của những ảnh được tick

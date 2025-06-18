@@ -51,7 +51,6 @@ public class CategoryViewServlet extends HttpServlet {
                 request.getRequestDispatcher("/WEB-INF/employees/teamplates/products/paginationTeamplate.jsp").forward(request, response);
                 break;
             case "create":
-
                 request.getRequestDispatcher("/WEB-INF/employees/teamplates/category/createCategoryTeamplate.jsp").forward(request, response);
                 break;
             case "edit":
@@ -60,14 +59,6 @@ public class CategoryViewServlet extends HttpServlet {
                 request.setAttribute("category", category);
                 request.getRequestDispatcher("/WEB-INF/employees/teamplates/category/editCategoryTeamplate.jsp").forward(request, response);
                 break;
-//            case "delete":
-//                request.getRequestDispatcher("/WEB-INF/employees/teamplates/category/deleteCategoryTeamplate.jsp").forward(request, response);
-//                break;
-//
-//            case "enable":
-//                request.getRequestDispatcher("/WEB-INF/employees/teamplates/category/enableCategoryTemplate.jsp").forward(request, response);
-//                break;
-
             default:
                 break;
         }
@@ -84,39 +75,23 @@ public class CategoryViewServlet extends HttpServlet {
 
         switch (type) {
             case "create":
-                // Validate category name
-                if (categoryName == null || categoryName.trim().isEmpty()) {
+                // Kiểm tra xem tên danh mục có trùng lặp không
+                if (categoryDAO.isCategoryNameExists(categoryName)) {
                     response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-
                     Map<String, Object> errorResponse = new HashMap<>();
                     errorResponse.put("isSuccess", false);
-                    errorResponse.put("message", "Category name is required.");
-
+                    errorResponse.put("message", "Category name already exists.");
                     response.setContentType("application/json");
                     response.setCharacterEncoding("UTF-8");
                     response.getWriter().write(new Gson().toJson(errorResponse));
-
-                    return; // Exit if validation fails
+                    return; // Dừng lại nếu tên danh mục đã tồn tại
                 }
 
-                // Don't set categoryId manually, let the DB auto-generate it
                 category.setName(categoryName);
-
-                // Log the category details for debugging purposes
-                System.out.println("Creating category with name: " + category.getName());
-
-                // Try to create the category
                 boolean isCreated = categoryDAO.createCategory(category);
-
-                // Log the result of category creation
-                System.out.println("Category creation result: " + isCreated);
-
-                // Prepare response
                 Map<String, Object> returnData = new HashMap<>();
                 returnData.put("isSuccess", isCreated);
                 returnData.put("message", isCreated ? "Category created successfully" : "An error occurred while creating the category");
-
-                // Send response
                 response.setContentType("application/json");
                 response.setCharacterEncoding("UTF-8");
                 String jsonResponse = new Gson().toJson(returnData);
@@ -125,36 +100,41 @@ public class CategoryViewServlet extends HttpServlet {
 
             case "update":
                 int categoryId = Integer.parseInt(request.getParameter("categoryId"));
-
                 category.setId(categoryId);
                 category.setName(categoryName);
 
-                boolean isUpdated = categoryDAO.updateCategory(category);
-                response.setContentType("application/json");
-                response.setCharacterEncoding("UTF-8");
+                // Kiểm tra xem tên danh mục đã tồn tại chưa (ngoài chính danh mục đang sửa)
+                if (categoryDAO.isCategoryNameExists(categoryName)) {
+                    response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                    Map<String, Object> errorResponseUpdate = new HashMap<>();
+                    errorResponseUpdate.put("isSuccess", false);
+                    errorResponseUpdate.put("message", "Category name already exists.");
+                    response.setContentType("application/json");
+                    response.setCharacterEncoding("UTF-8");
+                    response.getWriter().write(new Gson().toJson(errorResponseUpdate));
+                    return; // Dừng lại nếu tên danh mục đã tồn tại
+                } else {
 
-                Map<String, Object> returnDataUpdate = new HashMap<>();
-                returnDataUpdate.put("isSuccess", isUpdated);
-                returnDataUpdate.put("message", isUpdated ? "Category updated successfully" : "An error occurred while updating the category");
-
-                Gson gsonUpdate = new Gson();
-                String jsonUpdate = gsonUpdate.toJson(returnDataUpdate);
-                response.getWriter().write(jsonUpdate);
+                    boolean isUpdated = categoryDAO.updateCategory(category);
+                    Map<String, Object> returnDataUpdate = new HashMap<>();
+                    returnDataUpdate.put("isSuccess", isUpdated);
+                    returnDataUpdate.put("message", isUpdated ? "Category updated successfully" : "An error occurred while updating the category");
+                    Gson gsonUpdate = new Gson();
+                    String jsonUpdate = gsonUpdate.toJson(returnDataUpdate);
+                    response.getWriter().write(jsonUpdate);
+                }
                 break;
 
             case "delete":
                 int categoryIdToHide = Integer.parseInt(request.getParameter("categoryId"));
-                boolean isHidden = categoryDAO.hideCategory(categoryIdToHide);
-                response.setContentType("application/json");
-                response.setCharacterEncoding("UTF-8");
-                Map<String, Object> returnDataDelete = new HashMap<>();
-                returnDataDelete.put("isSuccess", isHidden);
-                returnDataDelete.put("message", isHidden ? "The category has been successfully hidden" : "An error occurred while hide the category");
-                Gson gsonDelete = new Gson();
-                String jsonDelete = gsonDelete.toJson(returnDataDelete);
-                response.getWriter().write(jsonDelete);
+                boolean updateNull = categoryDAO.updateCategoryInProducts(categoryIdToHide);
+                boolean deleteCategory = categoryDAO.deleteCategoryById(categoryIdToHide);
+                if (updateNull && deleteCategory) {
+                    response.getWriter().write("Category deleted successfully");
+                } else {
+                    response.getWriter().write("Failed to delete category");
+                }
                 break;
-
         }
     }
 

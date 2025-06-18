@@ -59,6 +59,12 @@
                 document.getElementById("modal").classList.add("hidden")
             }
 
+            const closeModal = () => {
+                document.getElementById("modal").classList.remove("flex")
+                document.body.classList.remove("overflow-hidden")
+                document.getElementById("modal").classList.add("hidden")
+            }
+
             // Helper: Render Brand Page layout (title + loading + container)
             function renderBrandPageLayout() {
                 document.getElementById('main-content').innerHTML = `
