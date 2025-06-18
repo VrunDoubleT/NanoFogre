@@ -117,9 +117,10 @@ public class StaffDAO extends DB.DBContext {
         return null;
     }
 
-    public boolean updateStaff(int id, String name, String email, boolean isBlock) {
-        String query = "UPDATE Employees SET employeeName = ?, employeeEmail = ?, isBlock = ? WHERE employeeId = ?";
-        Object[] params = {name, email, isBlock, id};
+    public boolean updateStaffStatus(int id, boolean isBlock) {
+        String query = "UPDATE Employees SET isBlock = ? WHERE employeeId = ?";
+        Object[] params = {isBlock, id};
+
         try {
             int rowsAffected = execQuery(query, params);
             return rowsAffected > 0;
