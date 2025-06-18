@@ -13,12 +13,9 @@
 
     <!-- Modal Container -->
     <div class="w-full max-w-2xl bg-white rounded-xl shadow-lg overflow-hidden">
-
         <!-- Header Section -->
-        <div class="bg-gradient-to-r from-green-600 to-blue-600 px-8 py-4 flex justify-between items-center">
-           
-
-        </div>
+            <div class="bg-gradient-to-r from-blue-600 to-purple-600 px-8 py-4 flex justify-between items-center">
+                  </div>
 
         <!-- Form Section -->
         <div class="p-8">

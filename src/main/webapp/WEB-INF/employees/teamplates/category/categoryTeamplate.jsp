@@ -25,9 +25,6 @@
                     <div class="ml-4">
                         <div class="text-sm font-medium text-gray-900 line-clamp-1">
                             <%= category.getName()%> 
-                            <% if (category.isIsDeleted()) { %>
-                            <span>(Deleted)</span>
-                            <% }%>
                         </div>
                     </div>
                 </div>

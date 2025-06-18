@@ -30,37 +30,29 @@
 %>
 
 <div class="">
-    <div class="bg-white w-full rounded-xl shadow-sm border border-gray-100">
-
-
-        <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
-            <div class="flex items-center justify-center space-x-4">
-                <div>
-                    <p class="text-3xl font-bold text-gray-900">Total Category: <%= count%></p>
-                </div>
-                <div class="h-12 w-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                    <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
-                    </svg>
-                </div>
-            </div>
-
-            <button id="create-category-button" data-category-id="${category.id} class="openEditCategoryModal" class="bg-blue-100 text-blue-700 hover:bg-blue-200 px-3 py-2 rounded-lg transition-colors flex items-center space-x-2" title="Add Category">
-
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v14m7-7H5" />
+    <div class="flex items-center justify-between space-x-4 mb-6">
+        <div class="flex items-center space-x-2">
+            <!-- Total Category -->
+            <p class="text-3xl font-bold text-gray-900 category-count">
+                Total Category: <%= count%>
+            </p>
+            <!-- Icon -->
+            <div class="h-12 w-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                <svg class="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
                 </svg>
-                <span class="text-lg font-semibold">Add Category</span>
-
-
-            </button>
-
-
+            </div>
         </div>
+        <!-- Add Category Button -->
+        <button id="create-category-button" class="openEditCategoryModal bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-lg shadow-lg hover:shadow-xl transform transition-all duration-200 flex items-center space-x-2">
+            <span>Add Category</span>
+        </button>
+    </div>
 
-
+    <div class="bg-white w-full rounded-xl shadow-sm border border-gray-100">
         <div class="w-full">
             <table class="w-full max-w-full divide-y divide-gray-200">
+
                 <thead class="bg-gray-50">
                     <tr>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">#</th>
