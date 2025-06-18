@@ -16,19 +16,9 @@
                 <h2 class="text-lg font-semibold text-gray-900">Staff List (Total: <%= count%>)</h2>
                 <div class="flex items-center space-x-3">
                     <button id="create-staff-button" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-lg shadow-lg hover:shadow-xl transform transition-all duration-200 flex items-center space-x-2">
+                        <i data-lucide="diamond-plus" class="w-5 h-5"></i>
                         <span>Add New Staff</span>
                     </button>
-                    <div class="flex items-center justify-center">
-                        <div class="relative w-full max-w-md">
-                            <input type="text" placeholder="Search..." class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-full shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"/>
-                            <div class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
-                                <!-- Icon -->
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35M16 10a6 6 0 11-12 0 6 6 0 0112 0z"/>
-                                </svg>
-                            </div>
-                        </div>
-                    </div>
                 </div>
             </div>
 
@@ -49,5 +39,6 @@
                 <div id="loadingStaff"></div>
             </div>
         </div>
-
-        <div id="pagination"></div>
+    </div>     
+</div>
+<div id="pagination"></div>

@@ -1,5 +1,6 @@
 // Staff list
 const loadStaffContentAndEvent = (page) => {
+    lucide.createIcons();
     document.getElementById('tabelContainer').innerHTML = '';
     document.getElementById('loadingStaff').innerHTML = `
         <div class="flex w-full justify-center items-center h-32">
@@ -40,6 +41,7 @@ const loadStaffContentAndEvent = (page) => {
 
 // Add Staff
 function loadCreateStaffEvent() {
+    lucide.createIcons();
     const password = generatePassword();
     document.getElementById("password").value = password;
     document.getElementById("generatedPassword").classList.remove("hidden");
@@ -68,7 +70,6 @@ function loadCreateStaffEvent() {
     async function validateEmail() {
         const email = emailInput.value.trim();
         const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        console.log("Validating email:", email);
 
         if (email === "") {
             emailError.textContent = "Email is required";
@@ -124,23 +125,45 @@ function loadCreateStaffEvent() {
             formData.append("block", "on");
         }
 
+        showLoading();
         fetch("/staff/view", {
             method: "POST",
             headers: {"Content-Type": "application/x-www-form-urlencoded"},
             body: formData
-        }).then(async res => {
-            if (res.ok) {
-                const lastPage = await res.text(); // Nhận số trang chứa staff mới
-                resetCreateStaffForm();
-                showSuccessPopup("Staff created successfully!", () => {
+        })
+                .then(response => response.text())
+                .then(lastPage => {
+                    hiddenLoading();
+                    closeModal();
+
+                    Toastify({
+                        text: "Staff created successfully!",
+                        duration: 5000,
+                        gravity: "top",
+                        position: "right",
+                        style: {
+                            background: "#2196F3"
+                        },
+                        close: true
+                    }).showToast();
                     const url = new URL(window.location);
                     url.searchParams.set("page", lastPage);
-                    window.location.href = url.toString(); // Load đến trang chứa staff mới
+                    history.pushState(null, '', url.toString());
+                    loadStaffContentAndEvent(parseInt(lastPage));
+                })
+                .catch(error => {
+                    hiddenLoading();
+                    Toastify({
+                        text: "Failed to create staff.",
+                        duration: 5000,
+                        gravity: "top",
+                        position: "right",
+                        style: {
+                            background: "#f44336"
+                        },
+                        close: true
+                    }).showToast();
                 });
-            } else {
-                alert("Failed to create staff.");
-            }
-        });
     };
 }
 
@@ -154,37 +177,19 @@ function generatePassword() {
     return password;
 }
 
-// Reset form
-function resetCreateStaffForm() {
-    document.getElementById("name").value = "";
-    document.getElementById("email").value = "";
-    document.getElementById("password").value = "";
-    document.getElementById("block").checked = false;
-    document.getElementById("generatedPassword").classList.add("hidden");
-    document.getElementById("passwordDisplay").textContent = "";
-
-    ["name", "email"].forEach(id => {
-        document.getElementById(id).classList.remove("border-red-500", "ring-1", "ring-green-500");
-        const errorElement = document.getElementById(id + "Error");
-        if (errorElement)
-            errorElement.textContent = "";
-    });
-}
-
 // Delete staff
 document.addEventListener("click", async function (e) {
-    const modal = document.getElementById("modal");
-    const modalContent = document.getElementById("modalContent");
-
     const deleteBtn = e.target.closest(".delete-staff-button");
     if (deleteBtn) {
         const id = deleteBtn.dataset.id;
-
         try {
             const response = await fetch(`/staff/view?type=delete&id=${id}`);
             const html = await response.text();
 
+            const modal = document.getElementById("modal");
+            const modalContent = document.getElementById("modalContent");
             modalContent.innerHTML = html;
+            lucide.createIcons();
             modal.classList.remove("hidden");
             modal.classList.add("flex");
             document.body.classList.add("overflow-hidden");
@@ -203,27 +208,47 @@ document.addEventListener("click", async function (e) {
 
                         if (res.ok) {
                             const currentPage = getCurrentPageFromURL();
-
                             const rowCount = document.querySelectorAll("tbody tr").length;
 
-                            showSuccessPopup("Staff deleted successfully!", () => {
-                                if (rowCount === 1 && currentPage > 1) {
-                                    const prevPageUrl = new URL(window.location.href);
-                                    prevPageUrl.searchParams.set("page", currentPage - 1);
-                                    window.location.href = prevPageUrl.toString();
-                                } else {
-                                    window.location.reload();
-                                }
-                            });
+                            Toastify({
+                                text: "Staff deleted successfully!",
+                                duration: 5000,
+                                gravity: "top",
+                                position: "right",
+                                style: {
+                                    background: "#2196F3"
+                                },
+                                close: true
+                            }).showToast();
+
+                            closeModal();
+                            const newPage = (rowCount === 1 && currentPage > 1) ? currentPage - 1 : currentPage;
+                            const url = new URL(window.location);
+                            url.searchParams.set("page", newPage);
+                            history.pushState(null, '', url.toString());
+                            loadStaffContentAndEvent(newPage);
                         } else {
-                            alert("Delete failed.");
+                            Toastify({
+                                text: "Delete failed.",
+                                duration: 5000,
+                                gravity: "top",
+                                position: "right",
+                                style: {background: "#f44336"},
+                                close: true
+                            }).showToast();
                         }
                     } catch (err) {
-                        alert("An error occurred while deleting.");
+                        Toastify({
+                            text: "An error occurred while deleting.",
+                            duration: 5000,
+                            gravity: "top",
+                            position: "right",
+                            style: {background: "#f44336"},
+                            close: true
+                        }).showToast();
                     }
                 });
             }
-
         } catch (err) {
             alert("Cannot open delete dialog.");
         }
@@ -232,18 +257,17 @@ document.addEventListener("click", async function (e) {
 
 // Update staff
 document.addEventListener("click", async function (e) {
-    const modal = document.getElementById("modal");
-    const modalContent = document.getElementById("modalContent");
-
     const updateBtn = e.target.closest(".update-staff-button");
     if (updateBtn) {
         const id = updateBtn.dataset.id;
-
         try {
             const response = await fetch(`/staff/view?type=update&id=${id}`);
             const html = await response.text();
 
+            const modal = document.getElementById("modal");
+            const modalContent = document.getElementById("modalContent");
             modalContent.innerHTML = html;
+            lucide.createIcons();
             modal.classList.remove("hidden");
             modal.classList.add("flex");
             document.body.classList.add("overflow-hidden");
@@ -252,7 +276,6 @@ document.addEventListener("click", async function (e) {
             if (form) {
                 form.addEventListener("submit", async function (event) {
                     event.preventDefault();
-
                     const formData = new FormData(form);
                     const status = formData.get("status");
 
@@ -266,23 +289,46 @@ document.addEventListener("click", async function (e) {
                         });
 
                         if (res.ok) {
-                            showSuccessPopup("Status updated successfully!", () => {
-                                window.location.reload();
-                            });
+                            Toastify({
+                                text: "Staff updated successfully!",
+                                duration: 5000,
+                                gravity: "top",
+                                position: "right",
+                                style: {background: "#2196F3"},
+                                close: true
+                            }).showToast();
+
+                            closeModal();
+                            const currentPage = getCurrentPageFromURL();
+                            loadStaffContentAndEvent(currentPage);
                         } else {
-                            alert("Update failed.");
+                            Toastify({
+                                text: "Update failed.",
+                                duration: 5000,
+                                gravity: "top",
+                                position: "right",
+                                style: {background: "#f44336"},
+                                close: true
+                            }).showToast();
                         }
                     } catch (err) {
-                        alert("An error occurred while updating.");
+                        Toastify({
+                            text: "An error occurred while updating.",
+                            duration: 5000,
+                            gravity: "top",
+                            position: "right",
+                            style: {background: "#f44336"},
+                            close: true
+                        }).showToast();
                     }
                 });
             }
-
         } catch (err) {
             alert("Cannot open update dialog.");
         }
     }
 });
+
 
 // Staff details
 document.addEventListener("click", async function (e) {
@@ -311,28 +357,4 @@ document.addEventListener("click", async function (e) {
 function getCurrentPageFromURL() {
     const urlParams = new URLSearchParams(window.location.search);
     return parseInt(urlParams.get("page")) || 1;
-}
-
-// Pop up success action
-function showSuccessPopup(message, onConfirm) {
-    const overlay = document.createElement("div");
-    overlay.className = "fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50";
-
-    const popup = document.createElement("div");
-    popup.className = "bg-white rounded-xl shadow-xl p-6 max-w-sm w-full text-center";
-
-    popup.innerHTML = `
-        <p class="text-lg font-semibold text-green-600 mb-4">${message}</p>
-        <button class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">OK</button>
-    `;
-
-    overlay.appendChild(popup);
-    document.body.appendChild(overlay);
-
-    popup.querySelector("button").onclick = () => {
-        document.body.removeChild(overlay);
-        if (typeof onConfirm === "function") {
-            onConfirm();
-        }
-    };
 }

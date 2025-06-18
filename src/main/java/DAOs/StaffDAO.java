@@ -117,10 +117,9 @@ public class StaffDAO extends DB.DBContext {
         return null;
     }
 
-    public boolean updateStaffStatus(int id, boolean isBlock) {
-        String query = "UPDATE Employees SET isBlock = ? WHERE employeeId = ?";
-        Object[] params = {isBlock, id};
-
+    public boolean updateStaff(int id, String name, String email, boolean isBlock) {
+        String query = "UPDATE Employees SET employeeName = ?, employeeEmail = ?, isBlock = ? WHERE employeeId = ?";
+        Object[] params = {name, email, isBlock, id};
         try {
             int rowsAffected = execQuery(query, params);
             return rowsAffected > 0;
@@ -146,10 +145,10 @@ public class StaffDAO extends DB.DBContext {
         String query = "SELECT 1 FROM Employees WHERE employeeEmail = ?";
         Object[] params = {email};
         try ( ResultSet rs = execSelectQuery(query, params)) {
-            return rs.next(); 
+            return rs.next();
         } catch (SQLException e) {
             e.printStackTrace();
-            return false; 
+            return false;
         }
     }
 

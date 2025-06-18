@@ -19,7 +19,10 @@
         <div class="p-8 w-full h-full overflow-y-auto">
             <p class="text-gray-600 mb-6">Are you sure you want to delete this staff?</p>
             <div class="flex justify-center gap-4">
-                <button id="btnConfirmDelete" data-id="<%= id%>" class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded">Delete</button>
+                <button id="btnConfirmDelete" data-id="<%= id%>" class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded flex items-center gap-2">
+                    <i data-lucide="trash-2" class="w-4 h-4"></i>
+                    Delete
+                </button>
             </div>
         </div>
     </div>

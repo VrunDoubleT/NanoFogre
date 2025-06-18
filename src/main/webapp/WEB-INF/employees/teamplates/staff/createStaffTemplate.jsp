@@ -22,7 +22,8 @@
         <div class="bg-gradient-to-r flex justify-between from-blue-600 to-purple-600 px-8 py-3">
             <h1 class="text-2xl font-bold text-white m-2 ml-0">Create New Staff</h1>
             <div class="flex items-center space-x-4">
-                <button id="create-staff-btn" class="px-4 py-2 bg-green-500 rounded-lg text-white hover:bg-green-600 transition-all">
+                <button id="create-staff-btn" class="px-4 py-2 flex bg-green-500 rounded-lg text-white hover:bg-green-600 transition-all">
+                    <i data-lucide="plus"></i>
                     <i class="fas fa-save mr-2"></i>Create
                 </button>
             </div>
