@@ -77,10 +77,9 @@
             </div>
         </div>
 
-        <!-- Pagination Section -->
-        <div id="pagination" class="flex justify-center py-4">
-        </div>
-
+    </div>
+    <!-- Pagination Section -->
+    <div id="pagination" class="flex justify-center py-4">
     </div>
 
 </div>
