@@ -79,7 +79,7 @@ const loadProductContentAndEvent = (categoryId, page) => {
             })
         })
 
-        // Hanlde if confirm hide product
+        // Handle if confirm hide product
         function confirmHide(productId) {
             Swal.fire({
                 title: 'Are you sure you want to hide this product?',
@@ -112,7 +112,8 @@ const loadProductContentAndEvent = (categoryId, page) => {
                 }
             })
         }
-        // Handle enale for product
+
+        // Handle enable for product
         function confirmEnable(productId) {
             Swal.fire({
                 title: 'Are you sure you want to restore this product?',
@@ -146,7 +147,6 @@ const loadProductContentAndEvent = (categoryId, page) => {
             })
         }
 
-
         // ADD EVENT FOR DISABLE PRODUCT
         document.querySelectorAll(".openDisableProdct").forEach(element => {
             element.addEventListener("click", (e) => {
@@ -176,6 +176,7 @@ const loadProductContentAndEvent = (categoryId, page) => {
             url.searchParams.set('page', page);
             history.pushState(null, '', url.toString());
         }
+
         // ADD EVENT FOR PAGINATION
         document.querySelectorAll("div.pagination").forEach(element => {
             element.addEventListener("click", function () {
@@ -189,6 +190,7 @@ const loadProductContentAndEvent = (categoryId, page) => {
 
         // GET CATEGORY SELECT
         const selectElement = document.getElementById("categorySelect");
+
         // HANDLE UPDATE URL WHEN CATEGORY CHANGE
         function updateCategoryURL(categoryId, page) {
             const url = new URL(window.location);
@@ -200,20 +202,11 @@ const loadProductContentAndEvent = (categoryId, page) => {
             if (page <= 1) {
                 url.searchParams.delete('page');
             } else {
-                url.searchParams.set('page', categoryId);
+                url.searchParams.set('page', page); // Fixed: was setting categoryId instead of page
             }
             history.pushState(null, '', url.toString());
         }
-        // ADD EVENT FOR CATEGORY
-        selectElement.addEventListener("change", function () {
-            const selectedOption = this.options[this.selectedIndex];
-            const categoryIdSelectString = selectedOption.getAttribute("data-category-id");
-            const categoryIdSelect = parseOptionNumber(categoryIdSelectString, 0)
-            if (categoryId !== categoryIdSelect) {
-                updateCategoryURL(categoryIdSelect, page)
-                loadProductContentAndEvent(categoryIdSelect, 1)
-            }
-        });
+
         // DEFINE OR REPLACE EVENT HANDLER
         if (handleCategoryChange !== null) {
             selectElement.removeEventListener("change", handleCategoryChange);
@@ -232,6 +225,7 @@ const loadProductContentAndEvent = (categoryId, page) => {
 
         // ADD EVENT LISTENER
         selectElement.addEventListener("change", handleCategoryChange);
+
         // SHOW SELECTED CATEGORY
         const options = selectElement.options;
         for (let i = 0; i < options.length; i++) {
@@ -241,7 +235,8 @@ const loadProductContentAndEvent = (categoryId, page) => {
             }
     }
     })
-    // Hanlde click new product button
+
+    // Handle click new product button
     document.getElementById("create-product-button").onclick = () => {
         const modal = document.getElementById("modal")
         openModal(modal);
@@ -249,12 +244,11 @@ const loadProductContentAndEvent = (categoryId, page) => {
     }
 }
 
-
-
 // HANDLE CHANGE IMAGE IN PRODUCT DETAIL
 function changeMainImage(imageUrl) {
     document.getElementById('main-image').src = imageUrl;
 }
+
 // HANDLE LOAD EVENT FOR PRODUCT DETAIL
 function loadProductDetailEvent() {
     const detailTab = document.getElementById('details-tab')
@@ -283,7 +277,8 @@ function loadCreateOrUpdateProductEvent(categoryIdURL, pageURL) {
     const errorText = document.getElementById("error-text");
     // File[]
     let selectedImages = [];
-    // Hanlde select image
+
+    // Handle select image
     imageInput.onchange = function (event) {
         const files = Array.from(event.target.files);
         let newImages = [];
@@ -438,8 +433,6 @@ function loadCreateOrUpdateProductEvent(categoryIdURL, pageURL) {
         };
     }
 
-
-
     const configValidate = [
         {
             id: "title",
@@ -494,7 +487,7 @@ function loadCreateOrUpdateProductEvent(categoryIdURL, pageURL) {
             validate: [required, validateMin(0)]
         }
     ];
-    ]
+
     // Handle config validate for input
     const checkValidate = (config) => {
         const inputElement = document.getElementById(config.id);
@@ -544,6 +537,7 @@ function loadCreateOrUpdateProductEvent(categoryIdURL, pageURL) {
 
     const createProductCategoryElm = document.getElementById("create-product-category")
     const createProductBrandElm = document.getElementById("create-product-brand")
+
     // Validate for category
     createProductCategoryElm.onchange = function () {
         const selectedOption = this.options[this.selectedIndex];
@@ -556,6 +550,7 @@ function loadCreateOrUpdateProductEvent(categoryIdURL, pageURL) {
             createProductCategoryElm.classList.add("border-red-500");
         }
     };
+
     // Validate for brand
     createProductBrandElm.onchange = function () {
         const selectedOption = this.options[this.selectedIndex];
@@ -578,6 +573,7 @@ function loadCreateOrUpdateProductEvent(categoryIdURL, pageURL) {
                 if (isErrorValidate)
                     isError = isErrorValidate
             })
+
             // Handle select category and brand
             const selectCategory = document.getElementById("create-product-category");
             const selectedOptionCategory = selectCategory.options[selectCategory.selectedIndex];
@@ -602,7 +598,8 @@ function loadCreateOrUpdateProductEvent(categoryIdURL, pageURL) {
                 selectBrand.classList.remove("border-red-500")
                 selectBrand.classList.add("border-green-600")
             }
-            // Lấy imageId của những ảnh được tick
+
+            // Get imageId of selected images
             const selectedImageIds = []
             document.querySelectorAll("#already-preview-grid input[type='checkbox']:checked").forEach(checkbox => {
                 const imageId = checkbox.getAttribute('data-image-id');
@@ -610,72 +607,7 @@ function loadCreateOrUpdateProductEvent(categoryIdURL, pageURL) {
                     selectedImageIds.push(imageId);
                 }
             })
-            console.log(selectedImageIds); // [1, 3, 5] - ví dụ
-
-            if (selectedImageIds.length === 0 && selectedImages.length === 0) {
-                showError("Must have at least one image selected")
-                isError = true
-            }
-
-            // Handle fetch servlet to create product
-            if (!isError) {
-                // Convert data to object
-                const formData = new FormData();
-
-                const isCheckedDestroy = document.getElementById("destroy").checked;
-                configValidate.forEach(config => {
-                    const value = document.getElementById(config.id).value
-                    formData.append(config.id, value);
-                })
-                const productId = document.getElementById("productIdUpdate").textContent.trim();
-                formData.append("productId", productId);
-                formData.append("categoryId", categoryId);
-                formData.append("brandId", brandId);
-                formData.append("destroy", isCheckedDestroy)
-                for (var i = 0; i < selectedImageIds.length; i++) {
-                    formData.append("urlsId", selectedImageIds[i])
-                }
-
-                for (let i = 0; i < selectedImages.length; i++) {
-                    formData.append("imageFiles", selectedImages[i]);
-                }
-
-                // Fetch to servlet
-                showLoading()
-                fetch('/product/view?type=update', {
-                    method: 'POST',
-                    body: formData
-                })
-                        .then(response => response.json())
-                        .then(data => {
-                            console.log(data);
-                            hiddenLoading()
-                            closeModal()
-                            Toastify({
-                                text: data.message,
-                                duration: 5000,
-                                gravity: "top",
-                                position: "right",
-                                style: {
-                                    background: data.isSuccess ? "#2196F3" : "#f44336"
-                                },
-                                close: true
-                            }).showToast();
-                            loadProductContentAndEvent(categoryIdURL, pageURL)
-                        });
-            } else {
-                console.log("Can't update product");
-            }
-        }
-    };
-            // Lấy imageId của những ảnh được tick
-            const selectedImageIds = []
-            document.querySelectorAll("#already-preview-grid input[type='checkbox']:checked").forEach(checkbox => {
-                const imageId = checkbox.getAttribute('data-image-id');
-                if (imageId) {
-                    selectedImageIds.push(imageId);
-                }
-            })
+            console.log(selectedImageIds); // [1, 3, 5] - example
 
             if (selectedImageIds.length === 0 && selectedImages.length === 0) {
                 showError("Must have at least one image selected")
@@ -831,7 +763,8 @@ function loadCreateOrUpdateProductEvent(categoryIdURL, pageURL) {
             }
         }
     }
-    // Add opacity for producat
+
+    // Add opacity for product
     function toggleImageOpacity(index, isChecked) {
         const image = document.querySelector(`.image-${index}`);
         const icon = document.querySelector(`.checkbox-icon-${index}`);
@@ -845,7 +778,8 @@ function loadCreateOrUpdateProductEvent(categoryIdURL, pageURL) {
             icon.classList.add('opacity-0');
         }
     }
-    // Hanlde checkbox change
+
+    // Handle checkbox change
     document.getElementById('already-preview-grid').addEventListener('change', function (event) {
         if (event.target.type === 'checkbox' &&
                 event.target.hasAttribute('data-index') &&
@@ -854,6 +788,7 @@ function loadCreateOrUpdateProductEvent(categoryIdURL, pageURL) {
             toggleImageOpacity(index, event.target.checked);
         }
     });
+
     // Handle click or no click with already image
     document.getElementById('already-preview-grid').addEventListener('click', function (event) {
         const group = event.target.closest('.group')
@@ -865,8 +800,8 @@ function loadCreateOrUpdateProductEvent(categoryIdURL, pageURL) {
                 toggleImageOpacity(index, checkbox.checked);
             }
         }
-
     });
+
     // Init all checkbox is ticked
     const checkboxes = document.querySelectorAll('[data-index]');
     checkboxes.forEach((checkbox) => {
@@ -877,8 +812,6 @@ function loadCreateOrUpdateProductEvent(categoryIdURL, pageURL) {
         }
     });
 }
-
-
 
 const updateProductStat = () => {
     const totalProductELm = document.getElementById("totalProduct")
@@ -897,7 +830,6 @@ const updateProductStat = () => {
             return Math.floor(amount).toString();
         }
     }
-
 
     fetch('/product/view?type=stat', {
         method: 'GET'

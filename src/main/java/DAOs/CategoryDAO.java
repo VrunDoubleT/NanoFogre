@@ -19,7 +19,7 @@ public class CategoryDAO extends DB.DBContext {
 
     public List<Category> getCategories() {
         List<Category> categories = new ArrayList<>();
-        String query = "SELECT * FROM Categories WHERE isDeleted = 0";
+        String query = "SELECT * FROM Categories";
         try (ResultSet rs = execSelectQuery(query)) {
             while (rs.next()) {
                 Category category = new Category();
@@ -36,7 +36,7 @@ public class CategoryDAO extends DB.DBContext {
     public List<Category> getCategories(int page, int limit) {
         int row = (page - 1) * limit;
         List<Category> categories = new ArrayList<>();
-        String query = "SELECT * FROM Categories WHERE isDeleted = 0 ORDER BY categoryId OFFSET " + row + " ROWS FETCH NEXT " + limit + " ROWS ONLY";
+        String query = "SELECT * FROM Categories ORDER BY categoryId OFFSET " + row + " ROWS FETCH NEXT " + limit + " ROWS ONLY";
         try (ResultSet rs = execSelectQuery(query)) {
             while (rs.next()) {
                 Category category = new Category();
@@ -51,7 +51,7 @@ public class CategoryDAO extends DB.DBContext {
     }
 
     public int countCategory() {
-        String query = "SELECT COUNT(*) FROM Categories WHERE isDeleted = 0";
+        String query = "SELECT COUNT(*) FROM Categories";
         try (ResultSet rs = execSelectQuery(query)) {
             if (rs.next()) {
                 return rs.getInt(1);
@@ -99,32 +99,6 @@ public class CategoryDAO extends DB.DBContext {
         return false;
     }
 
-    public boolean hideCategory(int categoryId) {
-        String sql = "UPDATE Categories SET isDeleted = 1 WHERE categoryId = ?";
-        Object[] paramsObj = {categoryId};
-
-        try {
-            int rf = execQuery(sql, paramsObj);
-            return rf > 0;
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return false;
-    }
-
-    public boolean enableCategory(int categoryId) {
-        String sql = "UPDATE Categories SET isDeleted = 0 WHERE categoryId = ?";
-        Object[] paramsObj = {categoryId};
-
-        try {
-            int rf = execQuery(sql, paramsObj);
-            return rf > 0;
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return false;
-    }
-
     public boolean deleteCategoryById(int categoryId) {
         String query = "DELETE FROM Categories WHERE categoryId = ?";
         try {
@@ -148,7 +122,7 @@ public class CategoryDAO extends DB.DBContext {
     }
 
     public boolean isCategoryNameExists(String categoryName) {
-        String query = "SELECT COUNT(*) FROM Categories WHERE categoryName = ? AND isDeleted = 0";
+        String query = "SELECT COUNT(*) FROM Categories WHERE categoryName = ?";
         try (ResultSet rs = execSelectQuery(query, new Object[]{categoryName})) {
             if (rs.next()) {
                 return rs.getInt(1) > 0;
@@ -160,7 +134,7 @@ public class CategoryDAO extends DB.DBContext {
     }
 
     public boolean isCategoryNameExistsForUpdate(String categoryName, int categoryId) {
-        String query = "SELECT COUNT(*) FROM Categories WHERE categoryName = ? AND categoryId != ? AND isDeleted = 0";
+        String query = "SELECT COUNT(*) FROM Categories WHERE categoryName = ? AND categoryId != ?";
         try (ResultSet rs = execSelectQuery(query, new Object[]{categoryName, categoryId})) {
             if (rs.next()) {
                 return rs.getInt(1) > 0;
