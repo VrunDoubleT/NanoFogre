@@ -48,7 +48,6 @@ const loadCategoryContentAndEvent = (page) => {
                 const buttonItem = clickedElement.closest('[data-category-id]');
                 const categoryId = buttonItem ? buttonItem.getAttribute('data-category-id') : null;
 
-                // Kiểm tra categoryId trước khi gửi yêu cầu
                 if (!categoryId) {
                     console.error("Category ID is missing or invalid.");
                     return;
@@ -56,14 +55,13 @@ const loadCategoryContentAndEvent = (page) => {
 
                 console.log("Category ID:", categoryId);
 
-                // Mở modal và tải dữ liệu cho modal
                 openModal(modal);
 
                 fetch(`/category/view?type=edit&categoryId=${categoryId}`)
                         .then(res => res.text())
                         .then(html => {
                             document.getElementById("modalContent").innerHTML = html;
-                            loadCreateCategoryEvent(categoryId, page);
+                            loadCreateCategoryEvent(categoryId, page); // Đảm bảo hàm này đã được định nghĩa
                         })
                         .catch(error => {
                             console.error("Error fetching the category data:", error);
@@ -71,7 +69,7 @@ const loadCategoryContentAndEvent = (page) => {
             });
         });
 
-        // Add event for disable category
+        // Add event for delete category
         document.querySelectorAll(".openDisableCategory").forEach(element => {
             element.addEventListener("click", (e) => {
                 const clickedElement = e.target;
@@ -81,22 +79,12 @@ const loadCategoryContentAndEvent = (page) => {
             });
         });
 
-        // Add event for enable category
-        document.querySelectorAll(".openEnableCategory").forEach(element => {
-            element.addEventListener("click", (e) => {
-                const clickedElement = e.target;
-                const buttonItem = clickedElement.closest('[data-category-id]');
-                const categoryId = buttonItem.getAttribute('data-category-id');
-                confirmEnableCategory(categoryId);
-            });
-        });
-
         // ADD EVENT FOR CREATE CATEGORY
         document.getElementById("create-category-button").onclick = () => {
             const modal = document.getElementById("modal");
             openModal(modal);
             updateModalContent(`/category/view?type=create`, loadCreateCategoryEvent);
-        }; // Fix: Thêm dấu ; ở đây
+    }
     });
 };
 
@@ -110,7 +98,6 @@ const loadCreateCategoryEvent = (categoryId, currentPage) => {
 
         const categoryName = categoryNameInput.value.trim();
 
-        // Validate category name
         if (categoryName === "") {
             errorDiv.textContent = "Category name cannot be empty.";
             errorDiv.classList.remove("hidden");
@@ -146,6 +133,7 @@ const loadCreateCategoryEvent = (categoryId, currentPage) => {
                     if (data.isSuccess) {
                         showToast(isCreate ? "✅ Category created!" : "✅ Category updated!", "success");
                         closeModal();
+                        updateCategoryCount();
                         loadCategoryContentAndEvent(currentPage);
                     } else {
                         errorDiv.textContent = data.message || "Failed to save category.";
@@ -163,7 +151,7 @@ const loadCreateCategoryEvent = (categoryId, currentPage) => {
 function showToast(message, type = "success") {
     const toast = document.createElement("div");
     toast.className = `fixed top-4 right-4 px-4 py-2 rounded shadow-lg text-white z-50 transition-all duration-300 ${
-            type === "success" ? "bg-green-600" : "bg-red-600"
+            type === "success" ? "bg-[#2196F3]" : "bg-[#f44336]"
             }`;
     toast.textContent = message;
     document.body.appendChild(toast);
@@ -172,7 +160,9 @@ function showToast(message, type = "success") {
     }, 3000);
 }
 
-// Function to retrieve the page number from the URL (default to 1 if not found)
+
+
+
 function getPageFromUrl() {
     const urlParams = new URLSearchParams(window.location.search);
     return parseInt(urlParams.get('page')) || 1;
@@ -182,8 +172,8 @@ function confirmDeleteCategory(categoryId) {
     const page = getPageFromUrl();
 
     Swal.fire({
-        title: 'Are you sure you want to hide this category?',
-        text: "This category will no longer be visible to customers, but it will remain associated with existing orders and records in the system",
+        title: 'Are you sure you want to delete this category?',
+        text: "Once deleted, it cannot be restored.",
         icon: 'warning',
         showCancelButton: true,
         confirmButtonColor: '#d33',
@@ -192,6 +182,7 @@ function confirmDeleteCategory(categoryId) {
         cancelButtonText: 'Cancel'
     }).then((result) => {
         if (result.isConfirmed) {
+
             fetch(`/category/view?type=delete&categoryId=${categoryId}`, {
                 method: 'POST'
             })
@@ -204,6 +195,7 @@ function confirmDeleteCategory(categoryId) {
                     .then(responseText => {
                         let data;
                         try {
+
                             if (!responseText || responseText.trim() === '') {
                                 data = {isSuccess: false, message: 'Invalid server response'};
                             } else {
@@ -211,7 +203,7 @@ function confirmDeleteCategory(categoryId) {
                             }
                         } catch (e) {
                             console.error('JSON parse error:', e);
-                            data = {isSuccess: true, message: 'Category deleted successfully'};
+                            data = {isSuccess: true, message: '✅ Category deleted successfully'};
                         }
 
                         Toastify({
@@ -224,9 +216,9 @@ function confirmDeleteCategory(categoryId) {
                             },
                             close: true
                         }).showToast();
-
-                        updateCategoryUI(categoryId, 1);
+                        updateCategoryCount();
                         loadCategoryContentAndEvent(page);
+
                     })
                     .catch(error => {
                         console.error("Error deleting category:", error);
@@ -236,62 +228,23 @@ function confirmDeleteCategory(categoryId) {
     });
 }
 
-function confirmEnableCategory(categoryId) {
-    const page = getPageFromUrl();
-
-    Swal.fire({
-        title: 'Are you sure you want to restore this category?',
-        text: "This category will become visible to customers again.",
-        icon: 'question',
-        showCancelButton: true,
-        confirmButtonColor: '#28a745',
-        cancelButtonColor: '#6c757d',
-        confirmButtonText: 'Yes, restore it',
-        cancelButtonText: 'Cancel'
-    }).then((result) => {
-        if (result.isConfirmed) {
-            fetch(`/category/view?type=enable&categoryId=${categoryId}`, {
-                method: 'POST'
+// Update total category when deleted success or created new ctegory 
+function updateCategoryCount() {
+    fetch("/category/view?type=total")
+            .then(response => response.json())
+            .then(data => {
+                const countElement = document.querySelector(".category-count");
+                if (countElement) {
+                    countElement.textContent = `Total Category: ${data.total}`;
+                }
             })
-                    .then(response => response.json())
-                    .then(data => {
-                        Toastify({
-                            text: data.message,
-                            duration: 5000,
-                            gravity: "top",
-                            position: "right",
-                            style: {
-                                background: data.isSuccess ? "#2196F3" : "#f44336"
-                            },
-                            close: true
-                        }).showToast();
-
-                        updateCategoryUI(categoryId, 0);
-                        loadCategoryContentAndEvent(page);
-                    });
-        }
-    });
+            .catch(error => {
+                console.error("Error fetching category count:", error);
+            });
 }
 
-function updateCategoryUI(categoryId, isDeleted) {
-    const categoryRow = document.querySelector(`[data-category-id='${categoryId}']`);
 
-    if (categoryRow) {
-        const enableButton = categoryRow.querySelector(".openEnableCategory");
-        const disableButton = categoryRow.querySelector(".openDisableCategory");
 
-        if (enableButton && disableButton) {
-            if (isDeleted) {
-                enableButton.classList.remove("bg-green-100", "text-green-700");
-                disableButton.classList.add("bg-red-100", "text-red-700");
-                disableButton.innerHTML = "&times;";
-            } else {
-                enableButton.classList.add("bg-green-100", "text-green-700");
-                disableButton.classList.remove("bg-red-100", "text-red-700");
-                disableButton.innerHTML = "Restore";
-            }
-        }
-    } else {
-        console.error(`Category row with ID ${categoryId} not found`);
-    }
-}
+
+
+

@@ -51,6 +51,7 @@ public class CategoryViewServlet extends HttpServlet {
                 request.getRequestDispatcher("/WEB-INF/employees/teamplates/products/paginationTeamplate.jsp").forward(request, response);
                 break;
             case "create":
+
                 request.getRequestDispatcher("/WEB-INF/employees/teamplates/category/createCategoryTeamplate.jsp").forward(request, response);
                 break;
             case "edit":
@@ -59,6 +60,15 @@ public class CategoryViewServlet extends HttpServlet {
                 request.setAttribute("category", category);
                 request.getRequestDispatcher("/WEB-INF/employees/teamplates/category/editCategoryTeamplate.jsp").forward(request, response);
                 break;
+            case "total": // New case for fetching total category count
+                int totalCategoryCount = categoryDao.countCategory(); // Get the total category count
+                response.setContentType("application/json");
+                response.setCharacterEncoding("UTF-8");
+
+                // Send the total category count as JSON
+                response.getWriter().write("{\"total\":" + totalCategoryCount + "}");
+                break;
+
             default:
                 break;
         }

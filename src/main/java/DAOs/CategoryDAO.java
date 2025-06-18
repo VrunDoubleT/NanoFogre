@@ -20,7 +20,7 @@ public class CategoryDAO extends DB.DBContext {
     public List<Category> getCategories() {
         List<Category> categories = new ArrayList<>();
         String query = "SELECT * FROM Categories";
-        try (ResultSet rs = execSelectQuery(query)) {
+        try ( ResultSet rs = execSelectQuery(query)) {
             while (rs.next()) {
                 Category category = new Category();
                 category.setId(rs.getInt("categoryId"));
@@ -37,7 +37,7 @@ public class CategoryDAO extends DB.DBContext {
         int row = (page - 1) * limit;
         List<Category> categories = new ArrayList<>();
         String query = "SELECT * FROM Categories ORDER BY categoryId OFFSET " + row + " ROWS FETCH NEXT " + limit + " ROWS ONLY";
-        try (ResultSet rs = execSelectQuery(query)) {
+        try ( ResultSet rs = execSelectQuery(query)) {
             while (rs.next()) {
                 Category category = new Category();
                 category.setId(rs.getInt("categoryId"));
@@ -51,52 +51,15 @@ public class CategoryDAO extends DB.DBContext {
     }
 
     public int countCategory() {
-        String query = "SELECT COUNT(*) FROM Categories";
-        try (ResultSet rs = execSelectQuery(query)) {
+        String query = "SELECT COUNT(*) FROM Categories"; // SQL query to get the total count of categories
+        try ( ResultSet rs = execSelectQuery(query)) {
             if (rs.next()) {
                 return rs.getInt(1);
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        return -1;
-    }
-
-    public Category getCategoryById(int categoryId) {
-        Category category = null;
-        String query = "SELECT * FROM Categories WHERE categoryId = ?";
-        try (ResultSet rs = execSelectQuery(query, new Object[]{categoryId})) {
-            if (rs.next()) {
-                category = new Category();
-                category.setId(rs.getInt("categoryId"));
-                category.setName(rs.getString("categoryName"));
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return category;
-    }
-
-    public boolean createCategory(Category category) {
-        String query = "INSERT INTO Categories (categoryName, isDeleted) VALUES (?, 0)";
-        try {
-            int rowsAffected = execQuery(query, new Object[]{category.getName()});
-            return rowsAffected > 0;
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return false;
-        }
-    }
-
-    public boolean updateCategory(Category category) {
-        String query = "UPDATE Categories SET categoryName = ? WHERE categoryId = ?";
-        try {
-            int rowsUpdated = execQuery(query, new Object[]{category.getName(), category.getId()});
-            return rowsUpdated > 0;
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return false;
+        return 0;
     }
 
     public boolean deleteCategoryById(int categoryId) {
@@ -121,27 +84,57 @@ public class CategoryDAO extends DB.DBContext {
         return false;
     }
 
-    public boolean isCategoryNameExists(String categoryName) {
-        String query = "SELECT COUNT(*) FROM Categories WHERE categoryName = ?";
-        try (ResultSet rs = execSelectQuery(query, new Object[]{categoryName})) {
-            if (rs.next()) {
-                return rs.getInt(1) > 0;
-            }
+    public boolean updateCategory(Category category) {
+        String query = "UPDATE Categories SET categoryName = ? WHERE categoryId = ?";
+        try {
+            int rowsUpdated = execQuery(query, new Object[]{category.getName(), category.getId()});
+            return rowsUpdated > 0;
         } catch (SQLException e) {
             e.printStackTrace();
         }
         return false;
     }
 
-    public boolean isCategoryNameExistsForUpdate(String categoryName, int categoryId) {
-        String query = "SELECT COUNT(*) FROM Categories WHERE categoryName = ? AND categoryId != ?";
-        try (ResultSet rs = execSelectQuery(query, new Object[]{categoryName, categoryId})) {
+    public Category getCategoryById(int categoryId) {
+        Category category = null;
+        String query = "SELECT * FROM Categories WHERE categoryId = ?";
+        try ( ResultSet rs = execSelectQuery(query, new Object[]{categoryId})) {
+            if (rs.next()) {
+                category = new Category();
+                category.setId(rs.getInt("categoryId"));
+                category.setName(rs.getString("categoryName"));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return category;
+    }
+
+    public boolean createCategory(Category category) {
+        String query = "INSERT INTO Categories (categoryName) VALUES (?)";
+        try {
+            int rowsAffected = execQuery(query, new Object[]{category.getName()});
+            return rowsAffected > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public boolean isCategoryNameExists(String categoryName) {
+
+        String query = "SELECT COUNT(*) FROM Categories WHERE categoryName = ?";
+
+        try ( ResultSet rs = execSelectQuery(query, new Object[]{categoryName})) {
+
             if (rs.next()) {
                 return rs.getInt(1) > 0;
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
+
         return false;
     }
+
 }
