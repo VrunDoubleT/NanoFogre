@@ -11,6 +11,7 @@ function openCreateModal() {
     document.getElementById('newBrandName').value = '';
     document.getElementById('newBrandImage').value = '';
     document.getElementById('addBrandImagePreview').innerHTML = '';
+    
 }
 
 function closeCreateModal() {
@@ -117,8 +118,50 @@ function closeConfirmDeleteModal() {
 }
 
 function deleteBrand(id) {
-    brandIdToDelete = id;
-    showConfirmDeleteModal();
+    Swal.fire({
+        title: 'Are you sure you want to delete this brand?',
+        text: "This brand will be permanently deleted and cannot be restored. All products under this brand will be affected.",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Yes, delete it',
+        cancelButtonText: 'Cancel'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            fetch(`/brand?action=delete&id=${id}`, {
+                method: 'POST'
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Delete brand response:', data); // Debug
+                Toastify({
+                    text: data.message,
+                    duration: 5000,
+                    gravity: "top",
+                    position: "right",
+                    style: {
+                        background: (data.success || data.isSuccess) ? "#2196F3" : "#f44336"
+                    },
+                    close: true
+                }).showToast();
+                if ((data.success || data.isSuccess) && typeof loadBrandContentAndEvent === "function") {
+                    loadBrandContentAndEvent();
+                }
+            })
+            .catch(error => {
+                console.error('Delete brand error:', error);
+                Toastify({
+                    text: "Delete failed! Server error.",
+                    duration: 5000,
+                    gravity: "top",
+                    position: "right",
+                    style: { background: "#f44336" },
+                    close: true
+                }).showToast();
+            });
+        }
+    });
 }
 
 document.addEventListener('click', function(e) {
@@ -137,13 +180,12 @@ document.addEventListener('click', function(e) {
     if (e.target && e.target.id === 'confirmDeleteModal') {
         closeConfirmDeleteModal();
     }
+    if (e.target && e.target.id === 'createBrandModal') closeCreateModal();
+    if (e.target && e.target.id === 'editBrandModal') closeEditModal();
 });
 document.addEventListener('keydown', function(e) {
     if (e.key === 'Escape') closeConfirmDeleteModal();
 });
-
-
-
 
 function handleCreateBrand() {
     const name = document.getElementById('newBrandName').value.trim();
@@ -345,7 +387,6 @@ function loadBrandContentAndEvent(page = 1, updateUrl = true) {
 
             lucide.createIcons && lucide.createIcons();
 
-            // Cập nhật totalPages từ hidden input
             const totalPagesInput = document.getElementById('totalPages');
             if (totalPagesInput) {
                 totalPages = parseInt(totalPagesInput.value);
@@ -536,6 +577,3 @@ function showToast(message, type = 'success') {
         setTimeout(() => toast.remove(), 300);
     }, 2500);
 }
-
-
-
