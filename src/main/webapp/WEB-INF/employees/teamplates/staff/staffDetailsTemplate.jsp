@@ -16,7 +16,8 @@
 <div class="bg-gray-100">
     <div class="w-4x1 mx-auto h-auto flex flex-col bg-white shadow-2xl overflow-hidden">
         <!-- Header -->
-        <div class="bg-gradient-to-r from-indigo-500 via-purple-500 to-blue-600 px-6 py-5">
+        <div class="bg-gradient-to-r from-indigo-500 via-purple-500 to-blue-600 px-6 py-5 flex items-center gap-3">
+            <i data-lucide="file-text" class="w-6 h-6 text-white"></i>
             <h1 class="text-2xl font-bold text-white">Staff Details</h1>
         </div>
 

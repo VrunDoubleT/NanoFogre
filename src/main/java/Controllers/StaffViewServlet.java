@@ -7,6 +7,9 @@ package Controllers;
 import DAOs.StaffDAO;
 import Models.Employee;
 import Utils.Converter;
+import Utils.MailUtil;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import java.io.IOException;
 import java.io.PrintWriter;
 import jakarta.servlet.ServletException;
@@ -14,6 +17,7 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import java.io.BufferedReader;
 import java.util.List;
 
 /**
@@ -67,13 +71,18 @@ public class StaffViewServlet extends HttpServlet {
                 request.getRequestDispatcher("/WEB-INF/employees/teamplates/staff/createStaffTemplate.jsp").forward(request, response);
                 break;
             case "checkEmail":
-                String email = request.getParameter("email");
-                boolean exists = sDao.isEmailExists(email);
+                String allEmails = request.getParameter("email");
+                boolean exists = sDao.isEmailExists(allEmails);
                 response.setContentType("text/plain");
                 response.getWriter().write(String.valueOf(exists));
                 break;
-            case "delete":
-                request.getRequestDispatcher("/WEB-INF/employees/teamplates/staff/deleteStaffTemplate.jsp").forward(request, response);
+            case "checkEmailExceptOwn":
+                String email = request.getParameter("email");
+                String idRaw = request.getParameter("id");
+                int idCheckMail = idRaw != null ? Integer.parseInt(idRaw) : -1;
+                boolean exist = sDao.isEmailExistsExceptOwn(email, idCheckMail);
+                response.setContentType("text/plain");
+                response.getWriter().write(String.valueOf(exist));
                 break;
             case "update":
                 try {
@@ -109,24 +118,28 @@ public class StaffViewServlet extends HttpServlet {
                 staff.setName(name);
                 staff.setAvatar((avatar != null && !avatar.trim().isEmpty()) ? avatar : null);
                 staff.setIsBlock(isBlockedParam != null);
-                boolean created = sDao.createStaff(staff); // giả sử hàm createStaff trả về boolean
+                boolean created = sDao.createStaff(staff);
 
                 if (created) {
-                    int totalStaff = sDao.countStaff(); // tổng nhân viên mới sau khi thêm
-                    int limit = 5;
-                    int lastPage = (int) Math.ceil((double) totalStaff / limit);
-
-                    response.setContentType("text/plain");
-                    response.setCharacterEncoding("UTF-8");
-                    response.getWriter().write(String.valueOf(lastPage)); // Trả về số trang cuối
-                } else {
-                    response.setStatus(500); // tạo thất bại
+                    try {
+                        String subject = "New Account";
+                        String content = "Hi " + name + ",\n\n"
+                                + "Your account has been successfully created in the system.\n"
+                                + "This is login information: \n"
+                                + "Email: " + email + "\n"
+                                + "Password: " + password + "\n\n"
+                                + "Regard,\n"
+                                + "NanoForge Team\n\n";
+                        MailUtil.sendEmail(email, subject, content);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
                 }
                 break;
             case "delete":
                 try {
-                int id = Integer.parseInt(request.getParameter("id"));
-                boolean deleted = sDao.deleteStaffById(id);
+                int staffIdToDelete = Integer.parseInt(request.getParameter("id"));
+                boolean deleted = sDao.deleteStaffById(staffIdToDelete);
                 response.setStatus(deleted ? 200 : 500);
             } catch (Exception e) {
                 response.setStatus(500);
@@ -134,11 +147,20 @@ public class StaffViewServlet extends HttpServlet {
             break;
             case "update":
                 try {
-                int id = Integer.parseInt(request.getParameter("id"));
-                String status = request.getParameter("status");
+                BufferedReader reader = request.getReader();
+                StringBuilder sb = new StringBuilder();
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    sb.append(line);
+                }
+                String json = sb.toString();
+                JsonObject obj = JsonParser.parseString(json).getAsJsonObject();
+                int staffIdToUpdate = Integer.parseInt(obj.get("id").getAsString());
+                String nameToUpdate = obj.get("name").getAsString();
+                String emailToUpdate = obj.get("email").getAsString();
+                String status = obj.get("status").getAsString();
                 boolean isBlocked = "Block".equalsIgnoreCase(status);
-
-                boolean updated = sDao.updateStaffStatus(id, isBlocked);
+                boolean updated = sDao.updateStaff(staffIdToUpdate, nameToUpdate, emailToUpdate, isBlocked);
 
                 if (updated) {
                     response.setStatus(200);

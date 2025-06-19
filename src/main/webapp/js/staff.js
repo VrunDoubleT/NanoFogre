@@ -46,7 +46,6 @@ function loadCreateStaffEvent() {
     document.getElementById("password").value = password;
     document.getElementById("generatedPassword").classList.remove("hidden");
     document.getElementById("passwordDisplay").textContent = password;
-
     const nameInput = document.getElementById("name");
     const emailInput = document.getElementById("email");
     const nameError = document.getElementById("nameError");
@@ -70,7 +69,6 @@ function loadCreateStaffEvent() {
     async function validateEmail() {
         const email = emailInput.value.trim();
         const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
         if (email === "") {
             emailError.textContent = "Email is required";
             emailInput.classList.add("border-red-500");
@@ -103,19 +101,21 @@ function loadCreateStaffEvent() {
     }
 
     nameInput.onblur = validateName;
+    nameInput.oninput = () => {
+        nameError.textContent = "";
+        nameInput.classList.remove("border-red-500", "ring-1", "ring-green-500");
+    };
+
     emailInput.onblur = validateEmail;
     emailInput.oninput = () => {
         emailError.textContent = "";
         emailInput.classList.remove("border-red-500", "ring-1", "ring-green-500");
     };
-
     document.getElementById("create-staff-btn").onclick = async () => {
         const isNameValid = validateName();
         const isEmailValid = await validateEmail();
-
         if (!isNameValid || !isEmailValid)
             return;
-
         const formData = new URLSearchParams();
         formData.append("type", "create");
         formData.append("name", nameInput.value.trim());
@@ -132,10 +132,9 @@ function loadCreateStaffEvent() {
             body: formData
         })
                 .then(response => response.text())
-                .then(lastPage => {
+                .then(() => {
                     hiddenLoading();
                     closeModal();
-
                     Toastify({
                         text: "Staff created successfully!",
                         duration: 5000,
@@ -146,10 +145,7 @@ function loadCreateStaffEvent() {
                         },
                         close: true
                     }).showToast();
-                    const url = new URL(window.location);
-                    url.searchParams.set("page", lastPage);
-                    history.pushState(null, '', url.toString());
-                    loadStaffContentAndEvent(parseInt(lastPage));
+                    loadStaffContentAndEvent(1);
                 })
                 .catch(error => {
                     hiddenLoading();
@@ -178,80 +174,66 @@ function generatePassword() {
 }
 
 // Delete staff
-document.addEventListener("click", async function (e) {
+document.addEventListener("click", function (e) {
     const deleteBtn = e.target.closest(".delete-staff-button");
     if (deleteBtn) {
         const id = deleteBtn.dataset.id;
-        try {
-            const response = await fetch(`/staff/view?type=delete&id=${id}`);
-            const html = await response.text();
-
-            const modal = document.getElementById("modal");
-            const modalContent = document.getElementById("modalContent");
-            modalContent.innerHTML = html;
-            lucide.createIcons();
-            modal.classList.remove("hidden");
-            modal.classList.add("flex");
-            document.body.classList.add("overflow-hidden");
-
-            const confirmBtn = document.getElementById("btnConfirmDelete");
-            if (confirmBtn) {
-                confirmBtn.addEventListener("click", async function () {
-                    try {
-                        const res = await fetch("/staff/view", {
-                            method: "POST",
-                            headers: {
-                                "Content-Type": "application/x-www-form-urlencoded"
-                            },
-                            body: `type=delete&id=${id}`
-                        });
-
-                        if (res.ok) {
-                            const currentPage = getCurrentPageFromURL();
-                            const rowCount = document.querySelectorAll("tbody tr").length;
+        Swal.fire({
+            title: 'Are you sure you want to delete this staff?',
+            text: "This staff will be removed permanently from the system.",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Yes, delete it',
+            cancelButtonText: 'Cancel'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                fetch(`/staff/view`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/x-www-form-urlencoded"
+                    },
+                    body: `type=delete&id=${id}`
+                })
+                        .then(response => {
+                            const isSuccess = response.ok;
 
                             Toastify({
-                                text: "Staff deleted successfully!",
+                                text: isSuccess ? "Staff deleted successfully!" : "Delete failed.",
                                 duration: 5000,
                                 gravity: "top",
                                 position: "right",
                                 style: {
-                                    background: "#2196F3"
+                                    background: isSuccess ? "#2196F3" : "#f44336"
                                 },
                                 close: true
                             }).showToast();
 
-                            closeModal();
-                            const newPage = (rowCount === 1 && currentPage > 1) ? currentPage - 1 : currentPage;
-                            const url = new URL(window.location);
-                            url.searchParams.set("page", newPage);
-                            history.pushState(null, '', url.toString());
-                            loadStaffContentAndEvent(newPage);
-                        } else {
+                            if (isSuccess) {
+                                const currentPage = getCurrentPageFromURL();
+                                const rowCount = document.querySelectorAll("tbody tr").length;
+                                const newPage = (rowCount === 1 && currentPage > 1) ? currentPage - 1 : currentPage;
+
+                                const url = new URL(window.location);
+                                url.searchParams.set("page", newPage);
+                                history.pushState(null, '', url.toString());
+
+                                loadStaffContentAndEvent(newPage);
+                            }
+                        })
+                        .catch(() => {
                             Toastify({
-                                text: "Delete failed.",
+                                text: "An error occurred while deleting.",
                                 duration: 5000,
                                 gravity: "top",
                                 position: "right",
                                 style: {background: "#f44336"},
                                 close: true
                             }).showToast();
-                        }
-                    } catch (err) {
-                        Toastify({
-                            text: "An error occurred while deleting.",
-                            duration: 5000,
-                            gravity: "top",
-                            position: "right",
-                            style: {background: "#f44336"},
-                            close: true
-                        }).showToast();
-                    }
-                });
+                        });
             }
-        } catch (err) {
-            alert("Cannot open delete dialog.");
-        }
+        });
     }
 });
 
@@ -263,7 +245,6 @@ document.addEventListener("click", async function (e) {
         try {
             const response = await fetch(`/staff/view?type=update&id=${id}`);
             const html = await response.text();
-
             const modal = document.getElementById("modal");
             const modalContent = document.getElementById("modalContent");
             modalContent.innerHTML = html;
@@ -271,23 +252,99 @@ document.addEventListener("click", async function (e) {
             modal.classList.remove("hidden");
             modal.classList.add("flex");
             document.body.classList.add("overflow-hidden");
-
             const form = modalContent.querySelector("form");
+            const nameInput = document.getElementById("name");
+            const emailInput = document.getElementById("email");
+            const nameError = document.getElementById("nameError");
+            const emailError = document.getElementById("emailError");
+
+            // Validate name
+            function validateName() {
+                const name = nameInput.value.trim();
+                if (name === "") {
+                    nameError.textContent = "Name is required";
+                    nameInput.classList.add("border-red-500");
+                    return false;
+                }
+                nameError.textContent = "";
+                nameInput.classList.remove("border-red-500");
+                nameInput.classList.add("ring-1", "ring-green-500");
+                return true;
+            }
+
+            // Validate email
+            async function validateEmail() {
+                const email = emailInput.value.trim();
+                const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if (email === "") {
+                    emailError.textContent = "Email is required";
+                    emailInput.classList.add("border-red-500");
+                    return false;
+                }
+                if (!re.test(email)) {
+                    emailError.textContent = "Invalid email format";
+                    emailInput.classList.add("border-red-500");
+                    return false;
+                }
+
+                try {
+                    const res = await fetch(`/staff/view?type=checkEmailExceptOwn&email=${encodeURIComponent(email)}&id=${id}`);
+                    const exists = await res.text();
+                    if (exists === "true") {
+                        emailError.textContent = "Email already exists";
+                        emailInput.classList.add("border-red-500");
+                        return false;
+                    }
+                } catch (e) {
+                    emailError.textContent = "Error checking email";
+                    emailInput.classList.add("border-red-500");
+                    return false;
+                }
+
+                emailError.textContent = "";
+                emailInput.classList.remove("border-red-500");
+                emailInput.classList.add("ring-1", "ring-green-500");
+                return true;
+            }
+
+            nameInput.onblur = validateName;
+            nameInput.oninput = () => {
+                nameError.textContent = "";
+                nameInput.classList.remove("border-red-500", "ring-1", "ring-green-500");
+            };
+
+            emailInput.onblur = validateEmail;
+            emailInput.oninput = () => {
+                emailError.textContent = "";
+                emailInput.classList.remove("border-red-500", "ring-1", "ring-green-500");
+            };
+
             if (form) {
                 form.addEventListener("submit", async function (event) {
                     event.preventDefault();
+                    const isNameValid = validateName();
+                    const isEmailValid = await validateEmail();
+                    if (!isNameValid || !isEmailValid)
+                        return;
                     const formData = new FormData(form);
+                    const id = formData.get("id");
+                    const name = formData.get("name");
+                    const email = formData.get("email");
                     const status = formData.get("status");
-
+                    const isBlock = status === "Block";
                     try {
-                        const res = await fetch("/staff/view", {
+                        const res = await fetch("/staff/view?type=update", {
                             method: "POST",
                             headers: {
-                                "Content-Type": "application/x-www-form-urlencoded"
+                                "Content-Type": "application/json"
                             },
-                            body: `type=update&id=${id}&status=${encodeURIComponent(status)}`
+                            body: JSON.stringify({
+                                id: id,
+                                name: name,
+                                email: email,
+                                status: isBlock ? 'Block' : 'Active'
+                            })
                         });
-
                         if (res.ok) {
                             Toastify({
                                 text: "Staff updated successfully!",
@@ -297,7 +354,6 @@ document.addEventListener("click", async function (e) {
                                 style: {background: "#2196F3"},
                                 close: true
                             }).showToast();
-
                             closeModal();
                             const currentPage = getCurrentPageFromURL();
                             loadStaffContentAndEvent(currentPage);
@@ -329,7 +385,6 @@ document.addEventListener("click", async function (e) {
     }
 });
 
-
 // Staff details
 document.addEventListener("click", async function (e) {
     const modal = document.getElementById("modal");
@@ -344,6 +399,7 @@ document.addEventListener("click", async function (e) {
             const html = await response.text();
 
             modalContent.innerHTML = html;
+            lucide.createIcons();
             modal.classList.remove("hidden");
             modal.classList.add("flex");
             document.body.classList.add("overflow-hidden");

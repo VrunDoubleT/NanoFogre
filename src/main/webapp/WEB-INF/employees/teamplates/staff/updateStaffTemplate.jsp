@@ -25,25 +25,53 @@
             </div>
 
             <!-- Content -->
+            <div class="p-8 w-full h-full overflow-y-auto">
+                <!-- Details Tab -->
+                <div id="details-content" class="tab-content w-full">
+                    <div id="staffForm">
+                        <div class="bg-gray-50 rounded-xl p-6">
 
-                <div class="p-10">
-                    <label class="block text-gray-700 text-sm font-medium text-[15px] mb-4">Change account status:</label>
-                    <div class="flex flex-col space-y-3 pl-8">
-                        <label class="flex items-center space-x-2">
-                            <input type="radio" name="status" value="Active"
-                                   class="accent-blue-600"
-                                   <%= !staff.isIsBlock() ? "checked" : ""%>>
-                            <span class="text-gray-800">Active</span>
-                        </label>
-                        <label class="flex items-center space-x-2">
-                            <input type="radio" name="status" value="Block"
-                                   class="accent-red-600"
-                                   <%= staff.isIsBlock() ? "checked" : ""%>>
-                            <span class="text-gray-800">Block</span>
-                        </label>
+                            <div class="space-y-4">
+                                <!-- Name -->
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Name</label>
+                                    <input placeholder="Enter name" type="text" name="name" id="name" value="<%= staff.getName()%>"
+                                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none">
+                                    <span id="nameError" class="text-sm text-red-500 mt-1 block"></span>
+                                </div>
+
+                                <!-- Email -->
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                                    <input placeholder="Enter email address" type="text" name="email" id="email" value="<%= staff.getEmail()%>"
+                                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none">
+                                    <span id="emailError" class="text-sm text-red-500 mt-1 block"></span>
+                                </div>
+
+                                <!-- Status -->
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Change Status</label>
+                                    <div class="flex space-x-10 pl-5">
+                                        <label class="flex items-center space-x-2">
+                                            <input type="radio" name="status" value="Active"
+                                                   class="accent-blue-600"
+                                                   <%= !staff.isIsBlock() ? "checked" : ""%>>
+                                            <span class="text-gray-800">Active</span>
+                                        </label>
+                                        <label class="flex items-center space-x-2">
+                                            <input type="radio" name="status" value="Block"
+                                                   class="accent-red-600"
+                                                   <%= staff.isIsBlock() ? "checked" : ""%>>
+                                            <span class="text-gray-800">Block</span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
-            </form>
+            </div>
+        </form>
     </div>
 </div>
 

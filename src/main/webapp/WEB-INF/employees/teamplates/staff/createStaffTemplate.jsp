@@ -43,7 +43,7 @@
                                 <label class="block text-sm font-medium text-gray-700 mb-2">Name</label>
                                 <input placeholder="Enter name" type="text" name="name" id="name"
                                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none">
-                                <span id="nameError"></span>
+                                <span id="nameError" class="text-sm text-red-500 mt-1 block"></span>
                             </div>
 
                             <!-- Email -->

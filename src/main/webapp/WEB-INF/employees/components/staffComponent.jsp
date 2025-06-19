@@ -11,34 +11,46 @@
 %>
 <div class="">
     <div class="bg-white w-full rounded-xl shadow-sm border border-gray-100">
-<!--        <div class="px-6 py-4 border-b border-gray-200">-->
-            <div class="flex items-center justify-between p-6">
-                <h2 class="text-lg font-semibold text-gray-900">Staff List (Total: <%= count%>)</h2>
-                <div class="flex items-center space-x-3">
-                    <button id="create-staff-button" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-lg shadow-lg hover:shadow-xl transform transition-all duration-200 flex items-center space-x-2">
-                        <i data-lucide="diamond-plus" class="w-5 h-5"></i>
-                        <span>Add New Staff</span>
-                    </button>
+        <div class="flex items-center justify-between p-6">  
+            <div class="flex items-center gap-3">
+                <div class="h-10 w-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                    <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                    </svg>
+                </div>
+                <div>
+                    <h2 class="text-[20px] font-semibold text-gray-800">Staff List</h2>
                 </div>
             </div>
 
-            <div class="w-full">
-                <table class="w-full max-w-full divide-y divide-gray-200">
-                    <thead class="bg-gray-50">
-                        <tr>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">#</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Information</th>
-                            <th class="px-5 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider text-center">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tabelContainer" class="bg-white divide-y divide-gray-200">
 
-                    </tbody>
-                </table>
-                <div id="loadingStaff"></div>
+            <div class="flex items-center space-x-3">
+                <button id="create-staff-button" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-lg shadow-lg hover:shadow-xl transform transition-all duration-200 flex items-center space-x-2">
+                    <i data-lucide="diamond-plus" class="w-5 h-5"></i>
+                    <span>Add New Staff</span>
+                </button>
             </div>
         </div>
-    </div>     
+
+        <div class="w-full">
+            <table class="w-full max-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-10 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">#</th>
+                        <th class="px-10 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Information</th>
+                        <th class="px-10 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                        <th class="px-10 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider text-center">Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="tabelContainer" class="bg-white divide-y divide-gray-200">
+
+                </tbody>
+            </table>
+            <div id="loadingStaff"></div>
+        </div>
+    </div>
+</div>     
 </div>
 <div id="pagination"></div>
+

@@ -21,16 +21,12 @@ import java.util.List;
  */
 public class StaffDAO extends DB.DBContext {
 
-    public StaffDAO() {
-        super(); // gọi constructor DBContext để mở connection
-    }
-
     public List<Employee> getAllStaff(int page, int limit) {
         int row = (page - 1) * limit;
         List<Employee> list = new ArrayList<>();
         String query = "SELECT * FROM Employees "
                 + "WHERE roleId = 2 "
-                + "ORDER BY employeeId "
+                + "ORDER BY employeeId DESC "
                 + "OFFSET " + row + " ROWS FETCH NEXT " + limit + " ROWS ONLY;";
         try ( ResultSet rs = execSelectQuery(query)) {
             while (rs.next()) {
@@ -117,9 +113,9 @@ public class StaffDAO extends DB.DBContext {
         return null;
     }
 
-    public boolean updateStaffStatus(int id, boolean isBlock) {
-        String query = "UPDATE Employees SET isBlock = ? WHERE employeeId = ?";
-        Object[] params = {isBlock, id};
+    public boolean updateStaff(int id, String name, String email, boolean isBlock) {
+        String query = "UPDATE Employees SET employeeName = ?, employeeEmail = ?, isBlock = ? WHERE employeeId = ?";
+        Object[] params = {name, email, isBlock, id};
 
         try {
             int rowsAffected = execQuery(query, params);
@@ -151,6 +147,19 @@ public class StaffDAO extends DB.DBContext {
             e.printStackTrace();
             return false;
         }
+    }
+
+    public boolean isEmailExistsExceptOwn(String email, int id) {
+        String query = "SELECT COUNT(*) FROM Employees WHERE employeeEmail = ? AND employeeId != ?";
+        Object[] params = {email, id};
+        try ( ResultSet rs = execSelectQuery(query, params)) {
+            if (rs.next()) {
+                return rs.getInt(1) > 0;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
     }
 
     public int countOrdersByEmployeeId(int employeeId) {

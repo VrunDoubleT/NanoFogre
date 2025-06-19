@@ -16,11 +16,11 @@
         for (Employee st : staff) {
 %>
 <tr>
-    <td class="px-5 py-4 whitespace-nowrap">
+    <td class="px-9 py-3 whitespace-nowrap">
         <span class="font-bold text-[20px] text-gray-500"><%= index++%></span>
     </td>
 
-    <td class="px-6 py-4 whitespace-nowrap">
+    <td class="px-10 py-3 whitespace-nowrap">
         <div class="flex items-center">
             <div class="flex-shrink-0 h-16 w-16">
                 <img class="h-16 w-16 rounded-full object-cover border border-gray-200"
@@ -36,7 +36,7 @@
         </div>
     </td>
 
-    <td class="px-4 py-4 whitespace-nowrap">
+    <td class="px-9 py-3 whitespace-nowrap">
         <% if (st.isIsBlock()) { %>
         <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-200 text-gray-800">Disable</span>
         <% } else { %>
