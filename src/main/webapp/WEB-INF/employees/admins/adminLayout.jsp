@@ -9,7 +9,7 @@
 <html>
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-               <title>Admin</title>
+        <title>Admin</title>
         <script src="https://cdn.tailwindcss.com"></script>
         <script src="https://unpkg.com/lucide@latest"></script>
         <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
@@ -181,6 +181,10 @@
                         const brandPage = params.get('page') || '1';
                         loadContent(viewPage, false, [{name: 'page', value: brandPage}]);
                         break;
+//                    case "category":
+//                        const categoryPage = params.get('page') || '1';
+//                        loadContent(viewPage, false, [{name: 'page', value: categoryPage}]);
+//                        break;
                     case "category":
                         const categoryPage = params.get('page') || '1';
                         loadContent(viewPage, false, [{name: 'page', value: categoryPage}]);
