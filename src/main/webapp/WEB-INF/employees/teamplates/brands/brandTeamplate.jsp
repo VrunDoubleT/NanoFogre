@@ -40,8 +40,6 @@
          transform scale-95 opacity-0 translate-y-8 transition-all duration-300 flex flex-col">
         <div class="bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-t-2xl px-6 py-4 flex items-center justify-between">
             <h2 class="text-xl font-bold">Add New Brand</h2>
-            <button type="button" onclick="closeCreateModal()"
-                    class="text-white hover:text-gray-200 text-2xl transition-colors duration-200">&times;</button>
         </div>
         <form id="createBrandForm" onsubmit="event.preventDefault(); handleCreateBrand();" class="space-y-5 p-8 pt-6" enctype="multipart/form-data">
             <div>
@@ -49,11 +47,19 @@
                 <input type="text" id="newBrandName" placeholder="Enter brand name"
                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition text-base" required>
             </div>
-            <div>
+            <div class="mb-4">
                 <label for="newBrandImage" class="block text-sm font-medium text-gray-700 mb-1">Brand Image</label>
-                <input type="file" id="newBrandImage" name="image" accept="image/*"
-                       class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition text-base bg-white" required>
-                <p class="text-xs text-gray-500 mt-1">Only PNG, JPG, JPEG, GIF formats are accepted. Maximum file size is 10MB.</p>
+                <input type="file" id="newBrandImage" name="image" accept="image/*" style="display:none;"
+                       onchange="showFileName(this); previewImage(this, 'addBrandImagePreview')">
+                <button type="button"
+                        onclick="document.getElementById('newBrandImage').click()"
+                        class="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-semibold rounded-md shadow hover:bg-blue-700 transition">
+                    Choose File
+                </button>
+                <span class="file-name text-xs text-gray-500 ml-3">No file chosen</span>
+                <p class="text-xs text-gray-500 mt-1">
+                    Only PNG, JPG, JPEG, GIF formats are accepted. Maximum file size is 10MB.
+                </p>
                 <div id="addBrandImagePreview" class="flex justify-center mt-2"></div>
             </div>
             <div class="flex justify-end gap-3 pt-2">
@@ -79,8 +85,6 @@
             <h2 class="text-xl font-bold flex items-center gap-2">
                 <i data-lucide="edit-3" class="w-7 h-7 text-white"></i> Edit Brand
             </h2>
-            <button type="button" onclick="closeEditModal()"
-                    class="text-white hover:text-gray-200 text-2xl transition-colors duration-200">&times;</button>
         </div>
         <form onsubmit="event.preventDefault(); handleUpdateBrand();" class="space-y-5 p-8 pt-6" enctype="multipart/form-data">
             <input type="hidden" id="editBrandId">
@@ -93,11 +97,19 @@
                 <label class="block text-sm font-medium text-gray-700 mb-1">Current Image</label>
                 <div id="editBrandCurrentImageWrapper" class="flex items-center"></div>
             </div>
-            <div>
+            <div class="mb-4">
                 <label for="editBrandImage" class="block text-sm font-medium text-gray-700 mb-1">Upload New Image (optional)</label>
-                <input type="file" id="editBrandImage" name="image" accept="image/*"
-                       class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition text-base bg-white">
-                <p class="text-xs text-gray-500 mt-1">Only PNG, JPG, JPEG, GIF formats are accepted. Maximum file size is 10MB.</p>
+                <input type="file" id="editBrandImage" name="image" accept="image/*" style="display:none;"
+                       onchange="showFileName(this); previewImage(this, 'editBrandImagePreview')">
+                <button type="button"
+                        onclick="document.getElementById('editBrandImage').click()"
+                        class="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-semibold rounded-md shadow hover:bg-blue-700 transition">
+                    Choose File
+                </button>
+                <span class="file-name text-xs text-gray-500 ml-3">No file chosen</span>
+                <p class="text-xs text-gray-500 mt-1">
+                    Only PNG, JPG, JPEG, GIF formats are accepted. Maximum file size is 10MB.
+                </p>
                 <div id="editBrandImagePreview" class="flex justify-center mt-2"></div>
             </div>
             <div class="flex justify-end gap-3 pt-2">
@@ -128,7 +140,7 @@
         <div page="1"
              class="pagination relative inline-flex items-center px-3 py-2 rounded-l-xl text-sm font-medium
              <%= currentPage == 1 ? "text-gray-400 bg-gray-50 pointer-events-none"
-                             : "text-gray-700 bg-white cursor-pointer hover:bg-gray-50 hover:text-gray-900 active:bg-gray-100"%>
+                     : "text-gray-700 bg-white cursor-pointer hover:bg-gray-50 hover:text-gray-900 active:bg-gray-100"%>
              transition-all duration-200 ease-in-out group"
              <%= currentPage == 1 ? "aria-disabled='true'" : ""%>
              role="button" tabindex="0">
@@ -140,7 +152,7 @@
         <div page="<%= Math.max(1, currentPage - 1)%>"
              class="pagination relative inline-flex items-center px-3 py-2 text-sm font-medium
              <%= currentPage == 1 ? "text-gray-400 cursor-not-allowed bg-gray-50"
-                             : "text-gray-700 bg-white cursor-pointer hover:bg-gray-50 hover:text-gray-900 active:bg-gray-100"%>
+                     : "text-gray-700 bg-white cursor-pointer hover:bg-gray-50 hover:text-gray-900 active:bg-gray-100"%>
              transition-all duration-200 ease-in-out group"
              <%= currentPage == 1 ? "aria-disabled='true'" : ""%>
              role="button" tabindex="0">
@@ -180,7 +192,7 @@
         <div page="<%= Math.min(totalPages, currentPage + 1)%>"
              class="pagination relative inline-flex items-center px-3 py-2 text-sm font-medium
              <%= currentPage == totalPages ? "text-gray-400 cursor-not-allowed bg-gray-50"
-                             : "text-gray-700 bg-white hover:bg-gray-50 cursor-pointer hover:text-gray-900 active:bg-gray-100"%>
+                     : "text-gray-700 bg-white hover:bg-gray-50 cursor-pointer hover:text-gray-900 active:bg-gray-100"%>
              transition-all duration-200 ease-in-out group"
              <%= currentPage == totalPages ? "aria-disabled='true'" : ""%>
              role="button" tabindex="0">
@@ -192,7 +204,7 @@
         <div page="<%= totalPages%>"
              class="pagination relative inline-flex items-center px-3 py-2 rounded-r-xl text-sm font-medium
              <%= currentPage == totalPages ? "text-gray-400 cursor-not-allowed bg-gray-50"
-                             : "text-gray-700 bg-white cursor-pointer hover:bg-gray-50 hover:text-gray-900 active:bg-gray-100"%>
+                     : "text-gray-700 bg-white cursor-pointer hover:bg-gray-50 hover:text-gray-900 active:bg-gray-100"%>
              transition-all duration-200 ease-in-out group"
              <%= currentPage == totalPages ? "aria-disabled='true'" : ""%>
              role="button" tabindex="0">

@@ -11,7 +11,7 @@ function openCreateModal() {
     document.getElementById('newBrandName').value = '';
     document.getElementById('newBrandImage').value = '';
     document.getElementById('addBrandImagePreview').innerHTML = '';
-    
+
 }
 
 function closeCreateModal() {
@@ -68,54 +68,32 @@ function closeEditModal() {
 
 
 function editBrand(id) {
-    console.log('Editing brand with ID:', id); 
-    
+    console.log('Editing brand with ID:', id);
+
     fetch(`/brand?action=getBrand&id=${id}`)
-        .then(res => {
-            console.log('Response status:', res.status);
-            if (!res.ok) throw new Error('HTTP error');
-            return res.json();
-        })
-        .then(data => {
-            console.log('Response data:', data);
-            if (data.success) {
-                openEditModal(data.brand.id, data.brand.name, data.brand.image);
-            } else {
-                 showToast(data.message || 'Brand not found!');
-            }
-        })
-        .catch((error) => {
-            console.error('Error:', error); // Debug log
-             showToast('Data processing error: ' + error.message);
-        });
+            .then(res => {
+                console.log('Response status:', res.status);
+                if (!res.ok)
+                    throw new Error('HTTP error');
+                return res.json();
+            })
+            .then(data => {
+                console.log('Response data:', data);
+                if (data.success) {
+                    openEditModal(data.brand.id, data.brand.name, data.brand.image);
+                } else {
+                    showToast(data.message || 'Brand not found!');
+                }
+            })
+            .catch((error) => {
+                console.error('Error:', error); // Debug log
+                showToast('Data processing error: ' + error.message);
+            });
 }
 
 
 
 let brandIdToDelete = null;
-
-function showConfirmDeleteModal() {
-    const overlay = document.getElementById('confirmDeleteModal');
-    const modal = overlay.querySelector('.shadow-2xl');
-    overlay.classList.remove('hidden');
-    setTimeout(() => {
-        modal.classList.remove('scale-95', 'opacity-0', 'translate-y-8');
-        modal.classList.add('scale-100', 'opacity-100', 'translate-y-0');
-    }, 10);
-    document.body.classList.add('overflow-hidden');
-}
-
-function closeConfirmDeleteModal() {
-    const overlay = document.getElementById('confirmDeleteModal');
-    const modal = overlay.querySelector('.shadow-2xl');
-    modal.classList.remove('scale-100', 'opacity-100', 'translate-y-0');
-    modal.classList.add('scale-95', 'opacity-0', 'translate-y-8');
-    setTimeout(() => {
-        overlay.classList.add('hidden');
-        document.body.classList.remove('overflow-hidden');
-        brandIdToDelete = null;
-    }, 300);
-}
 
 function deleteBrand(id) {
     Swal.fire({
@@ -132,39 +110,39 @@ function deleteBrand(id) {
             fetch(`/brand?action=delete&id=${id}`, {
                 method: 'POST'
             })
-            .then(response => response.json())
-            .then(data => {
-                console.log('Delete brand response:', data); // Debug
-                Toastify({
-                    text: data.message,
-                    duration: 5000,
-                    gravity: "top",
-                    position: "right",
-                    style: {
-                        background: (data.success || data.isSuccess) ? "#2196F3" : "#f44336"
-                    },
-                    close: true
-                }).showToast();
-                if ((data.success || data.isSuccess) && typeof loadBrandContentAndEvent === "function") {
-                    loadBrandContentAndEvent();
-                }
-            })
-            .catch(error => {
-                console.error('Delete brand error:', error);
-                Toastify({
-                    text: "Delete failed! Server error.",
-                    duration: 5000,
-                    gravity: "top",
-                    position: "right",
-                    style: { background: "#f44336" },
-                    close: true
-                }).showToast();
-            });
+                    .then(response => response.json())
+                    .then(data => {
+                        console.log('Delete brand response:', data); // Debug
+                        Toastify({
+                            text: data.message,
+                            duration: 5000,
+                            gravity: "top",
+                            position: "right",
+                            style: {
+                                background: (data.success || data.isSuccess) ? "#2196F3" : "#f44336"
+                            },
+                            close: true
+                        }).showToast();
+                        if ((data.success || data.isSuccess) && typeof loadBrandContentAndEvent === "function") {
+                            loadBrandContentAndEvent();
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Delete brand error:', error);
+                        Toastify({
+                            text: "Delete failed! Server error.",
+                            duration: 5000,
+                            gravity: "top",
+                            position: "right",
+                            style: {background: "#f44336"},
+                            close: true
+                        }).showToast();
+                    });
         }
     });
 }
 
-document.addEventListener('click', function(e) {
+document.addEventListener('click', function (e) {
     if (e.target && e.target.id === 'confirmDeleteBtn') {
         if (brandIdToDelete !== null) {
             handleDeleteBrand(brandIdToDelete);
@@ -180,27 +158,37 @@ document.addEventListener('click', function(e) {
     if (e.target && e.target.id === 'confirmDeleteModal') {
         closeConfirmDeleteModal();
     }
-    if (e.target && e.target.id === 'createBrandModal') closeCreateModal();
-    if (e.target && e.target.id === 'editBrandModal') closeEditModal();
+    if (e.target && e.target.id === 'createBrandModal')
+        closeCreateModal();
+    if (e.target && e.target.id === 'editBrandModal')
+        closeEditModal();
 });
-document.addEventListener('keydown', function(e) {
-    if (e.key === 'Escape') closeConfirmDeleteModal();
+document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape')
+        closeConfirmDeleteModal();
 });
+function showFileName(input) {
+    const fileName = input.files && input.files.length > 0 ? input.files[0].name : 'No file chosen';
+    const container = input.parentNode;
+    const label = container.querySelector('.file-name');
+    if (label) {
+        label.textContent = fileName;
+    }
+}
 
 function handleCreateBrand() {
     const name = document.getElementById('newBrandName').value.trim();
     const imageInput = document.getElementById('newBrandImage');
-     const submitBtn = document.querySelector('#createBrandForm button[type="submit"]');
+    const submitBtn = document.querySelector('#createBrandForm button[type="submit"]');
     const loadingIcon = submitBtn.querySelector('#loadingIconCreate');
-    // Hiển thị loading
     submitBtn.disabled = true;
     loadingIcon.classList.remove('hidden');
     if (!name || !imageInput.files.length) {
-    showToast('Please enter complete information');
-    submitBtn.disabled = false;
-    loadingIcon.classList.add('hidden');
-    return;
-}
+        showToast('Please enter complete information');
+        submitBtn.disabled = false;
+        loadingIcon.classList.add('hidden');
+        return;
+    }
     const formData = new FormData();
     formData.append('action', 'create');
     formData.append('name', name);
@@ -211,19 +199,19 @@ function handleCreateBrand() {
     })
             .then(response => response.json())
             .then(data => {
-        if (data.success) {
-            showToast(data.message);
-            closeCreateModal();
-            loadBrandContentAndEvent(1);
-        } else {
-            showToast(data.message);
-        }
-    })
-    .catch(() => showToast('Lỗi kết nối server', 'error'))
-    .finally(() => {
-        submitBtn.disabled = false;
-        loadingIcon.classList.add('hidden');
-    });
+                if (data.success) {
+                    showToast(data.message);
+                    closeCreateModal();
+                    loadBrandContentAndEvent(1);
+                } else {
+                    showToast(data.message);
+                }
+            })
+            .catch(() => showToast('Server connection error', 'error'))
+            .finally(() => {
+                submitBtn.disabled = false;
+                loadingIcon.classList.add('hidden');
+            });
 }
 
 function handleUpdateBrand() {
@@ -249,26 +237,26 @@ function handleUpdateBrand() {
         method: 'POST',
         body: formData
     })
-    .then(async response => {
-        const data = await response.json().catch(() => ({}));
-        if (!response.ok) {
-            throw new Error(data.message || 'Có lỗi xảy ra');
-        }
-        return data;
-    })
-    .then(data => {
-        showToast(data.message, 'success');
-        loadBrandContentAndEvent(1);
-    })
-    .catch(error => {
-        showToast(error.message, 'error');
-    });
+            .then(async response => {
+                const data = await response.json().catch(() => ({}));
+                if (!response.ok) {
+                    throw new Error(data.message || 'Có lỗi xảy ra');
+                }
+                return data;
+            })
+            .then(data => {
+                showToast(data.message, 'success');
+                loadBrandContentAndEvent(1);
+            })
+            .catch(error => {
+                showToast(error.message, 'error');
+            });
 }
 
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     var confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
     if (confirmDeleteBtn) {
-        confirmDeleteBtn.addEventListener('click', function() {
+        confirmDeleteBtn.addEventListener('click', function () {
             if (brandIdToDelete !== null) {
                 handleDeleteBrand(brandIdToDelete);
                 closeConfirmDeleteModal();
@@ -285,12 +273,14 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     var confirmDeleteModal = document.getElementById('confirmDeleteModal');
     if (confirmDeleteModal) {
-        confirmDeleteModal.addEventListener('click', function(e) {
-            if (e.target === this) closeConfirmDeleteModal();
+        confirmDeleteModal.addEventListener('click', function (e) {
+            if (e.target === this)
+                closeConfirmDeleteModal();
         });
     }
-    document.addEventListener('keydown', function(e) {
-        if (e.key === 'Escape') closeConfirmDeleteModal();
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape')
+            closeConfirmDeleteModal();
     });
 });
 
@@ -317,11 +307,11 @@ function validateBrandData(name, image) {
     const imageRegex = /^(https?:\/\/)?([\w\-]+\.)+[\w\-]+(\/\S+\.(jpg|jpeg|png|gif|webp|svg))$/i;
 
     if (!name || !image) {
-         showToast('Please fill in all information');
+        showToast('Please fill in all information');
         return false;
     }
     if (!imageRegex.test(image)) {
-         showToast('Invalid image URL');
+        showToast('Invalid image URL');
         return false;
     }
     return true;
@@ -377,53 +367,57 @@ function loadBrandContentAndEvent(page = 1, updateUrl = true) {
         `;
     }
     fetch(`/admin/view?viewPage=brand&page=${page}`)
-        .then(res => res.text())
-        .then(html => {
-            var loadingBrand = document.getElementById('loadingBrand');
-            if (loadingBrand) loadingBrand.innerHTML = '';
+            .then(res => res.text())
+            .then(html => {
+                var loadingBrand = document.getElementById('loadingBrand');
+                if (loadingBrand)
+                    loadingBrand.innerHTML = '';
 
-            var brandContainer = document.getElementById('brandContainer');
-            if (brandContainer) brandContainer.innerHTML = html;
+                var brandContainer = document.getElementById('brandContainer');
+                if (brandContainer)
+                    brandContainer.innerHTML = html;
 
-            lucide.createIcons && lucide.createIcons();
+                lucide.createIcons && lucide.createIcons();
 
-            const totalPagesInput = document.getElementById('totalPages');
-            if (totalPagesInput) {
-                totalPages = parseInt(totalPagesInput.value);
-            }
+                const totalPagesInput = document.getElementById('totalPages');
+                if (totalPagesInput) {
+                    totalPages = parseInt(totalPagesInput.value);
+                }
 
-            if (updateUrl) {
-                let url;
-                if (page === 1) {
-                    if (window.location.search !== '?view=brand') {
-                        url = '/admin/dashboard?view=brand&page=1';
+                if (updateUrl) {
+                    let url;
+                    if (page === 1) {
+                        if (window.location.search !== '?view=brand') {
+                            url = '/admin/dashboard?view=brand&page=1';
+                            window.history.pushState({page: page}, '', url);
+                        }
+                    } else {
+                        url = `/admin/dashboard?view=brand&page=${page}`;
                         window.history.pushState({page: page}, '', url);
                     }
-                } else {
-                    url = `/admin/dashboard?view=brand&page=${page}`;
-                    window.history.pushState({page: page}, '', url);
                 }
-            }
 
-            initPaginationAccessibility();
-        })
-        .catch(error => {
-            var loadingBrand = document.getElementById('loadingBrand');
-            if (loadingBrand) loadingBrand.innerHTML = '';
+                initPaginationAccessibility();
+            })
+            .catch(error => {
+                var loadingBrand = document.getElementById('loadingBrand');
+                if (loadingBrand)
+                    loadingBrand.innerHTML = '';
 
-            var brandContainer = document.getElementById('brandContainer');
-            if (brandContainer) {
-                brandContainer.innerHTML = `
+                var brandContainer = document.getElementById('brandContainer');
+                if (brandContainer) {
+                    brandContainer.innerHTML = `
                 <div class="text-center text-red-600 py-8">⚠️ Error loading data</div>
                 `;
-            }
-            console.error('Error:', error);
-        });
+                }
+                console.error('Error:', error);
+            });
 }
 
 
 function loadBrandPage(page) {
-    if (page < 1 || page > totalPages) return;
+    if (page < 1 || page > totalPages)
+        return;
     document.querySelectorAll('[page]').forEach(btn => {
         btn.style.pointerEvents = 'none';
         btn.style.opacity = '0.7';
@@ -440,25 +434,28 @@ function initPaginationAccessibility() {
     });
 }
 
-document.addEventListener('click', function(e) {
+document.addEventListener('click', function (e) {
     const paginationBtn = e.target.closest('.pagination, [page]');
     if (paginationBtn && paginationBtn.hasAttribute('page')) {
         const isDisabled = paginationBtn.classList.contains('pointer-events-none') ||
-            paginationBtn.getAttribute('aria-disabled') === 'true' ||
-            paginationBtn.style.pointerEvents === 'none';
-        if (isDisabled) return;
+                paginationBtn.getAttribute('aria-disabled') === 'true' ||
+                paginationBtn.style.pointerEvents === 'none';
+        if (isDisabled)
+            return;
         const page = parseInt(paginationBtn.getAttribute('page'));
-        if (!isNaN(page)) loadBrandPage(page);
+        if (!isNaN(page))
+            loadBrandPage(page);
     }
 });
 
-document.addEventListener('keydown', function(e) {
+document.addEventListener('keydown', function (e) {
     if ((e.key === 'Enter' || e.key === ' ') && document.activeElement && document.activeElement.hasAttribute('page')) {
         const btn = document.activeElement;
         const isDisabled = btn.classList.contains('pointer-events-none') ||
-            btn.getAttribute('aria-disabled') === 'true' ||
-            btn.style.pointerEvents === 'none';
-        if (isDisabled) return;
+                btn.getAttribute('aria-disabled') === 'true' ||
+                btn.style.pointerEvents === 'none';
+        if (isDisabled)
+            return;
         const page = parseInt(btn.getAttribute('page'));
         if (!isNaN(page)) {
             e.preventDefault();
@@ -467,7 +464,7 @@ document.addEventListener('keydown', function(e) {
     }
 });
 
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     initPaginationAccessibility();
 
     let pageParam = getQueryParam('page');
@@ -478,17 +475,29 @@ document.addEventListener('DOMContentLoaded', function() {
     if (page === 1 && window.location.search === '?view=brand&page=1') {
         window.history.replaceState({page: 1}, '', '/admin/dashboard?view=brand');
     }
-    loadBrandContentAndEvent(page, false); 
+    loadBrandContentAndEvent(page, false);
 });
 
+function previewImage(input, previewId) {
+    const preview = document.getElementById(previewId);
+    if (!preview)
+        return;
+    preview.innerHTML = '';
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function (e) {
+            preview.innerHTML = `<img src="${e.target.result}" alt="Preview" class="max-h-24 rounded shadow border">`;
+        };
+        reader.readAsDataURL(input.files[0]);
+    }
+}
 
-
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     // Add Brand
     const addImageInput = document.getElementById('newBrandImage');
     const addImagePreviewId = 'addBrandImagePreview';
     if (addImageInput) {
-        addImageInput.addEventListener('change', function() {
+        addImageInput.addEventListener('change', function () {
             let preview = document.getElementById(addImagePreviewId);
             if (!preview) {
                 preview = document.createElement('div');
@@ -499,7 +508,7 @@ document.addEventListener('DOMContentLoaded', function() {
             preview.innerHTML = '';
             if (this.files && this.files[0]) {
                 const reader = new FileReader();
-                reader.onload = function(e) {
+                reader.onload = function (e) {
                     preview.innerHTML = `<img src="${e.target.result}" alt="Preview" class="max-h-24 rounded shadow border">`;
                 };
                 reader.readAsDataURL(this.files[0]);
@@ -511,7 +520,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const editImageInput = document.getElementById('editBrandImage');
     const editImagePreviewId = 'editBrandImagePreview';
     if (editImageInput) {
-        editImageInput.addEventListener('change', function() {
+        editImageInput.addEventListener('change', function () {
             let preview = document.getElementById(editImagePreviewId);
             if (!preview) {
                 preview = document.createElement('div');
@@ -522,7 +531,7 @@ document.addEventListener('DOMContentLoaded', function() {
             preview.innerHTML = '';
             if (this.files && this.files[0]) {
                 const reader = new FileReader();
-                reader.onload = function(e) {
+                reader.onload = function (e) {
                     preview.innerHTML = `<img src="${e.target.result}" alt="Preview" class="max-h-24 rounded shadow border">`;
                 };
                 reader.readAsDataURL(this.files[0]);
@@ -531,19 +540,21 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
-document.addEventListener('keydown', function(e) {
+document.addEventListener('keydown', function (e) {
     if (e.key === "Escape") {
         closeCreateModal();
         closeEditModal();
     }
 });
-['createBrandModal', 'editBrandModal'].forEach(function(modalId) {
+['createBrandModal', 'editBrandModal'].forEach(function (modalId) {
     const modal = document.getElementById(modalId);
     if (modal) {
-        modal.addEventListener('mousedown', function(e) {
+        modal.addEventListener('mousedown', function (e) {
             if (e.target === modal) {
-                if (modalId === 'createBrandModal') closeCreateModal();
-                if (modalId === 'editBrandModal') closeEditModal();
+                if (modalId === 'createBrandModal')
+                    closeCreateModal();
+                if (modalId === 'editBrandModal')
+                    closeEditModal();
             }
         });
     }
@@ -577,3 +588,4 @@ function showToast(message, type = 'success') {
         setTimeout(() => toast.remove(), 300);
     }, 2500);
 }
+
