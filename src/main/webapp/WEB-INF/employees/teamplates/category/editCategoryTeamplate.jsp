@@ -8,10 +8,8 @@
 %>
 
 <!-- Modal Background -->
-<div class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
-    <!-- Modal Container -->
-    <div class="w-full max-w-2xl bg-white rounded-xl shadow-lg overflow-hidden">
-
+<div class="bg-gray-100">
+   <div class="w-[820px] mx-auto h-[28vh] flex flex-col bg-white shadow-2xl overflow-hidden"> 
         <!-- Header Section -->
         <div class="bg-gradient-to-r from-blue-600 to-purple-600 px-8 py-4 flex justify-between items-center">
             <h1 class="text-3xl font-bold text-white">#<%= category.getId()%></h1>
@@ -62,9 +60,11 @@
                         id="update-category-btn"
                         class="px-6 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 transition"
                         >
-                        Update
+                        <i data-lucide="pencil"></i>
+                        <span>  Update</span>
+
                     </button>
-                  
+
 
                 </div>
             </form>

@@ -181,10 +181,6 @@
                         const brandPage = params.get('page') || '1';
                         loadContent(viewPage, false, [{name: 'page', value: brandPage}]);
                         break;
-//                    case "category":
-//                        const categoryPage = params.get('page') || '1';
-//                        loadContent(viewPage, false, [{name: 'page', value: categoryPage}]);
-//                        break;
                     case "category":
                         const categoryPage = params.get('page') || '1';
                         loadContent(viewPage, false, [{name: 'page', value: categoryPage}]);

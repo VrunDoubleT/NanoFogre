@@ -8,17 +8,16 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 
-<!-- Modal Background -->
-<div class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50 overflow-hidden">
 
-    <!-- Modal Container -->
-    <div class="w-full max-w-2xl bg-white rounded-xl shadow-lg overflow-hidden">
+<!-- Modal Background -->
+<div class="bg-gray-100">
+    <div class="w-[820px] mx-auto h-[22vh] flex flex-col bg-white shadow-2xl overflow-hidden"> 
+
         <!-- Header Section -->
         <div class="bg-gradient-to-r from-blue-600 to-purple-600 px-8 py-4 flex justify-between items-center">
             <div class="w-full flex justify-center">
                 <h2 class="text-3xl font-bold text-white">Create Category</h2>
             </div>
-
         </div>
 
         <!-- Form Section -->
@@ -28,13 +27,14 @@
             <form id="create-category-form" class="space-y-6">
 
                 <!-- Category Name Input -->
-                <div>
-                    <label>Category name</label>
+                <div class="mb-6">
+                    <label for="categoryName" class="block text-lg font-semibold text-gray-800 mb-2">Category name:</label>
+
                     <input
                         type="text"
                         id="categoryName"
                         placeholder="Enter category name"
-                        class="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                        class="w-full px-6 py-3 border border-gray-300 rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 text-lg"
                         required
                         />
                 </div>

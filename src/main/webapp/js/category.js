@@ -56,7 +56,8 @@ const loadCategoryContentAndEvent = (page) => {
 
                 console.log("Category ID:", categoryId);
 
-                openModal(modal);
+                openModal(document.getElementById('modal'));
+
 
                 fetch(`/category/view?type=edit&categoryId=${categoryId}`)
                         .then(res => res.text())
@@ -83,11 +84,13 @@ const loadCategoryContentAndEvent = (page) => {
         // ADD EVENT FOR CREATE CATEGORY
         document.getElementById("create-category-button").onclick = () => {
             const modal = document.getElementById("modal");
-            openModal(modal);
+            openModal(document.getElementById('modal'));
+
             updateModalContent(`/category/view?type=create`, loadCreateCategoryEvent);
     }
     });
 };
+
 
 const loadCreateCategoryEvent = (categoryId, currentPage) => {
     lucide.createIcons();
@@ -97,7 +100,6 @@ const loadCreateCategoryEvent = (categoryId, currentPage) => {
 
     updateBtn.addEventListener("click", (e) => {
         e.preventDefault();
-
         const categoryName = categoryNameInput.value.trim();
 
         if (categoryName === "") {
@@ -164,9 +166,6 @@ function showToast(message, type = "success") {
     }, 3000);
 }
 
-
-
-
 function getPageFromUrl() {
     const urlParams = new URLSearchParams(window.location.search);
     return parseInt(urlParams.get('page')) || 1;
@@ -232,6 +231,8 @@ function confirmDeleteCategory(categoryId) {
     });
 }
 
+
+
 // Update total category when deleted success or created new ctegory 
 function updateCategoryCount() {
     fetch("/category/view?type=total")
@@ -248,5 +249,15 @@ function updateCategoryCount() {
 }
 
 
+document.getElementById("modal").onclick = () => {
+    document.getElementById("modal").classList.remove("flex");
+    document.body.classList.remove("overflow-hidden");
+    document.getElementById("modal").classList.add("hidden");
+};
+
+
+document.getElementById("modalContent").addEventListener("click", function (event) {
+    event.stopPropagation();
+});
 
 
