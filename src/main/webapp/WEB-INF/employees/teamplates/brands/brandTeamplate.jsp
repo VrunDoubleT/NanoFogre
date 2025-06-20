@@ -113,32 +113,10 @@
     </div>
 </div>
 
-<!-- Modal Confirm Delete Brand -->
-<div id="confirmDeleteModal"
-     class="fixed inset-0 z-50 hidden flex items-center justify-center bg-black bg-opacity-30 transition-all duration-300">
-    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-0 relative
-         transform scale-95 opacity-0 translate-y-8 transition-all duration-300 flex flex-col">
-        <div class="bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-t-2xl px-6 py-4 flex items-center justify-center relative">
-            <span class="text-5xl font-bold flex items-center justify-center w-full h-full">?</span>
-            <button type="button" id="closeDeleteModalBtn"
-                    class="absolute top-3 right-4 text-white hover:text-gray-200 text-2xl transition-colors duration-200 focus:outline-none">&times;</button>
-        </div>
-        <div class="p-8 flex flex-col items-center">
-            <h3 class="text-lg font-semibold text-gray-900 mb-1 mt-1 text-center">Are you sure you want to delete?</h3>
-            <p class="text-gray-500 mb-6 text-sm text-center">This action cannot be undone.</p>
-            <div class="flex justify-center gap-4 mb-2 w-full">
-                <button id="confirmDeleteBtn"
-                        class="px-5 py-2 bg-gradient-to-r from-blue-600 to-blue-400 text-white rounded-lg font-semibold shadow hover:from-blue-700 hover:to-blue-500 transition-all duration-200 focus:outline-none">
-                    Confirm deletion
-                </button>
-                <button id="cancelDeleteBtn"
-                        class="px-5 py-2 bg-gray-100 text-gray-700 rounded-lg font-semibold hover:bg-gray-200 transition focus:outline-none">
-                    Cancel
-                </button>
-            </div>
-        </div>
-    </div>
-</div>
+<button onclick="deleteBrand(${brand.id})" class="text-red-600 hover:text-red-800">
+    <i class="fas fa-trash"></i>
+</button>
+
 
 <div class="flex flex-col items-center space-y-4 mt-8">
     <div class="text-sm text-gray-600 font-medium">
