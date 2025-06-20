@@ -28,11 +28,11 @@
             </div>
 
             <!-- Add Category Button -->
-            <div class="flex items-center space-x-3">
-                <button id="create-category-button" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-lg shadow-lg hover:shadow-xl transform transition-all duration-200 flex items-center justify-center space-x-2"> <!-- Added justify-center -->
-                    <span class="text-center">Add New Category</span>
-                </button>
-            </div>
+            <button id="create-category-button" class=" bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-lg shadow-lg hover:shadow-xl transform transition-all duration-200 flex items-center space-x-2">
+                <i data-lucide="diamond-plus" class="w-5 h-5"></i>
+                <span>Add New Category</span>
+            </button>
+
         </div>
 
         <!-- Table Section -->
@@ -83,3 +83,5 @@
     </div>
 
 </div>
+
+
