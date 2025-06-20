@@ -1,4 +1,5 @@
 const loadCategoryContentAndEvent = (page) => {
+    lucide.createIcons();
 
     // SHOW LOADING WHEN CALL SERVLET GET HTML
     document.getElementById('tabelContainer').innerHTML = '';
@@ -89,6 +90,7 @@ const loadCategoryContentAndEvent = (page) => {
 };
 
 const loadCreateCategoryEvent = (categoryId, currentPage) => {
+    lucide.createIcons();
     const updateBtn = document.getElementById("update-category-btn");
     const categoryNameInput = document.getElementById("categoryName");
     const errorDiv = document.getElementById("error-message");
@@ -139,6 +141,7 @@ const loadCreateCategoryEvent = (categoryId, currentPage) => {
                         errorDiv.textContent = data.message || "Failed to save category.";
                         errorDiv.classList.remove("hidden");
                     }
+
                 })
                 .catch(error => {
                     console.error("Error:", error);
@@ -147,6 +150,7 @@ const loadCreateCategoryEvent = (categoryId, currentPage) => {
                 });
     });
 };
+
 
 function showToast(message, type = "success") {
     const toast = document.createElement("div");
@@ -178,7 +182,7 @@ function confirmDeleteCategory(categoryId) {
         showCancelButton: true,
         confirmButtonColor: '#d33',
         cancelButtonColor: '#3085d6',
-        confirmButtonText: 'Yes, hide it',
+        confirmButtonText: 'Yes',
         cancelButtonText: 'Cancel'
     }).then((result) => {
         if (result.isConfirmed) {
@@ -242,8 +246,6 @@ function updateCategoryCount() {
                 console.error("Error fetching category count:", error);
             });
 }
-
-
 
 
 
