@@ -25,7 +25,8 @@ public class StaffDAO extends DB.DBContext {
         int row = (page - 1) * limit;
         List<Employee> list = new ArrayList<>();
         String query = "SELECT * FROM Employees "
-                + "WHERE roleId = 2 "
+                + "WHERE roleId = 3 "
+                + "AND _destroy = 0 "
                 + "ORDER BY employeeId DESC "
                 + "OFFSET " + row + " ROWS FETCH NEXT " + limit + " ROWS ONLY;";
         try ( ResultSet rs = execSelectQuery(query)) {
@@ -38,7 +39,8 @@ public class StaffDAO extends DB.DBContext {
                         rs.getString("employeeAvatar"),
                         new Role(rs.getInt("roleId"), ""),
                         rs.getInt("isBlock") == 1,
-                        rs.getTimestamp("createdAt").toLocalDateTime()
+                        rs.getTimestamp("createdAt").toLocalDateTime(),
+                        rs.getInt("_destroy") == 1
                 );
                 list.add(staff);
             }
@@ -62,14 +64,15 @@ public class StaffDAO extends DB.DBContext {
     }
 
     public boolean createStaff(Employee staff) {
-        String query = "INSERT INTO Employees (employeeEmail, employeePassword, employeeName, employeeAvatar, roleId, isBlock, createdAt) "
-                + "VALUES (?, ?, ?, ?, 2, ?, GETDATE())";
+        String query = "INSERT INTO Employees (employeeEmail, employeePassword, employeeName, employeeAvatar, roleId, isBlock, createdAt, _destroy) "
+                + "VALUES (?, ?, ?, ?, 3, ?, GETDATE(), ?)";
         Object[] params = {
             staff.getEmail(),
             staff.getPassword(),
             staff.getName(),
             staff.getAvatar(),
-            staff.isIsBlock()
+            staff.isIsBlock(),
+            staff.isDestroy()
         };
 
         try {
@@ -127,7 +130,7 @@ public class StaffDAO extends DB.DBContext {
     }
 
     public boolean deleteStaffById(int id) {
-        String query = "DELETE FROM Employees WHERE employeeId = ?";
+        String query = "UPDATE Employees SET _destroy = 1 WHERE employeeId = ?";
         Object[] params = {id};
         try {
             int rowsAffected = execQuery(query, params);
@@ -139,7 +142,7 @@ public class StaffDAO extends DB.DBContext {
     }
 
     public boolean isEmailExists(String email) {
-        String query = "SELECT 1 FROM Employees WHERE employeeEmail = ?";
+        String query = "SELECT 1 FROM Employees WHERE employeeEmail = ? AND _destroy = 0";
         Object[] params = {email};
         try ( ResultSet rs = execSelectQuery(query, params)) {
             return rs.next();
@@ -150,7 +153,7 @@ public class StaffDAO extends DB.DBContext {
     }
 
     public boolean isEmailExistsExceptOwn(String email, int id) {
-        String query = "SELECT COUNT(*) FROM Employees WHERE employeeEmail = ? AND employeeId != ?";
+        String query = "SELECT COUNT(*) FROM Employees WHERE employeeEmail = ? AND employeeId != ? AND _destroy = 0";
         Object[] params = {email, id};
         try ( ResultSet rs = execSelectQuery(query, params)) {
             if (rs.next()) {

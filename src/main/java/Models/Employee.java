@@ -15,11 +15,12 @@ public class Employee {
     private Role role;
     private boolean isBlock;
     private LocalDateTime createdAt;
+    private boolean _destroy;
 
     public Employee() {
     }
 
-    public Employee(int id, String email, String password, String name, String avatar, Role role, boolean isBlock, LocalDateTime createdAt) {
+    public Employee(int id, String email, String password, String name, String avatar, Role role, boolean isBlock, LocalDateTime createdAt, boolean _destroy) {
         this.id = id;
         this.email = email;
         this.password = password;
@@ -28,6 +29,7 @@ public class Employee {
         this.role = role;
         this.isBlock = isBlock;
         this.createdAt = createdAt;
+        this._destroy = _destroy;
     }
 
     public int getId() {
@@ -92,6 +94,14 @@ public class Employee {
 
     public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
+    }
+
+    public boolean isDestroy() {
+        return _destroy;
+    }
+
+    public void setDestroy(boolean _destroy) {
+        this._destroy = _destroy;
     }
 
     @Override
