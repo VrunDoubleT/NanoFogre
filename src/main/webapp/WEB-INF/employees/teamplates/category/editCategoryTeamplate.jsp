@@ -45,7 +45,7 @@
 
                 <!-- Category Image Input -->
                 <div>
-                    <label class="block font-semibold mb-1">Category Image</label>
+                    <label class="block text-sm font-semibold text-gray-700 mb-1">Category Image</label>
                     <input    type="file"
                               id="categoryImage"
                               name="categoryImage"

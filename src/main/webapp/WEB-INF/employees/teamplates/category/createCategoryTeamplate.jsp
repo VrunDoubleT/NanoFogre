@@ -24,7 +24,7 @@
             <form id="create-category-form" class="space-y-6" enctype="multipart/form-data" autocomplete="off">
                 <!-- Category Name -->
                 <div>
-                    <label for="categoryName" class="block font-semibold mb-1">Category Name</label>
+                    <label for="categoryName" class="block text-sm font-semibold text-gray-700 mb-1">Category Name</label>
                     <input type="text" id="categoryName" name="categoryName"
                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                            required />
@@ -33,7 +33,7 @@
 
                 <!-- Category Image Upload -->
                 <div>
-                    <label class="block font-semibold mb-1">Category Image</label>
+                    <label class="block text-sm font-semibold text-gray-700 mb-1">Category Image</label>
                     <input type="file" id="categoryImage" name="categoryImage" accept="image/*" class="hidden" required />
                     <label for="categoryImage"
                            class="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 transition-colors">
