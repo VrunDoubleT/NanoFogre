@@ -7,11 +7,41 @@ function openCreateModal() {
         modal.classList.add('scale-100', 'opacity-100', 'translate-y-0');
     }, 10);
     document.body.classList.add('overflow-hidden');
-    // Reset form
     document.getElementById('newBrandName').value = '';
     document.getElementById('newBrandImage').value = '';
-    document.getElementById('addBrandImagePreview').innerHTML = '';
+    document.getElementById('createBrandImagePreview').innerHTML = '';
+    document.getElementById('createBrandNameError').textContent = '';
+    document.getElementById('createBrandImageError').textContent = '';
+    document.getElementById('newBrandName').classList.remove('border-red-500');
 
+    const fileNameLabel = document.querySelector('#createBrandModal .file-name');
+    if (fileNameLabel)
+        fileNameLabel.textContent = 'No file chosen';
+    const nameInput = document.getElementById('newBrandName');
+    const nameError = document.getElementById('createBrandNameError');
+    if (nameInput && nameError) {
+        nameInput.onfocus = nameInput.oninput = function () {
+            nameError.textContent = '';
+            this.classList.remove('border-red-500');
+        };
+    }
+    const imageInput = document.getElementById('newBrandImage');
+    const imageError = document.getElementById('createBrandImageError');
+    if (imageInput && imageError) {
+        imageInput.onchange = function () {
+            showFileName(this);
+            imageError.textContent = '';
+        };
+        imageInput.onclick = function () {
+            imageError.textContent = '';
+        };
+        const uploadLabel = document.querySelector('label[for="newBrandImage"]');
+        if (uploadLabel) {
+            uploadLabel.onclick = function () {
+                imageError.textContent = '';
+            };
+        }
+    }
 }
 
 function closeCreateModal() {
@@ -22,10 +52,11 @@ function closeCreateModal() {
     setTimeout(() => {
         overlay.classList.add('hidden');
         document.body.classList.remove('overflow-hidden');
-        // Reset form
-        document.getElementById('newBrandName').value = '';
-        document.getElementById('newBrandImage').value = '';
-        document.getElementById('addBrandImagePreview').innerHTML = '';
+        document.getElementById('createBrandImagePreview').innerHTML = '';
+        const fileNameLabel = document.querySelector('#createBrandModal .file-name');
+        if (fileNameLabel) {
+            fileNameLabel.textContent = 'No file chosen';
+        }
     }, 300);
 }
 
@@ -38,18 +69,56 @@ function openEditModal(id, name, imageUrl) {
         modal.classList.add('scale-100', 'opacity-100', 'translate-y-0');
     }, 10);
     document.body.classList.add('overflow-hidden');
-    // Fill form
     document.getElementById('editBrandId').value = id;
     document.getElementById('editBrandName').value = name;
     document.getElementById('editBrandImage').value = '';
     document.getElementById('editBrandImagePreview').innerHTML = '';
+    document.getElementById('editBrandNameError').textContent = '';
+    document.getElementById('editBrandImageError').textContent = '';
+    document.getElementById('editBrandName').classList.remove('border-red-500');
+
     const currentImageWrapper = document.getElementById('editBrandCurrentImageWrapper');
     if (imageUrl && imageUrl.trim() !== '') {
         currentImageWrapper.innerHTML = `<img src="${imageUrl}" alt="Current Image" class="max-h-20 rounded shadow border">`;
     } else {
         currentImageWrapper.innerHTML = '<p class="text-gray-500 text-sm">No current image</p>';
     }
+
+    const nameInput = document.getElementById('editBrandName');
+    const nameError = document.getElementById('editBrandNameError');
+    if (nameInput && nameError) {
+        nameInput.onclick = null;
+        nameInput.oninput = null;
+        nameInput.onclick = function () {
+            nameError.textContent = '';
+            this.classList.remove('border-red-500');
+        };
+        nameInput.oninput = function () {
+            nameError.textContent = '';
+            this.classList.remove('border-red-500');
+        };
+    }
+
+    const imageInput = document.getElementById('editBrandImage');
+    const imageError = document.getElementById('editBrandImageError');
+    if (imageInput && imageError) {
+        imageInput.onchange = function () {
+            showFileName(this);
+            imageError.textContent = '';
+        };
+        imageInput.onclick = function () {
+            imageError.textContent = '';
+        };
+        const uploadLabel = document.querySelector('label[for="editBrandImage"]');
+        if (uploadLabel) {
+            uploadLabel.onclick = function () {
+                imageError.textContent = '';
+            };
+        }
+    }
 }
+
+
 
 function closeEditModal() {
     const overlay = document.getElementById('editBrandModal');
@@ -59,39 +128,27 @@ function closeEditModal() {
     setTimeout(() => {
         overlay.classList.add('hidden');
         document.body.classList.remove('overflow-hidden');
-        document.getElementById('editBrandName').value = '';
-        document.getElementById('editBrandImage').value = '';
-        document.getElementById('editBrandImagePreview').innerHTML = '';
-        document.getElementById('editBrandCurrentImageWrapper').innerHTML = '';
     }, 300);
 }
 
-
 function editBrand(id) {
-    console.log('Editing brand with ID:', id);
-
     fetch(`/brand?action=getBrand&id=${id}`)
             .then(res => {
-                console.log('Response status:', res.status);
                 if (!res.ok)
                     throw new Error('HTTP error');
                 return res.json();
             })
             .then(data => {
-                console.log('Response data:', data);
                 if (data.success) {
                     openEditModal(data.brand.id, data.brand.name, data.brand.image);
                 } else {
-                    showToast(data.message || 'Brand not found!');
+                    showToast(data.message || 'Brand not found!', 'error');
                 }
             })
             .catch((error) => {
-                console.error('Error:', error); // Debug log
-                showToast('Data processing error: ' + error.message);
+                showToast('Data processing error: ' + error.message, 'error');
             });
 }
-
-
 
 let brandIdToDelete = null;
 
@@ -169,26 +226,63 @@ document.addEventListener('keydown', function (e) {
 });
 function showFileName(input) {
     const fileName = input.files && input.files.length > 0 ? input.files[0].name : 'No file chosen';
-    const container = input.parentNode;
-    const label = container.querySelector('.file-name');
-    if (label) {
+    let label = input.parentNode.querySelector('.file-name');
+    if (!label)
+        label = input.closest('div').querySelector('.file-name');
+    if (label)
         label.textContent = fileName;
+
+    // Preview ảnh
+    if (input.id === 'newBrandImage') {
+        previewImage(input, 'createBrandImagePreview');
+    } else if (input.id === 'editBrandImage') {
+        previewImage(input, 'editBrandImagePreview');
+    }
+}
+function previewImage(input, previewId) {
+    const preview = document.getElementById(previewId);
+    if (!preview)
+        return;
+    preview.innerHTML = '';
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function (e) {
+            preview.innerHTML = `<img src="${e.target.result}" alt="Preview" class="max-h-24 rounded shadow border">`;
+        };
+        reader.readAsDataURL(input.files[0]);
     }
 }
 
+
 function handleCreateBrand() {
-    const name = document.getElementById('newBrandName').value.trim();
+    const nameInput = document.getElementById('newBrandName');
+    const name = nameInput.value.trim();
     const imageInput = document.getElementById('newBrandImage');
+    const nameError = document.getElementById('createBrandNameError');
+    const imageError = document.getElementById('createBrandImageError');
     const submitBtn = document.querySelector('#createBrandForm button[type="submit"]');
     const loadingIcon = submitBtn.querySelector('#loadingIconCreate');
-    submitBtn.disabled = true;
-    loadingIcon.classList.remove('hidden');
-    if (!name || !imageInput.files.length) {
-        showToast('Please enter complete information');
-        submitBtn.disabled = false;
-        loadingIcon.classList.add('hidden');
-        return;
+
+    nameError.textContent = '';
+    nameInput.classList.remove('border-red-500');
+    imageError.textContent = '';
+
+    let hasError = false;
+    if (!name) {
+        nameError.textContent = 'Please enter brand name';
+        nameInput.classList.add('border-red-500');
+        hasError = true;
     }
+    if (!imageInput.files.length) {
+        imageError.textContent = 'Please upload brand image';
+        hasError = true;
+    }
+    if (hasError)
+        return;
+
+    submitBtn.disabled = true;
+//    showLoading();
+    loadingIcon.classList.remove('hidden');
     const formData = new FormData();
     formData.append('action', 'create');
     formData.append('name', name);
@@ -200,30 +294,43 @@ function handleCreateBrand() {
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    showToast(data.message);
+                    showToast(data.message, 'success');
                     closeCreateModal();
                     loadBrandContentAndEvent(1);
                 } else {
-                    showToast(data.message);
+                    showToast(data.message, 'error');
                 }
             })
             .catch(() => showToast('Server connection error', 'error'))
             .finally(() => {
                 submitBtn.disabled = false;
+//hideLoading();
                 loadingIcon.classList.add('hidden');
             });
 }
 
 function handleUpdateBrand() {
     const id = document.getElementById('editBrandId').value;
-    const name = document.getElementById('editBrandName').value.trim();
+    const nameInput = document.getElementById('editBrandName');
+    const name = nameInput.value.trim();
     const imageInput = document.getElementById('editBrandImage');
+    const nameError = document.getElementById('editBrandNameError');
+    const imageError = document.getElementById('editBrandImageError');
+    const submitBtn = document.querySelector('#editBrandModal button[type="submit"]');
+    const loadingIcon = submitBtn.querySelector('#loadingIconEdit');
 
+    nameError.textContent = '';
+    nameInput.classList.remove('border-red-500');
+    if (imageError)
+        imageError.textContent = '';
     if (!name) {
-        showToast('Please enter brand name');
+        nameError.textContent = 'Please enter brand name';
+        nameInput.classList.add('border-red-500');
+        nameInput.focus();
         return;
     }
-
+    submitBtn.disabled = true;
+    loadingIcon.classList.remove('hidden');
     const formData = new FormData();
     formData.append('action', 'update');
     formData.append('id', id);
@@ -232,7 +339,6 @@ function handleUpdateBrand() {
     if (imageInput.files.length > 0) {
         formData.append('image', imageInput.files[0]);
     }
-
     fetch('/brand', {
         method: 'POST',
         body: formData
@@ -240,16 +346,21 @@ function handleUpdateBrand() {
             .then(async response => {
                 const data = await response.json().catch(() => ({}));
                 if (!response.ok) {
-                    throw new Error(data.message || 'Có lỗi xảy ra');
+                    throw new Error(data.message || 'An error occurred.');
                 }
                 return data;
             })
             .then(data => {
                 showToast(data.message, 'success');
+                closeEditModal();
                 loadBrandContentAndEvent(1);
             })
             .catch(error => {
                 showToast(error.message, 'error');
+            })
+            .finally(() => {
+                submitBtn.disabled = false;
+                loadingIcon.classList.add('hidden');
             });
 }
 
@@ -348,12 +459,27 @@ function getQueryParam(param) {
     const urlParams = new URLSearchParams(window.location.search);
     return urlParams.get(param);
 }
+function updateBrandUrl(page) {
+    const url = new URL(window.location);
+    url.searchParams.set('view', 'brand');
+    url.searchParams.delete('page');
+    if (page > 1 || (page === 1 && window.location.search.includes('page='))) {
+        url.searchParams.set('page', page);
+    }
+    window.history.pushState(null, '', url.toString());
+}
 
 function loadBrandContentAndEvent(page = 1, updateUrl = true) {
+    const currentView = getQueryParam('view');
+    if (currentView !== 'brand')
+        return;
+    if (updateUrl)
+        updateBrandUrl(page);
     var brandContainer = document.getElementById('brandContainer');
     if (brandContainer) {
         brandContainer.innerHTML = '';
     }
+
     var loadingBrand = document.getElementById('loadingBrand');
     if (loadingBrand) {
         loadingBrand.innerHTML = `
@@ -363,17 +489,14 @@ function loadBrandContentAndEvent(page = 1, updateUrl = true) {
                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
             </svg>
             <span class="ml-2 text-blue-600 font-medium">Loading brands...</span>
-        </div>
-        `;
+        </div>`;
     }
+
     fetch(`/admin/view?viewPage=brand&page=${page}`)
             .then(res => res.text())
             .then(html => {
-                var loadingBrand = document.getElementById('loadingBrand');
                 if (loadingBrand)
                     loadingBrand.innerHTML = '';
-
-                var brandContainer = document.getElementById('brandContainer');
                 if (brandContainer)
                     brandContainer.innerHTML = html;
 
@@ -384,36 +507,19 @@ function loadBrandContentAndEvent(page = 1, updateUrl = true) {
                     totalPages = parseInt(totalPagesInput.value);
                 }
 
-                if (updateUrl) {
-                    let url;
-                    if (page === 1) {
-                        if (window.location.search !== '?view=brand') {
-                            url = '/admin/dashboard?view=brand&page=1';
-                            window.history.pushState({page: page}, '', url);
-                        }
-                    } else {
-                        url = `/admin/dashboard?view=brand&page=${page}`;
-                        window.history.pushState({page: page}, '', url);
-                    }
-                }
-
                 initPaginationAccessibility();
             })
             .catch(error => {
-                var loadingBrand = document.getElementById('loadingBrand');
                 if (loadingBrand)
                     loadingBrand.innerHTML = '';
-
-                var brandContainer = document.getElementById('brandContainer');
                 if (brandContainer) {
                     brandContainer.innerHTML = `
                 <div class="text-center text-red-600 py-8">⚠️ Error loading data</div>
-                `;
+            `;
                 }
                 console.error('Error:', error);
             });
 }
-
 
 function loadBrandPage(page) {
     if (page < 1 || page > totalPages)
@@ -422,6 +528,7 @@ function loadBrandPage(page) {
         btn.style.pointerEvents = 'none';
         btn.style.opacity = '0.7';
     });
+
     loadBrandContentAndEvent(page);
 }
 
@@ -434,17 +541,36 @@ function initPaginationAccessibility() {
     });
 }
 
+window.addEventListener('popstate', function (event) {
+    const params = new URLSearchParams(window.location.search);
+    const view = params.get('view');
+    let page = 1;
+    if (params.has('page')) {
+        page = parseInt(params.get('page')) || 1;
+    }
+    if (view === 'brand') {
+        loadBrandContentAndEvent(page, false);
+    }
+});
+
 document.addEventListener('click', function (e) {
     const paginationBtn = e.target.closest('.pagination, [page]');
-    if (paginationBtn && paginationBtn.hasAttribute('page')) {
-        const isDisabled = paginationBtn.classList.contains('pointer-events-none') ||
-                paginationBtn.getAttribute('aria-disabled') === 'true' ||
-                paginationBtn.style.pointerEvents === 'none';
-        if (isDisabled)
-            return;
-        const page = parseInt(paginationBtn.getAttribute('page'));
-        if (!isNaN(page))
-            loadBrandPage(page);
+    if (!paginationBtn || !paginationBtn.hasAttribute('page'))
+        return;
+
+    const isDisabled = paginationBtn.classList.contains('pointer-events-none') ||
+            paginationBtn.getAttribute('aria-disabled') === 'true' ||
+            paginationBtn.style.pointerEvents === 'none';
+    if (isDisabled)
+        return;
+
+    const page = parseInt(paginationBtn.getAttribute('page'));
+    if (isNaN(page))
+        return;
+
+    const currentView = getQueryParam('view');
+    if (currentView === 'brand') {
+        loadBrandPage(page);
     }
 });
 
@@ -459,7 +585,11 @@ document.addEventListener('keydown', function (e) {
         const page = parseInt(btn.getAttribute('page'));
         if (!isNaN(page)) {
             e.preventDefault();
-            loadBrandPage(page);
+
+            const currentView = getQueryParam('view');
+            if (currentView === 'brand') {
+                loadBrandPage(page);
+            }
         }
     }
 });
@@ -467,78 +597,68 @@ document.addEventListener('keydown', function (e) {
 document.addEventListener('DOMContentLoaded', function () {
     initPaginationAccessibility();
 
-    let pageParam = getQueryParam('page');
+    const params = new URLSearchParams(window.location.search);
+    const view = params.get('view');
     let page = 1;
-    if (pageParam) {
-        page = parseInt(pageParam) || 1;
+    if (params.has('page')) {
+        page = parseInt(params.get('page')) || 1;
     }
-    if (page === 1 && window.location.search === '?view=brand&page=1') {
-        window.history.replaceState({page: 1}, '', '/admin/dashboard?view=brand');
+    if (view === 'brand') {
+        loadBrandContentAndEvent(page, false);
     }
-    loadBrandContentAndEvent(page, false);
 });
 
-function previewImage(input, previewId) {
-    const preview = document.getElementById(previewId);
-    if (!preview)
-        return;
-    preview.innerHTML = '';
-    if (input.files && input.files[0]) {
-        const reader = new FileReader();
-        reader.onload = function (e) {
-            preview.innerHTML = `<img src="${e.target.result}" alt="Preview" class="max-h-24 rounded shadow border">`;
-        };
-        reader.readAsDataURL(input.files[0]);
+
+document.addEventListener('keydown', function (e) {
+    if ((e.key === 'Enter' || e.key === ' ') && document.activeElement && document.activeElement.hasAttribute('page')) {
+        const btn = document.activeElement;
+        const isDisabled = btn.classList.contains('pointer-events-none') ||
+                btn.getAttribute('aria-disabled') === 'true' ||
+                btn.style.pointerEvents === 'none';
+        if (isDisabled)
+            return;
+        const page = parseInt(btn.getAttribute('page'));
+        if (!isNaN(page)) {
+            e.preventDefault();
+
+            const params = new URLSearchParams(window.location.search);
+            const currentView = params.get('view');
+
+            if (currentView === 'brand') {
+                loadBrandPage(page);
+            }
+        }
     }
-}
+});
 
 document.addEventListener('DOMContentLoaded', function () {
-    // Add Brand
-    const addImageInput = document.getElementById('newBrandImage');
-    const addImagePreviewId = 'addBrandImagePreview';
-    if (addImageInput) {
-        addImageInput.addEventListener('change', function () {
-            let preview = document.getElementById(addImagePreviewId);
-            if (!preview) {
-                preview = document.createElement('div');
-                preview.id = addImagePreviewId;
-                preview.className = 'flex justify-center mt-2';
-                this.parentNode.appendChild(preview);
-            }
-            preview.innerHTML = '';
-            if (this.files && this.files[0]) {
-                const reader = new FileReader();
-                reader.onload = function (e) {
-                    preview.innerHTML = `<img src="${e.target.result}" alt="Preview" class="max-h-24 rounded shadow border">`;
-                };
-                reader.readAsDataURL(this.files[0]);
-            }
-        });
-    }
+    initPaginationAccessibility();
 
-    // Edit Brand
-    const editImageInput = document.getElementById('editBrandImage');
-    const editImagePreviewId = 'editBrandImagePreview';
-    if (editImageInput) {
-        editImageInput.addEventListener('change', function () {
-            let preview = document.getElementById(editImagePreviewId);
-            if (!preview) {
-                preview = document.createElement('div');
-                preview.id = editImagePreviewId;
-                preview.className = 'flex justify-center mt-2';
-                this.parentNode.appendChild(preview);
-            }
-            preview.innerHTML = '';
-            if (this.files && this.files[0]) {
-                const reader = new FileReader();
-                reader.onload = function (e) {
-                    preview.innerHTML = `<img src="${e.target.result}" alt="Preview" class="max-h-24 rounded shadow border">`;
-                };
-                reader.readAsDataURL(this.files[0]);
-            }
-        });
+    const params = new URLSearchParams(window.location.search);
+    const view = params.get('view');
+    const page = parseInt(params.get('page')) || 1;
+
+    if (view === 'brand') {
+        loadBrandContentAndEvent(page);
     }
 });
+
+document.addEventListener('DOMContentLoaded', function () {
+    const setupImagePreview = (inputId, previewId) => {
+        const input = document.getElementById(inputId);
+        if (!input)
+            return;
+
+        input.addEventListener('change', function () {
+            previewImage(this, previewId);
+        });
+    };
+
+    setupImagePreview('newBrandImage', 'createBrandImagePreview');
+
+    setupImagePreview('editBrandImage', 'editBrandImagePreview');
+});
+
 
 document.addEventListener('keydown', function (e) {
     if (e.key === "Escape") {
@@ -559,6 +679,7 @@ document.addEventListener('keydown', function (e) {
         });
     }
 });
+
 function showToast(message, type = 'success') {
     // type: 'success', 'error', 'info', 'warning'
     const icons = {

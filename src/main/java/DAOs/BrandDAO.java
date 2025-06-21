@@ -28,7 +28,7 @@ public class BrandDAO extends DBContext {
     // READ 
     public List<Brand> getBrandsPaginated(int page, int pageSize) {
         List<Brand> brands = new ArrayList<>();
-        String query = "SELECT brandId, brandName, image FROM Brands ORDER BY brandId OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
+        String query = "SELECT brandId, brandName, image FROM Brands ORDER BY brandId DESC OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
         try ( Connection conn = this.getConnection();  PreparedStatement stmt = conn.prepareStatement(query)) {
             int offset = (page - 1) * pageSize;
             stmt.setInt(1, offset);
