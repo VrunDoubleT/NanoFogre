@@ -4,6 +4,7 @@
     Author     : Tran Thanh Van - CE181019
 --%>
 
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@page import="Models.Product"%>
 <%@page import="java.util.List"%>
 <%@page import="Utils.CurrencyFormatter"%>
@@ -13,8 +14,8 @@
         <div class="bg-gradient-to-r flex justify-between from-blue-600 to-purple-600 px-8 py-3">
             <h1 class="text-3xl font-bold text-white mb-2">#${product.productId}</h1>
             <div class="flex items-center space-x-4 text-blue-100">
-                <span class="px-3 py-1 bg-white/20 rounded-full text-sm">${product.category != null ? product.category : "No category"}</span>
-                <span class="px-3 py-1 bg-white/20 rounded-full text-sm">${product.brand != null ? product.brand : "No brand"}</span>
+                <span class="px-3 py-1 bg-white/20 rounded-full text-sm">${product.category != null ? product.category.name : "No category"}</span>
+                <span class="px-3 py-1 bg-white/20 rounded-full text-sm">${product.brand != null ? product.brand.name : "No brand"}</span>
             </div>
         </div>
 
@@ -24,8 +25,8 @@
                 <button id="details-tab" class="tab-button active px-6 py-3 text-sm font-medium border-b-2">
                     <i class="fas fa-info-circle mr-2"></i>Product Detail
                 </button>
-                <button id="preview-tab" class="tab-button px-6 py-3 text-sm font-medium border-b-2 text-gray-500 border-transparent hover:text-blue-600 hover:border-blue-300 transition-all duration-200>
-                        <i class="fas fa-eye mr-2"></i>Reviews
+                <button id="preview-tab" class="tab-button px-6 py-3 text-sm font-medium border-b-2 text-gray-500 border-transparent hover:text-blue-600 hover:border-blue-300 transition-all duration-200">
+                    <i class="fas fa-eye mr-2"></i>Preview
                 </button>
             </nav>
         </div>
@@ -59,7 +60,6 @@
                             <%
                                 }
                             %>
-
                         </div>
                     </div>
                     <!-- Image Gallery -->
@@ -104,50 +104,56 @@
                         </div>
                     </div>
 
-                    <!-- Specifications -->
+                    <!-- Basic Information -->
                     <div class="bg-gray-50 rounded-xl p-6">
                         <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-                            Specifications
+                            Product Information
                         </h3>
                         <div class="grid grid-cols-1 gap-4">
                             <div class="space-y-3">
                                 <div class="flex justify-between">
-                                    <span class="text-gray-600">Scale:</span><span class="font-medium">${product.scale}</span>
+                                    <span class="text-gray-600">Category:</span>
+                                    <span class="font-medium">${product.category != null ? product.category.name : "N/A"}</span>
                                 </div>
                                 <div class="flex justify-between">
-                                    <span class="text-gray-600">Material:</span><span class="font-medium">${product.material}</span>
+                                    <span class="text-gray-600">Brand:</span>
+                                    <span class="font-medium">${product.brand != null ? product.brand.name : "N/A"}</span>
                                 </div>
                                 <div class="flex justify-between">
-                                    <span class="text-gray-600">Paint:</span><span class="font-medium">${product.paint}</span>
+                                    <span class="text-gray-600">Material:</span>
+                                    <span class="font-medium">${product.material}</span>
                                 </div>
                                 <div class="flex justify-between">
-                                    <span class="text-gray-600">Manufacturer:</span><span class="font-medium">${product.manufacturer}</span>
-                                </div>
-                            </div>
-                            <div class="space-y-3">
-                                <div class="flex justify-between">
-                                    <span class="text-gray-600">Length:</span><span class="font-medium">${product.length} cm</span>
-                                </div>
-                                <div class="flex justify-between">
-                                    <span class="text-gray-600">Width:</span><span class="font-medium">${product.width} cm</span>
-                                </div>
-                                <div class="flex justify-between">
-                                    <span class="text-gray-600">Height:</span><span class="font-medium">${product.height} cm</span>
-                                </div>
-                                <div class="flex justify-between">
-                                    <span class="text-gray-600">Weight:</span><span class="font-medium">${product.weight} g</span>
+                                    <span class="text-gray-600">Status:</span>
+                                    <span class="font-medium">
+                                        <% if (product != null) { %>
+                                        <% if (product.isDestroy()) { %>
+                                        <span class="text-red-600">Disabled</span>
+                                        <% } else if (!product.isActive()) { %>
+                                        <span class="text-yellow-600">Inactive</span>
+                                        <% } else { %>
+                                        <span class="text-green-600">Active</span>
+                                        <% } %>
+                                        <% }%>
+                                    </span>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Features -->
+                    <!-- Additional Info -->
                     <div class="bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl p-6 border border-green-100">
                         <h3 class="text-lg font-semibold text-gray-900 mb-3 flex items-center">
-                            Special Features
+                            Additional Information
                         </h3>
-                        <p class="text-gray-700 leading-relaxed">${product.features}</p>
-
+                        <div class="space-y-2">
+                            <c:forEach var="productAtribute" items="${productAtributes}">
+                                <div class="flex justify-between gap-4">
+                                    <span class="text-gray-600 whitespace-nowrap">${productAtribute.name}:</span>
+                                    <span class="text-gray-500 flex-1 text-end">${productAtribute.value} ${(productAtribute.unit != null && !productAtribute.unit.trim().isEmpty()) ? productAtribute.unit : ''}</span>
+                                </div>
+                            </c:forEach>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -164,7 +170,7 @@
                             <div class="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center">
                                 <div class="text-center text-white">
                                     <h2 class="text-2xl font-bold mb-2">${product.title}</h2>
-                                    <p class="text-lg">$${product.price}</p>
+                                    <p class="text-lg">${CurrencyFormatter.formatVietNamCurrency(product.price)}</p>
                                 </div>
                             </div>
                         </div>
@@ -172,8 +178,8 @@
                         <div class="p-6">
                             <div class="flex items-center justify-between mb-4">
                                 <div class="flex items-center space-x-2">
-                                    <span class="px-3 py-1 bg-blue-100 text-blue-800 text-sm rounded-full">${product.category.name}</span>
-                                    <span class="px-3 py-1 bg-purple-100 text-purple-800 text-sm rounded-full">${product.brand.name}</span>
+                                    <span class="px-3 py-1 bg-blue-100 text-blue-800 text-sm rounded-full">${product.category != null ? product.category.name : "No category"}</span>
+                                    <span class="px-3 py-1 bg-purple-100 text-purple-800 text-sm rounded-full">${product.brand != null ? product.brand.name : "No brand"}</span>
                                 </div>
                                 <div class="flex items-center space-x-1 text-yellow-500">
                                     <i class="fas fa-star"></i>
@@ -188,9 +194,9 @@
 
                             <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                                 <div class="text-center p-3 bg-gray-50 rounded-lg">
-                                    <i class="fas fa-ruler text-blue-600 mb-1"></i>
-                                    <p class="font-medium">${product.scale}</p>
-                                    <p class="text-gray-500">Scale</p>
+                                    <i class="fas fa-tag text-blue-600 mb-1"></i>
+                                    <p class="font-medium">${product.category != null ? product.category.name : "N/A"}</p>
+                                    <p class="text-gray-500">Category</p>
                                 </div>
                                 <div class="text-center p-3 bg-gray-50 rounded-lg">
                                     <i class="fas fa-cube text-green-600 mb-1"></i>
@@ -198,9 +204,9 @@
                                     <p class="text-gray-500">Material</p>
                                 </div>
                                 <div class="text-center p-3 bg-gray-50 rounded-lg">
-                                    <i class="fas fa-weight text-purple-600 mb-1"></i>
-                                    <p class="font-medium">${product.weight} g</p>
-                                    <p class="text-gray-500">Weight</p>
+                                    <i class="fas fa-industry text-purple-600 mb-1"></i>
+                                    <p class="font-medium">${product.brand != null ? product.brand.name : "N/A"}</p>
+                                    <p class="text-gray-500">Brand</p>
                                 </div>
                                 <div class="text-center p-3 bg-gray-50 rounded-lg">
                                     <i class="fas fa-boxes text-orange-600 mb-1"></i>

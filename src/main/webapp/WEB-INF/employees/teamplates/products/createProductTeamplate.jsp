@@ -17,7 +17,7 @@
     }
 </style>
 <div class="bg-gray-100">
-    <div class="w-[1120px] mx-auto h-[90vh] flex flex-col bg-white shadow-2xl overflow-hidden">
+    <div class="w-[900px] mx-auto h-[90vh] flex flex-col bg-white shadow-2xl overflow-hidden">
         <!-- Header Section -->
         <span id="productIdUpdate" class="hidden">${not empty product ? product.productId : 0}</span>
         <div class="bg-gradient-to-r flex justify-between from-blue-600 to-purple-600 px-8 py-3">
@@ -35,14 +35,12 @@
                 <c:choose>
                     <c:when test="${type == 'create'}">
                         <button id="create-product-btn" class="px-4 py-2 bg-emerald-500 rounded-lg text-white hover:bg-emerald-600 transition-all flex items-center gap-2">
-                            <!-- Lucide icon: Plus -->
                             <i data-lucide="plus"></i>
                             Create
                         </button>
                     </c:when>
                     <c:otherwise>
                         <button id="update-product-btn" class="px-4 py-2 bg-sky-500 rounded-lg text-white hover:bg-sky-600 transition-all flex items-center gap-2">
-                            <!-- Lucide icon: Pencil -->
                             <i data-lucide="pencil"></i>
                             Update
                         </button>
@@ -57,7 +55,7 @@
             <!-- Details Tab -->
             <div id="details-content" class="tab-content w-full">
                 <div id="productForm" class="space-y-6">
-                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <div class="grid grid-cols-1 gap-8">
                         <!-- Basic Information -->
                         <div class="space-y-6">
                             <div class="bg-gray-50 rounded-xl p-6">
@@ -66,139 +64,36 @@
                                 <div class="space-y-4">
                                     <div>
                                         <label class="block text-sm font-medium text-gray-700 mb-2">Title</label>
-                                        <input value="${not empty product ? product.title : ''}" type="text" name="title" id="title" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none">
+                                        <input value="${not empty product ? product.title : 'This is a title'}" type="text" name="title" id="title" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none">
                                         <span id="titleError"></span>
                                     </div>
 
                                     <div>
                                         <label class="block text-sm font-medium text-gray-700 mb-2">Description</label>
-                                        <textarea id="description" rows="4" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none" required>${not empty product ? product.description : ''}</textarea>
+                                        <textarea id="description" rows="4" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none" required>${not empty product ? product.description : 'This is a descrition'}</textarea>
                                         <span id="descriptionError"></span>
                                     </div>
 
                                     <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-2">Features</label>
-                                        <textarea name="features" id="features" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none">${not empty product ? product.features : ''}</textarea>
-                                        <span id="featuresError"></span>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Category and Brand -->
-                            <div class="bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl p-6 border border-blue-100">
-                                <h3 class="text-lg font-semibold text-gray-900 mb-4">Category & Brand</h3>
-
-                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-2">Category</label>
-                                        <select id="create-product-category" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none" required>
-                                            <option data-category-id="0">Select Category</option>
-                                            <c:forEach var="category" items="${categories}">
-                                                <option value="${category.id}"
-                                                        data-category-id="${category.id}"
-                                                        <c:if test="${not empty product && product.category.id == category.id}">
-                                                            selected="selected"
-                                                        </c:if>>
-                                                    ${category.name}
-                                                </option>
-                                            </c:forEach>
-                                        </select>
-                                    </div>
-
-                                    <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-2">Brand</label>
-                                        <select id="create-product-brand" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none" required>
-                                            <option data-brand-id="0">Select Brand</option>
-                                            <c:forEach var="brand" items="${brands}">
-                                                <option value="${brand.id}"
-                                                        data-brand-id="${brand.id}"
-                                                        <c:if test="${not empty product && product.brand.id == brand.id}">
-                                                            selected="selected"
-                                                        </c:if>>
-                                                    ${brand.name}
-                                                </option>
-                                            </c:forEach>
-                                        </select>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Product Specifications -->
-                        <div class="space-y-6">
-                            <div class="bg-gray-50 rounded-xl p-6">
-                                <h3 class="text-lg font-semibold text-gray-900 mb-4">Specifications</h3>
-
-                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-2">Scale</label>
-                                        <input value="${not empty product ? product.scale : ''}" type="text" name="scale" id="scale" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none" placeholder="1:64">
-                                        <span id="scaleError"></span>
-                                    </div>
-
-                                    <div>
                                         <label class="block text-sm font-medium text-gray-700 mb-2">Material</label>
-                                        <input value="${not empty product ? product.material : ''}" type="text" name="material" id="material" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none" placeholder="Metal">
+                                        <input value="${not empty product ? product.material : 'This is a material'}" type="text" name="title" id="material" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none">
                                         <span id="materialError"></span>
-                                    </div>
-
-                                    <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-2">Paint</label>
-                                        <input value="${not empty product ? product.paint : ''}" type="text" name="paint" id="paint" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none" placeholder="Glossy">
-                                        <span id="paintError"></span>
-                                    </div>
-
-                                    <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-2">Manufacturer</label>
-                                        <input value="${not empty product ? product.manufacturer : ''}" type="text" name="manufacturer" id="manufacturer" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none" placeholder="Mattel Inc.">
-                                        <span id="manufacturerError"></span>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Dimensions -->
-                            <div class="bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl p-6 border border-green-100">
-                                <h3 class="text-lg font-semibold text-gray-900 mb-4">Dimensions</h3>
-
-                                <div class="grid grid-cols-2 gap-4">
-                                    <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-2">Length (cm)</label>
-                                        <input value="${not empty product ? product.length : ''}" type="number" step="0.1" name="length" id="length" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none">
-                                        <span id="lengthError"></span>
-                                    </div>
-
-                                    <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-2">Width (cm)</label>
-                                        <input value="${not empty product ? product.width : ''}" type="number" step="0.1" name="width" id="width" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none">
-                                        <span id="widthError"></span>
-                                    </div>
-
-                                    <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-2">Height (cm)</label>
-                                        <input value="${not empty product ? product.height : ''}" type="number" step="0.1" name="height" id="height" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none">
-                                        <span id="heightError"></span>
-                                    </div>
-
-                                    <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-2">Weight (g)</label>
-                                        <input value="${not empty product ? product.weight : ''}" type="number" step="0.1" name="weight" id="weight" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none">
-                                        <span id="weightError"></span>
                                     </div>
                                 </div>
                             </div>
 
                             <!-- Price and Quantity -->
-                            <div class="bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl p-6 border border-blue-100">
+                            <div class="bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl p-6 border border-green-100">
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div>
                                         <label class="block text-sm font-medium text-gray-700 mb-2">Price</label>
-                                        <input value="${not empty product ? product.price : ''}" type="number" step="1000" name="price" id="price" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none" required>
+                                        <input value="${not empty product ? product.price : '50000'}" type="number" step="1000" name="price" id="price" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none" required>
                                         <span id="priceError"></span>
                                     </div>
 
                                     <div>
                                         <label class="block text-sm font-medium text-gray-700 mb-2">Quantity</label>
-                                        <input value="${not empty product ? product.quantity : ''}" type="number" name="quantity" id="quantity" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none" required>
+                                        <input value="${not empty product ? product.quantity : '32'}" type="number" name="quantity" id="quantity" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none" required>
                                         <span id="quantityError"></span>
                                     </div>
                                 </div>
@@ -290,16 +185,65 @@
                         </div>
                     </div>
 
+                    <!-- Category and Brand -->
+                    <div class="bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl p-6 border border-blue-100">
+                        <h3 class="text-lg font-semibold text-gray-900 mb-4">Category & Brand</h3>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Category</label>
+                                <select id="create-product-category" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none" required>
+                                    <option data-category-id="0">Select Category</option>
+                                    <c:forEach var="category" items="${categories}">
+                                        <option value="${category.id}"
+                                                data-category-id="${category.id}"
+                                                <c:if test="${not empty product && product.category.id == category.id}">
+                                                    selected="selected"
+                                                </c:if>>
+                                            ${category.name}
+                                        </option>
+                                    </c:forEach>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Brand</label>
+                                <select id="create-product-brand" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none" required>
+                                    <option data-brand-id="0">Select Brand</option>
+                                    <c:forEach var="brand" items="${brands}">
+                                        <option value="${brand.id}"
+                                                data-brand-id="${brand.id}"
+                                                <c:if test="${not empty product && product.brand.id == brand.id}">
+                                                    selected="selected"
+                                                </c:if>>
+                                            ${brand.name}
+                                        </option>
+                                    </c:forEach>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="createAtrributeProduct" class="w-full"></div>
+
                     <!-- Status -->
                     <div class="bg-yellow-50 rounded-xl p-6 border border-yellow-100">
                         <h3 class="text-lg font-semibold text-gray-900 mb-4">Product Status</h3>
-                        <div class="flex items-center">
-                            <!--<input type="checkbox" name="destroy" id="destroy" class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">-->
-                            <input type="checkbox" name="destroy" id="destroy" value="true"
-                                   <c:if test="${product.destroy}">checked</c:if>
-                                   class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
-
-                            <label for="destroy" class="ml-2 text-sm font-medium text-gray-700">Mark as destroyed/discontinued</label>
+                        <div class="space-y-3">
+                            <div class="flex items-center">
+                                <div>
+                                    <input type="checkbox" name="isActive" id="isActiveCreateProduct" value="true"
+                                           <c:if test="${product.isActive}">checked</c:if>
+                                               class="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded">
+                                           <label for="isActive" class="ml-2 text-sm font-medium text-gray-700">Product is active (visible to customers)</label>
+                                    </div>
+                                    <div class="flex items-center">
+                                        <input type="checkbox" name="destroy" id="destroy" value="true"
+                                        <c:if test="${product.destroy}">checked</c:if>
+                                        class="h-4 w-4 text-red-600 focus:ring-red-500 border-gray-300 rounded">
+                                    <label for="destroy" class="ml-2 text-sm font-medium text-gray-700">Mark as destroyed/discontinued</label>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>

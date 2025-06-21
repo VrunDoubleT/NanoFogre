@@ -22,15 +22,26 @@
     <td class="px-6 py-4 whitespace-nowrap">
         <div class="flex items-center">
             <div class="flex-shrink-0 h-16 w-16">
+                <%
+                    if (product.getUrls().size() > 0) {
+                %>
                 <img class="h-16 w-16 rounded-lg object-cover border border-gray-200"
                      src="<%= product.getUrls().get(0)%>" alt="<%= product.getTitle()%>">
+                <%
+                } else {
+                %>
+                <span class="h-16 w-16 flex justify-center items-center rounded-lg text-[10px] text-medium border border-gray-200">No image</span>
+                <%
+                    }
+                %>
+
             </div>
             <div class="ml-4">
                 <div class="text-sm font-medium text-gray-900"><%= product.getTitle().length() > 30 ? product.getTitle().substring(0, 27) + "..." : product.getTitle()%></div>
 
                 <div class="flex items-center mt-1">
-                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800"><%= product.getScale()%></span>
-                    <span class="ml-2 inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800"><%= product.getFeatures()%></span>
+                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800"><%= product.getCategory().getName()%></span>
+                    <span class="ml-2 inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800"><%= product.getBrand().getName()%></span>
                 </div>
             </div>
         </div>
@@ -38,9 +49,8 @@
 
     <td class="px-4 py-4 whitespace-nowrap">
         <div class="text-sm text-gray-900">
-            <div><strong>Manufacturer: </strong> <%= product.getManufacturer().length() > 30 ? product.getManufacturer().substring(0, 30) + "..." : product.getManufacturer()%></div>
+            <div><strong>Brand: </strong> <%= product.getBrand().getName()%></div>
             <div><strong>Material:</strong> <%= product.getMaterial()%></div>
-
         </div>
     </td>
 
@@ -55,6 +65,8 @@
     <td class="px-4 py-4 whitespace-nowrap">
         <% if (product.isDestroy()) { %>
         <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-200 text-gray-800">Disable</span>
+        <% } else if (!product.isActive()) { %>
+        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-200 text-yellow-800">Inactive</span>
         <% } else { %>
         <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">Active</span>
         <% }%>
@@ -90,8 +102,6 @@
                 </svg>
             </button>
             <% } %>
-
-
         </div>
     </td>
 </tr>
