@@ -1,6 +1,5 @@
 const loadCategoryContentAndEvent = (page) => {
     lucide.createIcons();
-
     // SHOW LOADING WHEN CALL SERVLET GET HTML
     document.getElementById('tabelContainer').innerHTML = '';
     document.getElementById('loadingCategory').innerHTML = `
@@ -8,20 +7,17 @@ const loadCategoryContentAndEvent = (page) => {
             <div class="w-10 h-10 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
         </div>
     `;
-
     let paramUrl = '';
-
     // Fetch category list and pagination
     Promise.all([
         fetch("/category/view?type=list&page=" + page + paramUrl).then(res => res.text()),
         fetch("/category/view?type=pagination&page=" + page + paramUrl).then(res => res.text())
     ]).then(([categoryHTML, paginationHTML]) => {
 
-        // UPDATE HTML
+// UPDATE HTML
         document.getElementById('tabelContainer').innerHTML = categoryHTML;
         document.getElementById('pagination').innerHTML = paginationHTML;
         document.getElementById('loadingCategory').innerHTML = '';
-
         // UPDATE URL WHEN CLICK PAGE
         function updatePageUrl(page) {
             const url = new URL(window.location);
@@ -48,21 +44,18 @@ const loadCategoryContentAndEvent = (page) => {
                 const clickedElement = e.target;
                 const buttonItem = clickedElement.closest('[data-category-id]');
                 const categoryId = buttonItem ? buttonItem.getAttribute('data-category-id') : null;
-
                 if (!categoryId) {
                     console.error("Category ID is missing or invalid.");
                     return;
                 }
-
-                console.log("Category ID:", categoryId);
-
                 openModal(modal);
 
                 fetch(`/category/view?type=edit&categoryId=${categoryId}`)
                         .then(res => res.text())
                         .then(html => {
                             document.getElementById("modalContent").innerHTML = html;
-                            loadCreateCategoryEvent(categoryId, page); // Đảm bảo hàm này đã được định nghĩa
+                            // Gọi đúng hàm cho edit
+                            loadEditCategoryEvent(categoryId, page);
                         })
                         .catch(error => {
                             console.error("Error fetching the category data:", error);
@@ -70,86 +63,296 @@ const loadCategoryContentAndEvent = (page) => {
             });
         });
 
-        // Add event for delete category
-        document.querySelectorAll(".openDisableCategory").forEach(element => {
-            element.addEventListener("click", (e) => {
-                const clickedElement = e.target;
-                const buttonItem = clickedElement.closest('[data-category-id]');
-                const categoryId = buttonItem.getAttribute('data-category-id');
-                confirmDeleteCategory(categoryId);
-            });
-        });
-
         // ADD EVENT FOR CREATE CATEGORY
         document.getElementById("create-category-button").onclick = () => {
             const modal = document.getElementById("modal");
-            openModal(modal);
+            openModal(document.getElementById('modal'));
             updateModalContent(`/category/view?type=create`, loadCreateCategoryEvent);
-    }
-    });
-};
-
-const loadCreateCategoryEvent = (categoryId, currentPage) => {
-    lucide.createIcons();
-    const updateBtn = document.getElementById("update-category-btn");
-    const categoryNameInput = document.getElementById("categoryName");
-    const errorDiv = document.getElementById("error-message");
-
-    updateBtn.addEventListener("click", (e) => {
-        e.preventDefault();
-
-        const categoryName = categoryNameInput.value.trim();
-
-        if (categoryName === "") {
-            errorDiv.textContent = "Category name cannot be empty.";
-            errorDiv.classList.remove("hidden");
-            return;
         }
 
-        const isCreate = categoryId == null;
+        /////hIDE cATEGFORY
+        function confirmHideCategory(categoryId) {
+            Swal.fire({
+                title: 'Are you sure you want to hide this category?',
+                text: "This category will be hidden from users but still kept in system records.",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Yes, hide it',
+                cancelButtonText: 'Cancel'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    fetch(`/category/view?type=delete&categoryId=${categoryId}`, {
+                        method: 'POST'
+                    })
+                            .then(response => response.json())
+                            .then(data => {
+                                Toastify({
+                                    text: data.message,
+                                    duration: 5000,
+                                    gravity: "top",
+                                    position: "right",
+                                    style: {
+                                        background: data.isSuccess ? "#2196F3" : "#f44336"
+                                    },
+                                    close: true
+                                }).showToast();
+                                loadCategoryContentAndEvent(getPageFromUrl());
+                            });
+                }
+            });
+        }
 
-        const postData = isCreate
-                ? `type=create&categoryName=${encodeURIComponent(categoryName)}`
-                : `type=update&categoryId=${encodeURIComponent(categoryId)}&categoryName=${encodeURIComponent(categoryName)}`;
+        function confirmEnableCategory(categoryId) {
+            Swal.fire({
+                title: 'Are you sure you want to restore this category?',
+                text: "This category will be visible to users again.",
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#28a745',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Yes, restore it',
+                cancelButtonText: 'Cancel'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    fetch(`/category/view?type=enable&categoryId=${categoryId}`, {
+                        method: 'POST'
+                    })
+                            .then(response => response.json())
+                            .then(data => {
+                                Toastify({
+                                    text: data.message,
+                                    duration: 5000,
+                                    gravity: "top",
+                                    position: "right",
+                                    style: {
+                                        background: data.isSuccess ? "#2196F3" : "#f44336"
+                                    },
+                                    close: true
+                                }).showToast();
+                                loadCategoryContentAndEvent(getPageFromUrl());
+                            });
+                }
+            });
+        }
+// DISABLE/HIDE
+        document.querySelectorAll(".openDisableCategory").forEach(element => {
+            element.addEventListener("click", (e) => {
+                const buttonItem = e.target.closest('[data-category-id]');
+                const categoryId = buttonItem.getAttribute('data-category-id');
+                confirmHideCategory(categoryId);
+            });
+        });
 
-        fetch("/category/view", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/x-www-form-urlencoded"
-            },
-            body: postData
-        })
-                .then(res => {
-                    if (!res.ok) {
-                        throw new Error(`Category name already exists.`);
-                    }
-                    return res.text();
-                })
-                .then(responseText => {
-                    if (!responseText) {
-                        throw new Error("Empty response from the server");
-                    }
-                    return JSON.parse(responseText);
-                })
-                .then(data => {
-                    if (data.isSuccess) {
-                        showToast(isCreate ? "✅ Category created!" : "✅ Category updated!", "success");
-                        closeModal();
-                        updateCategoryCount();
-                        loadCategoryContentAndEvent(currentPage);
-                    } else {
-                        errorDiv.textContent = data.message || "Failed to save category.";
-                        errorDiv.classList.remove("hidden");
-                    }
-
-                })
-                .catch(error => {
-                    console.error("Error:", error);
-                    errorDiv.textContent = error.message || "Server error. Please try again.";
-                    errorDiv.classList.remove("hidden");
-                });
+// ENABLE
+        document.querySelectorAll(".openEnableCategory").forEach(element => {
+            element.addEventListener("click", (e) => {
+                const buttonItem = e.target.closest('[data-category-id]');
+                const categoryId = buttonItem.getAttribute('data-category-id');
+                confirmEnableCategory(categoryId);
+            });
+        });
+        ////
     });
 };
+
+
+//edit category
+function loadEditCategoryEvent(categoryId, currentPage) {
+    lucide.createIcons();
+
+    const nameInput = document.getElementById("categoryName");
+    const imageInput = document.getElementById("categoryImage");
+    const preview = document.getElementById("image-preview");
+    const form = document.getElementById("edit-category-form");
+    const errorDiv = document.getElementById("error-message");
+    const nameError = document.getElementById("categoryNameError");
+    const imageError = document.getElementById("categoryImageError");
+    const statusDiv = document.getElementById("upload-status");
+    const statusText = document.getElementById("status-text");
+    const errorStatusDiv = document.getElementById("upload-error");
+    const errorStatusText = document.getElementById("error-text");
+
+
+    const oldImg = imageInput.getAttribute("data-old-image");
+   
+    if (oldImg && preview && !imageInput.files[0]) {
+        preview.innerHTML = `<img src="${oldImg}" class="h-32 w-32 object-cover rounded-lg shadow" />`;
+    }
+
+    imageInput.onchange = function () {
+        if (imageInput.files && imageInput.files[0]) {
+            const file = imageInput.files[0];
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                preview.innerHTML = `<img src="${e.target.result}" class="h-32 w-32 object-cover rounded-lg shadow" />`;
+            };
+            reader.readAsDataURL(file);
+        } else if (oldImg) {
+      
+            preview.innerHTML = `<img src="${oldImg}" class="h-32 w-32 object-cover rounded-lg shadow" />`;
+        } else {
+            preview.innerHTML = `<span class="text-gray-400 italic">No image available</span>`;
+        }
+    };
+
+    function showStatus(message) {
+        statusDiv.classList.remove("hidden");
+        statusText.textContent = message;
+        errorStatusDiv.classList.add("hidden");
+    }
+    function showError(message) {
+        errorStatusDiv.classList.remove("hidden");
+        errorStatusText.textContent = message;
+        statusDiv.classList.add("hidden");
+    }
+
+    // Validate
+    function validate() {
+        let isError = false;
+        if (!nameInput.value.trim()) {
+            nameError.textContent = "Category name is required";
+            isError = true;
+        } else {
+            nameError.textContent = "";
+        }
+        return !isError;
+    }
+
+    // Submit
+    form.onsubmit = function (e) {
+        e.preventDefault();
+        errorDiv.classList.add("hidden");
+        errorStatusDiv.classList.add("hidden");
+        statusDiv.classList.add("hidden");
+
+        if (!validate())
+            return;
+
+        const formData = new FormData();
+        formData.append("type", "update"); 
+        formData.append("categoryId", categoryId);
+        formData.append("categoryName", nameInput.value.trim());
+  
+        if (imageInput.files && imageInput.files[0]) {
+            formData.append("categoryImage", imageInput.files[0]);
+        }
+
+        showStatus("Uploading...");
+
+        fetch('/category/view', {
+            method: 'POST',
+            body: formData
+        })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.isSuccess) {
+                        showStatus(data.message || "Category updated!");
+                        setTimeout(() => {
+                            closeModal();
+                            loadCategoryContentAndEvent(currentPage);
+                        }, 800);
+                    } else {
+                        showError(data.message || "Update failed");
+                    }
+                })
+                .catch(() => {
+                    showError("Something went wrong, please try again!");
+                });
+    };
+}
+
+
+//Create Category
+function loadCreateCategoryEvent() {
+    lucide.createIcons();
+
+    const nameInput = document.getElementById("categoryName");
+    const imageInput = document.getElementById("categoryImage");
+    const preview = document.getElementById("image-preview");
+    const btnCreate = document.getElementById("create-category-btn");
+    const statusDiv = document.getElementById("upload-status");
+    const statusText = document.getElementById("status-text");
+    const errorDiv = document.getElementById("upload-error");
+    const errorText = document.getElementById("error-text");
+
+    // Preview
+    imageInput.onchange = function () {
+        preview.innerHTML = "";
+        if (imageInput.files && imageInput.files[0]) {
+            const file = imageInput.files[0];
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                preview.innerHTML = `<img src="${e.target.result}" class="h-32 w-32 object-cover rounded-lg shadow" />`;
+            };
+            reader.readAsDataURL(file);
+        }
+    };
+
+    // Validate
+    function validate() {
+        let isError = false;
+        if (!nameInput.value.trim()) {
+            document.getElementById("categoryNameError").textContent = "Category name is required";
+            isError = true;
+        } else {
+            document.getElementById("categoryNameError").textContent = "";
+        }
+        if (!imageInput.files || !imageInput.files[0]) {
+            document.getElementById("categoryImageError").textContent = "Category image is required";
+            isError = true;
+        } else {
+            document.getElementById("categoryImageError").textContent = "";
+        }
+        return !isError;
+    }
+
+    function showStatus(message) {
+        statusDiv.classList.remove("hidden");
+        statusText.textContent = message;
+        errorDiv.classList.add("hidden");
+    }
+    function showError(message) {
+        errorDiv.classList.remove("hidden");
+        errorText.textContent = message;
+        statusDiv.classList.add("hidden");
+    }
+
+    btnCreate.onclick = function (e) {
+        e.preventDefault();
+        if (!validate())
+            return;
+
+        const formData = new FormData();
+        formData.append("categoryName", nameInput.value.trim());
+        formData.append("categoryImage", imageInput.files[0]);
+        showStatus("Uploading...");
+
+        fetch('/category/view?type=create', {
+            method: 'POST',
+            body: formData
+        })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.isSuccess) {
+                        showStatus(data.message || "Category created!");
+                        setTimeout(() => {
+                            closeModal(); 
+                          
+                            if (typeof loadCategoryContentAndEvent === 'function') {
+                                loadCategoryContentAndEvent(1);
+                            }
+                        }, 800);
+                    } else {
+                        showError(data.message || "Failed to create category");
+                    }
+                })
+                .catch(() => {
+                    showError("Something went wrong, please try again!");
+                });
+    }
+}
 
 
 function showToast(message, type = "success") {
@@ -164,73 +367,12 @@ function showToast(message, type = "success") {
     }, 3000);
 }
 
-
-
-
 function getPageFromUrl() {
     const urlParams = new URLSearchParams(window.location.search);
     return parseInt(urlParams.get('page')) || 1;
 }
 
-function confirmDeleteCategory(categoryId) {
-    const page = getPageFromUrl();
 
-    Swal.fire({
-        title: 'Are you sure you want to delete this category?',
-        text: "Once deleted, it cannot be restored.",
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#d33',
-        cancelButtonColor: '#3085d6',
-        confirmButtonText: 'Yes',
-        cancelButtonText: 'Cancel'
-    }).then((result) => {
-        if (result.isConfirmed) {
-
-            fetch(`/category/view?type=delete&categoryId=${categoryId}`, {
-                method: 'POST'
-            })
-                    .then(response => {
-                        if (!response.ok) {
-                            throw new Error('Failed to delete category');
-                        }
-                        return response.text();
-                    })
-                    .then(responseText => {
-                        let data;
-                        try {
-
-                            if (!responseText || responseText.trim() === '') {
-                                data = {isSuccess: false, message: 'Invalid server response'};
-                            } else {
-                                data = JSON.parse(responseText);
-                            }
-                        } catch (e) {
-                            console.error('JSON parse error:', e);
-                            data = {isSuccess: true, message: '✅ Category deleted successfully'};
-                        }
-
-                        Toastify({
-                            text: data.message,
-                            duration: 5000,
-                            gravity: "top",
-                            position: "right",
-                            style: {
-                                background: data.isSuccess ? "#2196F3" : "#f44336"
-                            },
-                            close: true
-                        }).showToast();
-                        updateCategoryCount();
-                        loadCategoryContentAndEvent(page);
-
-                    })
-                    .catch(error => {
-                        console.error("Error deleting category:", error);
-                        Swal.fire('Error!', 'There was an issue deleting the category.', 'error');
-                    });
-        }
-    });
-}
 
 // Update total category when deleted success or created new ctegory 
 function updateCategoryCount() {
@@ -248,5 +390,12 @@ function updateCategoryCount() {
 }
 
 
-
+document.getElementById("modal").onclick = () => {
+    document.getElementById("modal").classList.remove("flex");
+    document.body.classList.remove("overflow-hidden");
+    document.getElementById("modal").classList.add("hidden");
+};
+document.getElementById("modalContent").addEventListener("click", function (event) {
+    event.stopPropagation();
+});
 

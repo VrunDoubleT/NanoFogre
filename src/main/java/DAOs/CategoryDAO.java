@@ -36,17 +36,24 @@ public class CategoryDAO extends DB.DBContext {
     public List<Category> getCategories(int page, int limit) {
         int row = (page - 1) * limit;
         List<Category> categories = new ArrayList<>();
+
         String query = "SELECT * FROM Categories ORDER BY categoryId OFFSET " + row + " ROWS FETCH NEXT " + limit + " ROWS ONLY";
+
         try ( ResultSet rs = execSelectQuery(query)) {
             while (rs.next()) {
-                Category category = new Category();
-                category.setId(rs.getInt("categoryId"));
-                category.setName(rs.getString("categoryName"));
-                categories.add(category);
+                // Instantiate Category using the constructor that takes parameters
+                Category category = new Category(
+                        rs.getInt("categoryId"),
+                        rs.getString("categoryName"),
+                        rs.getBoolean("isActive"), // Assuming the column for active status is 'isActive'
+                        rs.getString("image") // Column for image
+                );
+                categories.add(category); // Add category to the list
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
+
         return categories;
     }
 
@@ -84,10 +91,20 @@ public class CategoryDAO extends DB.DBContext {
         return false;
     }
 
-    public boolean updateCategory(Category category) {
-        String query = "UPDATE Categories SET categoryName = ? WHERE categoryId = ?";
+    public boolean updateCategory(Category category, boolean updateImage) {
+        String query;
+        Object[] params;
+
+        if (updateImage) {
+            query = "UPDATE Categories SET categoryName = ?, image = ? WHERE categoryId = ?";
+            params = new Object[]{category.getName(), category.getAvatar(), category.getId()};
+        } else {
+            query = "UPDATE Categories SET categoryName = ? WHERE categoryId = ?";
+            params = new Object[]{category.getName(), category.getId()};
+        }
+
         try {
-            int rowsUpdated = execQuery(query, new Object[]{category.getName(), category.getId()});
+            int rowsUpdated = execQuery(query, params);
             return rowsUpdated > 0;
         } catch (SQLException e) {
             e.printStackTrace();
@@ -111,13 +128,20 @@ public class CategoryDAO extends DB.DBContext {
     }
 
     public boolean createCategory(Category category) {
-        String query = "INSERT INTO Categories (categoryName) VALUES (?)";
+        // Updated query to insert categoryName, image, and isActive status
+        String query = "INSERT INTO Categories (categoryName, image) VALUES (?, ?)";
+
         try {
-            int rowsAffected = execQuery(query, new Object[]{category.getName()});
-            return rowsAffected > 0;
+            // Pass categoryName, image, and isActive status to the query
+            int rowsAffected = execQuery(query, new Object[]{
+                category.getName(), // categoryName
+                category.getAvatar() // image (assuming 'avatar' stores the image URL)
+            });
+
+            return rowsAffected > 0; // Return true if the insertion is successful
         } catch (SQLException e) {
             e.printStackTrace();
-            return false;
+            return false; // Return false in case of an error
         }
     }
 
@@ -134,6 +158,31 @@ public class CategoryDAO extends DB.DBContext {
             e.printStackTrace();
         }
 
+        return false;
+    }
+
+    public boolean hideCategory(int categoryId) {
+        String sql = "UPDATE Categories SET isActive = 0 WHERE categoryId = ?";
+        Object[] params = {categoryId};
+        try {
+            int rows = execQuery(sql, params);
+            System.out.println("Rows affected (hide): " + rows);
+            return rows > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    public boolean enableCategory(int categoryId) {
+        String sql = "UPDATE Categories SET isActive = 1 WHERE categoryId = ?";
+        Object[] params = {categoryId};
+        try {
+            int rows = execQuery(sql, params);
+            return rows > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
         return false;
     }
 

@@ -8,9 +8,17 @@ public class Category {
 
     private int id;
     private String name;
-    private boolean isDeleted; // 0 = không xóa, 1 = đã xóa
-  
+    private boolean isActive; 
+    private String avatar;
+
     public Category() {
+    }
+
+    public Category(int id, String name, boolean isActive, String avatar) {
+        this.id = id;
+        this.name = name;
+        this.isActive = isActive;
+        this.avatar = avatar;
     }
 
     public Category(int id, String name) {
@@ -18,13 +26,13 @@ public class Category {
         this.name = name;
     }
 
-    public Category(int id, String name, boolean isDeleted) {
-        this.id = id;
-        this.name = name;
-        this.isDeleted = isDeleted;
+    public String getAvatar() {
+        return avatar;
     }
 
-
+    public void setAvatar(String avatar) {
+        this.avatar = avatar;
+    }
 
     public int getId() {
         return id;
@@ -42,18 +50,12 @@ public class Category {
         this.name = name;
     }
 
-    public boolean isIsDeleted() {
-        return isDeleted;
+    public boolean isIsActive() {
+        return isActive;
     }
 
-    public void setIsDeleted(boolean isDeleted) {
-        this.isDeleted = isDeleted;
+    public void setIsActive(boolean isActive) {
+        this.isActive = isActive;
     }
 
-
-
-    @Override
-    public String toString() {
-        return "Category{" + "id=" + id + ", name=" + name + ", isDeleted=" + isDeleted + '}';
-    }
 }
