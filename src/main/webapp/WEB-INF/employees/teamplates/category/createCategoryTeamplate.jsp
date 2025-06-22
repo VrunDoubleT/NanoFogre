@@ -1,4 +1,6 @@
 
+<%@page import="DAOs.CategoryDAO"%>
+<%@page import="Models.Category"%>
 <%-- 
     Document   : createCategoryTeamplate
     Created on : Jun 15, 2025, 7:27:04 PM
@@ -9,8 +11,12 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 
+<%
+    Category category = new Category();
 
-<!-- createCategoryTeamplate.jsp -->
+    String imageUrl = category.getAvatar();
+
+%>
 
 <div class="bg-gray-100">
     <div class="w-[500px] mx-auto h-auto flex flex-col bg-white shadow-2xl overflow-hidden rounded-xl">
@@ -32,9 +38,21 @@
                     <p id="categoryNameError" class="text-red-500 text-sm mt-1"></p>
                 </div>
 
-                <!-- Category Image Upload -->
+
+                <!-- Upload input -->
                 <div>
                     <label class="block text-sm font-semibold text-gray-700 mb-1">Category Image</label>
+
+                    <div id="image-preview" class="flex justify-center mb-3">
+                        <img src="<%= imageUrl%>" id="category-image-preview-tag"
+                             class="h-32 w-32 object-cover rounded-full border border-gray-200 shadow"
+                             alt="Category Image Preview"
+                             hidden=""/>
+                    </div>
+                </div>
+
+                <!-- Category Image Upload -->
+                <div>
                     <input type="file" id="categoryImage" name="categoryImage" accept="image/*" class="hidden" required />
                     <label for="categoryImage"
                            class="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 transition-colors">
