@@ -19,7 +19,7 @@ public class CategoryDAO extends DB.DBContext {
 
     public List<Category> getCategories() {
         List<Category> categories = new ArrayList<>();
-        String query = "SELECT * FROM Categories";
+        String query = "SELECT * FROM Categories DESC";
         try ( ResultSet rs = execSelectQuery(query)) {
             while (rs.next()) {
                 Category category = new Category();
@@ -37,7 +37,7 @@ public class CategoryDAO extends DB.DBContext {
         int row = (page - 1) * limit;
         List<Category> categories = new ArrayList<>();
 
-        String query = "SELECT * FROM Categories ORDER BY categoryId OFFSET " + row + " ROWS FETCH NEXT " + limit + " ROWS ONLY";
+        String query = "SELECT * FROM Categories ORDER BY categoryId DESC OFFSET " + row + " ROWS FETCH NEXT " + limit + " ROWS ONLY";
 
         try ( ResultSet rs = execSelectQuery(query)) {
             while (rs.next()) {
@@ -120,6 +120,8 @@ public class CategoryDAO extends DB.DBContext {
                 category = new Category();
                 category.setId(rs.getInt("categoryId"));
                 category.setName(rs.getString("categoryName"));
+                category.setAvatar(rs.getString("image"));
+
             }
         } catch (SQLException e) {
             e.printStackTrace();

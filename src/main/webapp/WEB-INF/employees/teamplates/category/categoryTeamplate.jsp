@@ -39,7 +39,16 @@
                     </div>
                 </div>
             </td>
+            <!-- Status -->
+            <td class="px-3 py-4 whitespace-nowrap text-center">
+                <% if (category.isIsActive()) { %>
+                <span class="inline-block px-2 py-1 rounded-full bg-green-100 text-green-800 font-semibold text-xs">Active</span>
+                <% } else { %>
+                <span class="inline-block px-2 py-1 rounded-full bg-yellow-200 text-yellow-800 font-semibold text-xs">Inactive</span>
+                <% }%>
+            </td>
 
+            <!-- End status -->
             <td class="px-4 py-4 whitespace-nowrap text-sm font-medium">
                 <div class="flex items-center justify-center space-x-4">
                     <!-- Edit Button -->
@@ -51,7 +60,7 @@
                         </svg>
                     </button>
 
-                    <% if (category.isIsActive()) { %>
+                    <% if (category.isIsActive()) {%>
                     <button data-category-id="<%= category.getId()%>" class="openDisableCategory bg-red-100 text-red-700 hover:bg-red-200 px-3 py-1.5 rounded-lg transition-colors" title="Hide category">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"

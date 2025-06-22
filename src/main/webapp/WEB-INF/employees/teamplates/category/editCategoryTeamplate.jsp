@@ -5,6 +5,15 @@
     int categoryId = Integer.parseInt(request.getParameter("categoryId"));
     CategoryDAO categoryDAO = new CategoryDAO();
     Category category = categoryDAO.getCategoryById(categoryId);
+
+    String imageUrl = category.getAvatar();
+    if (imageUrl == null || imageUrl.trim().isEmpty()) {
+        imageUrl = "/assets/images/no-image.png";
+    } else if (imageUrl.startsWith("http")) {
+
+    } else if (!imageUrl.startsWith("/")) {
+        imageUrl = "/uploads/category/" + imageUrl;
+    }
 %>
 
 
@@ -43,23 +52,53 @@
                     <span id="categoryNameError" class="text-red-500 text-sm"></span>
                 </div>
 
-                <!-- Category Image Input -->
+
+                <!-- avater curent -->
+                <div> 
+                    <label class="block text-sm font-semibold text-gray-700 mb-1">Category Image Current</label>
+                    <div class="flex justify-center">
+
+                        <div class="relative">
+                            <img
+                                src="<%= imageUrl%>"
+                                alt="Category Avatar"
+                                class="h-24 w-24 rounded-full object-cover border-4 border-white shadow-lg ring-2 ring-blue-200 transition-all duration-300"
+                                style="background: linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%);"
+                                />
+                            <!-- Badge  -->
+                            <span class="absolute bottom-2 right-2 block w-5 h-5 bg-green-400 border-2 border-white rounded-full"></span> 
+                        </div>
+                    </div>
+                </div>
+
+
+
+                <!-- Upload input -->
                 <div>
                     <label class="block text-sm font-semibold text-gray-700 mb-1">Category Image</label>
-                    <input    type="file"
-                              id="categoryImage"
-                              name="categoryImage"
-                              accept="image/*"
-                              class="hidden"
-                              data-old-image="<%= category.getAvatar() != null ? category.getAvatar() : ""%>"/>
+
+                    <div id="image-preview" class="flex justify-center mb-3">
+                        <img src="<%= imageUrl%>" id="category-image-preview-tag"
+                             class="h-32 w-32 object-cover rounded-full border border-gray-200 shadow"
+                             alt="Category Image Preview"
+                             hidden=""/>
+                    </div>
+                    <!-- Upload input -->
+                    <input type="file"
+                           id="categoryImage"
+                           name="categoryImage"
+                           accept="image/*"
+                           class="hidden" />
                     <label for="categoryImage"
                            class="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 transition-colors">
                         <span class="text-gray-500 text-sm">Click to upload or drag & drop</span>
                         <span class="text-gray-400 text-xs">PNG, JPG, JPEG, GIF (max 5MB)</span>
                     </label>
-                    <div id="image-preview" class="mt-2"></div>
                     <p id="categoryImageError" class="text-red-500 text-sm mt-1"></p>
                 </div>
+
+
+
 
                 <!-- Error Message -->
                 <div id="error-message" class="text-red-600 text-sm hidden"></div>
