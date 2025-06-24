@@ -66,7 +66,7 @@
             </div>
         </div>
     </div>
-    <div class="bg-white w-full rounded-xl shadow-sm border border-gray-100">
+    <div class="bg-white w-full rounded-xl overflow-hidden shadow-sm border border-gray-100">
         <div class="px-6 py-4 border-b border-gray-200">
             <div class="flex items-center justify-between">
                 <h2 class="text-lg font-semibold text-gray-900">Product List</h2>

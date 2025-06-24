@@ -75,9 +75,9 @@ public class ProductViewServlet extends HttpServlet {
             case "item":
                 String productId = request.getParameter("productId");
                 Product product = pDao.getProductById(Integer.parseInt(productId));
-                List<ProductAttribute> productAtributes = pDao.getAttributesByProductId(Integer.parseInt(productId));
+                List<ProductAttribute> productAttributes = pDao.getAttributesByProductId(Integer.parseInt(productId));
                 request.setAttribute("product", product);
-                request.setAttribute("productAtributes", productAtributes);
+                request.setAttribute("productAttributes", productAttributes);
                 request.getRequestDispatcher("/WEB-INF/employees/teamplates/products/productDetailTeamplate.jsp").forward(request, response);
                 break;
             case "pagination":
@@ -103,20 +103,22 @@ public class ProductViewServlet extends HttpServlet {
                 List<Category> cas = categoryDao.getCategories();
                 List<Brand> bras = brandDao.getAllBrands();
                 List<ProductImage> productImages = pDao.getProductImagesByProductId(productIdToEdit);
+                List<ProductAttribute> paEdit = pDao.getAttributesByProductId(productIdToEdit);
                 request.setAttribute("categories", cas);
                 request.setAttribute("brands", bras);
                 request.setAttribute("type", "edit");
                 request.setAttribute("product", productToEdit);
                 request.setAttribute("productImages", productImages);
-                request.getRequestDispatcher("/WEB-INF/employees/teamplates/products/createProductTeamplate.jsp").forward(request, response);
+                request.setAttribute("productAttributes", paEdit);
+                request.getRequestDispatcher("/WEB-INF/employees/teamplates/products/editProductTeamplate.jsp").forward(request, response);
                 break;
             case "stat":
                 ProductStat productStat = pDao.getProductStat();
                 responseJson(response, true, "Success", "Error", productStat);
                 break;
             case "productAttribute":
-                List<ProductAttribute> productAttributes = pDao.getAttributesByCategoryId(Converter.parseOption(request.getParameter("categoryId"), 0));
-                request.setAttribute("productAttributes", productAttributes);
+                List<ProductAttribute> pa = pDao.getAttributesByProductIdAndCategoryId(Converter.parseOption(request.getParameter("productId"), 0),Converter.parseOption(request.getParameter("categoryId"), 0));
+                request.setAttribute("productAttributes", pa);
                 request.getRequestDispatcher("/WEB-INF/employees/teamplates/products/productAttributeTeamplate.jsp").forward(request, response);
                 break;
             case "productAttributeData":
@@ -199,17 +201,14 @@ public class ProductViewServlet extends HttpServlet {
                 String[] alreadyUrlsId = request.getParameterValues("urlsId");
                 pDao.deleteUnusedProductImages(productToUpdate.getProductId(), alreadyUrlsId);
                 boolean isUpdateSuccess = pDao.updateProduct(productToUpdate);
+                pDao.upsertProductAttributeValues(productToUpdate.getProductId(), productToUpdate.getAttributes());
+                System.out.println(productToUpdate.isActive());
                 responseJson(response, isUpdateSuccess, "Product has been updated successfully", "An error occurred while update the product");
                 break;
             case "delete":
-                int productIdToHide = Integer.parseInt(request.getParameter("productId"));
-                boolean isHidden = pDao.hideProduct(productIdToHide);
-                responseJson(response, isHidden, "The product has been successfully hidden", "An error occurred while hide the product");
-                break;
-            case "enable":
-                int productIdToEnable = Integer.parseInt(request.getParameter("productId"));
-                boolean isEnable = pDao.enableProduct(productIdToEnable);
-                responseJson(response, isEnable, "The product has been successfully restored", "An error occurred while restoring the product");
+                int productIdToDelete = Integer.parseInt(request.getParameter("productId"));
+                boolean isHidden = pDao.deleteProduct(productIdToDelete);
+                responseJson(response, isHidden, "The product has been successfully deleted", "An error occurred while deleted the product");
                 break;
             default:
                 break;

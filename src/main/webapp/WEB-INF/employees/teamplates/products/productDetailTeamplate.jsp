@@ -147,12 +147,28 @@
                             Additional Information
                         </h3>
                         <div class="space-y-2">
-                            <c:forEach var="productAtribute" items="${productAtributes}">
-                                <div class="flex justify-between gap-4">
-                                    <span class="text-gray-600 whitespace-nowrap">${productAtribute.name}:</span>
-                                    <span class="text-gray-500 flex-1 text-end">${productAtribute.value} ${(productAtribute.unit != null && !productAtribute.unit.trim().isEmpty()) ? productAtribute.unit : ''}</span>
-                                </div>
+                            <c:forEach var="productAttribute" items="${productAttributes}">
+                                <c:if test="${productAttribute.value != null && !productAttribute.value.trim().isEmpty()}">
+                                    <div class="flex justify-between gap-4">
+                                        <span class="text-gray-600 whitespace-nowrap">${productAttribute.name}:</span>
+                                        <span class="text-gray-500 flex-1 text-end">${productAttribute.value} ${(productAtribute.unit != null && !productAtribute.unit.trim().isEmpty()) ? productAtribute.unit : ''}</span>
+                                    </div>
+                                </c:if>
                             </c:forEach>
+                            <c:if test="${empty productAttributes}">
+                                <span>No information</span>
+                            </c:if>
+                            <c:if test="${not empty productAttributes}">
+                                <c:set var="hasValue" value="false" />
+                                <c:forEach var="attr" items="${productAttributes}">
+                                    <c:if test="${not empty attr.value}">
+                                        <c:set var="hasValue" value="true" />
+                                    </c:if>
+                                </c:forEach>
+                                <c:if test="${not hasValue}">
+                                    <span>No information</span>
+                                </c:if>
+                            </c:if>
                         </div>
                     </div>
                 </div>

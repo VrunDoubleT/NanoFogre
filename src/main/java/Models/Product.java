@@ -147,6 +147,7 @@ public class Product {
         this.attributes = attributes;
     }
 
+
     @Override
     public String toString() {
         return "Product{" + "productId=" + productId + ", title=" + title + ", slug=" + slug + ", description=" + description + ", material=" + material + ", price=" + price + ", quantity=" + quantity + ", isActive=" + isActive + ", destroy=" + destroy + ", category=" + category + ", brand=" + brand + ", urls=" + urls + ", attributes=" + attributes + '}';
