@@ -2,6 +2,7 @@ package Utils;
 
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
+import java.time.LocalDateTime;
 import java.util.Locale;
 
 /**
@@ -25,6 +26,22 @@ public class Converter {
         } else {
             DecimalFormat df = new DecimalFormat("#.##");
             return df.format(price);
+        }
+    }
+
+    public static double parseDouble(String val, double defaultValue) {
+        try {
+            return Double.parseDouble(val);
+        } catch (Exception e) {
+            return defaultValue;
+        }
+    }
+
+    public static LocalDateTime parseLocalDateTime(String input) {
+        try {
+            return LocalDateTime.parse(input);
+        } catch (Exception e) {
+            return null;
         }
     }
 }

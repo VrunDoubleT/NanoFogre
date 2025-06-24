@@ -1,12 +1,13 @@
 package Models;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 /**
  *
  * @author Tran Thanh Van - CE181019
  */
 public class Voucher {
+
     private int id;
     private String code;
     private String type;
@@ -14,15 +15,14 @@ public class Voucher {
     private double minValue;
     private double maxValue;
     private String description;
-    private LocalDate validFrom;
-    private LocalDate validTo;
+    private LocalDateTime validFrom;
+    private LocalDateTime validTo;
     private boolean isActive;
-    private boolean _destroy;
 
     public Voucher() {
     }
 
-    public Voucher(int id, String code, String type, double value, double minValue, double maxValue, String description, LocalDate validFrom, LocalDate validTo, boolean isActive, boolean _destroy) {
+    public Voucher(int id, String code, String type, double value, double minValue, double maxValue, String description, LocalDateTime validFrom, LocalDateTime validTo, boolean isActive) {
         this.id = id;
         this.code = code;
         this.type = type;
@@ -33,7 +33,6 @@ public class Voucher {
         this.validFrom = validFrom;
         this.validTo = validTo;
         this.isActive = isActive;
-        this._destroy = _destroy;
     }
 
     public int getId() {
@@ -92,19 +91,19 @@ public class Voucher {
         this.description = description;
     }
 
-    public LocalDate getValidFrom() {
+    public LocalDateTime getValidFrom() {
         return validFrom;
     }
 
-    public void setValidFrom(LocalDate validFrom) {
+    public void setValidFrom(LocalDateTime validFrom) {
         this.validFrom = validFrom;
     }
 
-    public LocalDate getValidTo() {
+    public LocalDateTime getValidTo() {
         return validTo;
     }
 
-    public void setValidTo(LocalDate validTo) {
+    public void setValidTo(LocalDateTime validTo) {
         this.validTo = validTo;
     }
 
@@ -116,16 +115,19 @@ public class Voucher {
         this.isActive = isActive;
     }
 
-    public boolean isDestroy() {
-        return _destroy;
-    }
-
-    public void setDestroy(boolean _destroy) {
-        this._destroy = _destroy;
+    public String getStatus() {
+        LocalDateTime now = LocalDateTime.now();
+        if (now.isBefore(validFrom)) {
+            return "Upcoming";
+        } else if (!now.isAfter(validTo)) {
+            return "Ongoing";
+        } else {
+            return "Expired";
+        }
     }
 
     @Override
     public String toString() {
-        return "Voucher{" + "id=" + id + ", code=" + code + ", type=" + type + ", value=" + value + ", minValue=" + minValue + ", maxValue=" + maxValue + ", description=" + description + ", validFrom=" + validFrom + ", validTo=" + validTo + ", isActive=" + isActive + ", _destroy=" + _destroy + '}';
+        return "Voucher{" + "id=" + id + ", code=" + code + ", type=" + type + ", value=" + value + ", minValue=" + minValue + ", maxValue=" + maxValue + ", description=" + description + ", validFrom=" + validFrom + ", validTo=" + validTo + ", isActive=" + isActive + ", _destroy=" + '}';
     }
 }

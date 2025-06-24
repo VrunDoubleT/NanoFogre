@@ -129,6 +129,13 @@
                                     }
                                     loadCategoryContentAndEvent(categoryPage);
                                     break;
+                                case 'voucher':
+                                    let voucherPage = 1;
+                                    if (params.length > 0) {
+                                        voucherPage = parseOptionNumber(params[0].value, 1);
+                                    }
+                                    loadVoucherContentAndEvent(voucherPage);
+                                    break;
                                 default:
                                     break;
                             }
@@ -176,6 +183,7 @@
                         const staffPage = params.get('page') || '1';
                         loadContent(viewPage, false, [{name: 'page', value: staffPage}
                         ]);
+                        break;
                     case "brand":
                         const brandPage = params.get('page') || '1';
                         loadContent(viewPage, false, [{name: 'page', value: brandPage}]);
@@ -187,6 +195,11 @@
                     case "category":
                         const categoryPage = params.get('page') || '1';
                         loadContent(viewPage, false, [{name: 'page', value: categoryPage}]);
+                        break;
+                    case "voucher":
+                        const voucherPage = params.get('page') || '1';
+                        loadContent(viewPage, false, [{name: 'page', value: voucherPage}
+                        ]);
                         break;
                     default:
 
@@ -205,5 +218,6 @@
         <script src="../../../js/category.js"></script>       
         <script src="../../../js/staff.js"></script> 
         <script src="../../../js/loading.js"></script>
+        <script src="../../../js/voucher.js"></script>
     </body>
 </html>
