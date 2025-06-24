@@ -47,12 +47,11 @@ public class StaffDAO extends DB.DBContext {
         } catch (SQLException e) {
             e.printStackTrace();
         }
-
         return list;
     }
 
     public int countStaff() {
-        String query = "SELECT COUNT(*) as total FROM Employees WHERE roleId = 2";
+        String query = "SELECT COUNT(*) as total FROM Employees WHERE roleId = 3 AND _destroy = 0";
         try ( ResultSet rs = execSelectQuery(query)) {
             if (rs.next()) {
                 return rs.getInt(1);
@@ -74,7 +73,6 @@ public class StaffDAO extends DB.DBContext {
             staff.isIsBlock(),
             staff.isDestroy()
         };
-
         try {
             int generatedId = execQueryReturnId(query, params);
             return generatedId > 0;
@@ -105,14 +103,13 @@ public class StaffDAO extends DB.DBContext {
                 if (ts != null) {
                     staff.setCreatedAt(ts.toLocalDateTime());
                 }
-
                 staff.setIsBlock(rs.getBoolean("isBlock"));
+                staff.setDestroy(rs.getBoolean("_destroy"));
                 return staff;
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
-
         return null;
     }
 

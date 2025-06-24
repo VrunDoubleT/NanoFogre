@@ -7,6 +7,7 @@ import java.time.LocalDateTime;
  * @author Tran Thanh Van - CE181019
  */
 public class Employee {
+
     private int id;
     private String email;
     private String password;
@@ -29,7 +30,9 @@ public class Employee {
         this.role = role;
         this.isBlock = isBlock;
         this.createdAt = createdAt;
+
         this._destroy = _destroy;
+
     }
 
     public int getId() {
@@ -109,5 +112,4 @@ public class Employee {
         return "Employee{" + "id=" + id + ", email=" + email + ", password=" + password + ", name=" + name + ", avatar=" + avatar + ", role=" + role + ", isBlock=" + isBlock + ", createdAt=" + createdAt + '}';
     }
 
-    
 }
