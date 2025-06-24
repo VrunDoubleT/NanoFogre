@@ -4,11 +4,12 @@
     Author     : Duong Tran Ngoc Chau - CE181040
 --%>
 
+<%@page import="Models.Employee"%>
 <%@ page contentType="text/html;charset=UTF-8" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ page import="java.time.format.DateTimeFormatter" %>
 <%
-    Models.Employee staff = (Models.Employee) request.getAttribute("staff");
+    Employee staff = (Employee) request.getAttribute("staff");
     DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd/MM/yyyy");
     String formattedDate = staff.getCreatedAt() != null ? staff.getCreatedAt().format(dtf) : "N/A";
 %>
