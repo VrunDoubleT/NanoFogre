@@ -22,6 +22,7 @@ public class VoucherDAO extends DB.DBContext {
         int row = (page - 1) * limit;
         List<Voucher> list = new ArrayList<>();
         String query = "SELECT * FROM Vouchers "
+                + "WHERE _destroy = 0 "
                 + "ORDER BY voucherId DESC "
                 + "OFFSET " + row + " ROWS FETCH NEXT " + limit + " ROWS ONLY;";
         try ( ResultSet rs = execSelectQuery(query)) {
@@ -36,7 +37,8 @@ public class VoucherDAO extends DB.DBContext {
                         rs.getString("voucherDescription"),
                         rs.getTimestamp("validFrom").toLocalDateTime(),
                         rs.getTimestamp("validTo").toLocalDateTime(),
-                        rs.getInt("isActive") == 1
+                        rs.getInt("isActive") == 1,
+                        rs.getInt("_destroy") == 1
                 );
                 list.add(vouchers);
             }
@@ -47,7 +49,7 @@ public class VoucherDAO extends DB.DBContext {
     }
 
     public int countVouchers() {
-        String query = "SELECT COUNT(*) as total FROM Vouchers";
+        String query = "SELECT COUNT(*) as total FROM Vouchers WHERE _destroy = 0";
         try ( ResultSet rs = execSelectQuery(query)) {
             if (rs.next()) {
                 return rs.getInt("total");
@@ -59,8 +61,8 @@ public class VoucherDAO extends DB.DBContext {
     }
 
     public boolean createVoucher(Voucher voucher) {
-        String query = "INSERT INTO Vouchers (voucherCode, type, value, minValue, maxValue, voucherDescription, validFrom, validTo, isActive) "
-                + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        String query = "INSERT INTO Vouchers (voucherCode, type, value, minValue, maxValue, voucherDescription, validFrom, validTo, isActive, _destroy) "
+                + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         Object[] params = {
             voucher.getCode(),
             voucher.getType(),
@@ -70,7 +72,8 @@ public class VoucherDAO extends DB.DBContext {
             voucher.getDescription(),
             Timestamp.valueOf(voucher.getValidFrom()),
             Timestamp.valueOf(voucher.getValidTo()),
-            voucher.isIsActive()
+            voucher.isIsActive(),
+            voucher.isDestroy(),
         };
         try {
             int generatedId = execQueryReturnId(query, params);
@@ -82,7 +85,7 @@ public class VoucherDAO extends DB.DBContext {
     }
 
     public boolean deleteVoucherById(int id) {
-        String query = "DELETE FROM Vouchers WHERE voucherId = ?";
+        String query = "UPDATE Vouchers SET _destroy = 1, isActive = 0 WHERE voucherId = ?";
         Object[] params = {id};
         try {
             int rowsAffected = execQuery(query, params);
@@ -117,7 +120,7 @@ public class VoucherDAO extends DB.DBContext {
     }
 
     public boolean isCodeExists(String code) {
-        String query = "SELECT 1 FROM Vouchers WHERE voucherCode = ?";
+        String query = "SELECT 1 FROM Vouchers WHERE voucherCode = ? AND _destroy = 0";
         Object[] params = {code};
         try ( ResultSet rs = execSelectQuery(query, params)) {
             return rs.next();
@@ -128,7 +131,7 @@ public class VoucherDAO extends DB.DBContext {
     }
 
     public boolean isCodeExistsExceptOwn(String code, int id) {
-        String query = "SELECT COUNT(*) FROM Vouchers WHERE voucherCode = ? AND voucherId != ?";
+        String query = "SELECT COUNT(*) FROM Vouchers WHERE voucherCode = ? AND voucherId != ? AND _destroy = 0";
         Object[] params = {code, id};
         try ( ResultSet rs = execSelectQuery(query, params)) {
             if (rs.next()) {
@@ -156,7 +159,8 @@ public class VoucherDAO extends DB.DBContext {
                         rs.getString("voucherDescription"),
                         rs.getTimestamp("validFrom").toLocalDateTime(),
                         rs.getTimestamp("validTo").toLocalDateTime(),
-                        rs.getInt("isActive") == 1
+                        rs.getInt("isActive") == 1,
+                        rs.getInt("_destroy") == 1
                 );
             }
         } catch (SQLException e) {

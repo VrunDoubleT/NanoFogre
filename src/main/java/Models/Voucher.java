@@ -18,11 +18,12 @@ public class Voucher {
     private LocalDateTime validFrom;
     private LocalDateTime validTo;
     private boolean isActive;
+    private boolean _destroy;
 
     public Voucher() {
     }
 
-    public Voucher(int id, String code, String type, double value, double minValue, double maxValue, String description, LocalDateTime validFrom, LocalDateTime validTo, boolean isActive) {
+    public Voucher(int id, String code, String type, double value, double minValue, double maxValue, String description, LocalDateTime validFrom, LocalDateTime validTo, boolean isActive, boolean _destroy) {
         this.id = id;
         this.code = code;
         this.type = type;
@@ -33,6 +34,7 @@ public class Voucher {
         this.validFrom = validFrom;
         this.validTo = validTo;
         this.isActive = isActive;
+        this._destroy = _destroy;
     }
 
     public int getId() {
@@ -113,6 +115,14 @@ public class Voucher {
 
     public void setIsActive(boolean isActive) {
         this.isActive = isActive;
+    }
+
+    public boolean isDestroy() {
+        return _destroy;
+    }
+
+    public void setDestroy(boolean _destroy) {
+        this._destroy = _destroy;
     }
 
     public String getStatus() {

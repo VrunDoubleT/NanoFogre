@@ -39,7 +39,7 @@ public class StaffViewServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        int limit = 5;
+        int limit = 10;
         StaffDAO sDao = new StaffDAO();
         String type = request.getParameter("type") != null ? request.getParameter("type") : "slist";
         switch (type) {
