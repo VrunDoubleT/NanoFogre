@@ -36,12 +36,41 @@ public class CloudinaryConfig {
     }
 
     public static List<String> uploadImages(Collection<Part> imageParts) throws IOException {
-    List<String> imageUrls = new ArrayList<>();
+        List<String> imageUrls = new ArrayList<>();
 
-    for (Part part : imageParts) {
-        if (part.getSubmittedFileName() != null && part.getSize() > 0) {
-            try (InputStream inputStream = part.getInputStream();
-                 ByteArrayOutputStream buffer = new ByteArrayOutputStream()) {
+        for (Part part : imageParts) {
+            if (part.getSubmittedFileName() != null && part.getSize() > 0) {
+                try ( InputStream inputStream = part.getInputStream();  ByteArrayOutputStream buffer = new ByteArrayOutputStream()) {
+
+                    byte[] data = new byte[1024];
+                    int bytesRead;
+                    while ((bytesRead = inputStream.read(data, 0, data.length)) != -1) {
+                        buffer.write(data, 0, bytesRead);
+                    }
+
+                    byte[] imageBytes = buffer.toByteArray();
+
+                    Map<String, Object> options = new HashMap<>();
+                    options.put("resource_type", "auto");
+                    options.put("public_id", part.getSubmittedFileName());
+
+                    Map<?, ?> uploadResult = cloudinary.uploader().upload(imageBytes, options);
+
+                    String secureUrl = (String) uploadResult.get("secure_url");
+                    imageUrls.add(secureUrl);
+
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+
+        return imageUrls;
+    }
+
+    public static String uploadSingleImage(Part imagePart) throws IOException {
+        if (imagePart != null && imagePart.getSize() > 0) {
+            try ( InputStream inputStream = imagePart.getInputStream();  ByteArrayOutputStream buffer = new ByteArrayOutputStream()) {
 
                 byte[] data = new byte[1024];
                 int bytesRead;
@@ -53,21 +82,19 @@ public class CloudinaryConfig {
 
                 Map<String, Object> options = new HashMap<>();
                 options.put("resource_type", "auto");
-                options.put("public_id", part.getSubmittedFileName());
+                options.put("public_id", "brand_" + System.currentTimeMillis() + "_" + imagePart.getSubmittedFileName());
 
                 Map<?, ?> uploadResult = cloudinary.uploader().upload(imageBytes, options);
 
                 String secureUrl = (String) uploadResult.get("secure_url");
-                imageUrls.add(secureUrl);
+                return secureUrl;
 
             } catch (Exception e) {
                 e.printStackTrace();
+                throw new IOException("Error uploading image: " + e.getMessage());
             }
         }
+        return null;
     }
-
-    return imageUrls;
-}
-
 
 }

@@ -7,10 +7,8 @@
 %>
 
 <div id="loadingBrand" class="hidden"> 
-    <div class="animate-pulse space-y-4">
-        <div class="h-12 bg-gray-200 rounded"></div>
-        <div class="h-12 bg-gray-200 rounded"></div>
-        <div class="h-12 bg-gray-200 rounded"></div>
+    <div class="flex w-full justify-center items-center h-32">
+        <div class="w-10 h-10 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
     </div>
 </div>
 
@@ -21,9 +19,17 @@
     <c:otherwise>
         <div class="bg-white rounded-xl shadow overflow-hidden">
             <div class="flex items-center justify-between px-6 py-4 border-b">
-                <span class="text-lg font-semibold">
-                    Brands List (Total : ${total})
-                </span>
+                <div class="flex items-center">
+                    <span class="text-2xl font-bold text-gray-900">
+                        Total Brands: ${total}
+                    </span>
+                    <div class="h-10 w-10 bg-blue-100 rounded-lg flex items-center justify-center ml-2">
+                        <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
+                        </svg>
+                    </div>
+                </div>
                 <button id="create-brand-button"
                         onclick="openCreateModal()"
                         class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-lg shadow-lg hover:shadow-xl transform transition-all duration-200 flex items-center space-x-2 ml-4">

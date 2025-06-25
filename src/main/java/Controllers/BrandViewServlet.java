@@ -11,12 +11,9 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.Part;
-import java.io.File;
 import java.io.IOException;
-import java.nio.file.Paths;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+import static Utils.CloudinaryConfig.uploadSingleImage;
 
 @WebServlet(name = "BrandViewServlet", urlPatterns = {"/brand"})
 @MultipartConfig(
@@ -56,7 +53,7 @@ public class BrandViewServlet extends HttpServlet {
                 response.setContentType("application/json");
                 response.getWriter().write("{\"success\":false,\"message\":\"Invalid ID format\"}");
             } catch (Exception e) {
-                e.printStackTrace(); // In lỗi ra console
+                e.printStackTrace(); 
                 response.setContentType("application/json");
                 response.getWriter().write("{\"success\":false,\"message\":\"Server error: " + e.getMessage() + "\"}");
             }
@@ -123,20 +120,14 @@ public class BrandViewServlet extends HttpServlet {
         String name = request.getParameter("name").trim();
         Part imagePart = request.getPart("image");
         if (name.isEmpty() || imagePart == null || imagePart.getSize() == 0) {
-            return false;
+            throw new RuntimeException("Missing brand name or image.");
         }
 
-        String uploadPath = getServletContext().getRealPath("/") + "uploads/brands";
-        File uploadDir = new File(uploadPath);
-        if (!uploadDir.exists()) {
-            uploadDir.mkdirs();
+        String imageUrl = uploadSingleImage(imagePart);
+
+        if (imageUrl == null || imageUrl.isEmpty()) {
+            throw new RuntimeException("Error uploading brand image!");
         }
-
-        String fileName = System.currentTimeMillis() + "_" + Paths.get(imagePart.getSubmittedFileName()).getFileName().toString();
-        String filePath = uploadPath + File.separator + fileName;
-        imagePart.write(filePath);
-
-        String imageUrl = "/uploads/brands/" + fileName;
         if (brandDao.isBrandNameExists(name)) {
             throw new RuntimeException("Brand name already exists");
         }
@@ -152,18 +143,13 @@ public class BrandViewServlet extends HttpServlet {
 
         Part imagePart = request.getPart("image");
         if (imagePart != null && imagePart.getSize() > 0) {
-            String uploadPath = getServletContext().getRealPath("/") + "uploads/brands";
-            File uploadDir = new File(uploadPath);
-            if (!uploadDir.exists()) {
-                uploadDir.mkdirs();
+            imageUrl = Utils.CloudinaryConfig.uploadSingleImage(imagePart);
+            if (imageUrl == null || imageUrl.isEmpty()) {
+                throw new RuntimeException("Error uploading brand image!");
             }
-            String fileName = System.currentTimeMillis() + "_" + Paths.get(imagePart.getSubmittedFileName()).getFileName().toString();
-            String filePath = uploadPath + File.separator + fileName;
-            imagePart.write(filePath);
-            imageUrl = "/uploads/brands/" + fileName;
         }
         if (name.isEmpty() || imageUrl.isEmpty()) {
-            throw new RuntimeException("Missing brand name or image");
+            throw new RuntimeException("Missing brand name or image.");
         }
         if (brandDao.isBrandNameExistsExceptId(name, id)) {
             throw new RuntimeException("The brand has existed.");
