@@ -208,6 +208,7 @@ public class CategoryViewServlet extends HttpServlet {
                 // 1.  params
                 int categoryId = Integer.parseInt(request.getParameter("categoryId"));
                 String newNamese = request.getParameter("categoryName");
+
                 String attrsJsonse = request.getParameter("attributes");
 
                 // 2. update image

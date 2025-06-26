@@ -32,7 +32,7 @@
                 <button
                     type="submit"
                     id="update-category-btn"
-                   class="px-4 flex py-2 bg-green-500 rounded-lg text-white hover:bg-green-600 transition-all"
+                    class="px-4 flex py-2 bg-green-500 rounded-lg text-white hover:bg-green-600 transition-all"
                     >
                     <i data-lucide="pencil" class="mr-1"></i>
                     <span>Update</span>
@@ -102,7 +102,7 @@
             <p id="categoryImageError" class="text-red-500 text-sm mt-1"></p>
         </div>
 
-
+        <!--//=========================================================================================-->
         <!-- Add attributeProduct-->
 
         <button type="button"
@@ -126,10 +126,10 @@
             <!-- TEMPLATE ITEM -->
             <div id="attribute-item-template" class="hidden">
                 <div id="main-attribute-item" class="hidden border border-gray-200 rounded-lg p-4 mb-4 bg-gray-50 relative">
-                    <!-- thêm luôn hidden input cho attributeId -->
+                    <!--  hidden input cho attributeId -->
                     <input type="hidden" name="attributeId" value="0"/>
 
-                    <!-- nút Delete -->
+                    <!-- Delete -->
                     <button type="button"
                             class="remove-attribute absolute top-1/2 right-4 -translate-y-1/2 text-red-500 flex items-center gap-1 px-2 py-1 rounded">
                         <i data-lucide="x" class="w-4 h-4"></i> 
@@ -290,7 +290,7 @@
                 <div class="flex items-start gap-4">
                     <div class="min-w-[200px]">
                         <label class="block text-sm font-semibold text-gray-700 mb-1">Data Type <span class="text-red-500">*</span></label>
-                        <select name="attributeDatatypeShow" class="w-full px-3 py-2 border rounded-lg" required>
+                        <select name="attributeDatatype" class="w-full px-3 py-2 border rounded-lg" required>
                             <option value="">Select data type</option>
                             <option value="text"  <%= dataType.equals("text") ? "selected" : ""%>>Text</option>
                             <option value="int"   <%= dataType.equals("int") ? "selected" : ""%>>Integer</option>
@@ -299,7 +299,7 @@
                         </select>
                     </div>
 
-                    <div class="min-max-containerShow flex-1 flex gap-4">
+                    <div class="min-max-container flex-1 flex gap-4">
                         <% if ("int".equals(dataType) || "float".equals(dataType)) {%>
                         <div class="flex flex-col flex-1">
                             <label class="flex items-center gap-2 mb-1">

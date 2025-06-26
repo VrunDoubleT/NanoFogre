@@ -129,13 +129,13 @@
                                     }
                                     loadCategoryContentAndEvent(categoryPage);
                                     break;
-                                case 'order':
-                                    let orderPage = 1;
-                                    if (params.length > 0) {
-                                        orderPage = parseOptionNumber(params[0].value, 1);
-                                    }
-                                    loadOrderContentAndEvent(orderPage);
-                                    break;
+//                                case 'order':
+//                                    let orderPage = 1;
+//                                    if (params.length > 0) {
+//                                        orderPage = parseOptionNumber(params[0].value, 1);
+//                                    }
+//                                    loadOrderContentAndEvent(orderPage);
+//                                    break;
                                 default:
                                     break;
                             }
@@ -191,10 +191,10 @@
                         const categoryPage = params.get('page') || '1';
                         loadContent(viewPage, false, [{name: 'page', value: categoryPage}]);
                         break;
-                    case "order":
-                        const categoryPage = params.get('page') || '1';
-                        loadContent(viewPage, false, [{name: 'page', value: categoryPage}]);
-                        break;
+//                    case "order":
+//                        const categoryPage = params.get('page') || '1';
+//                        loadContent(viewPage, false, [{name: 'page', value: categoryPage}]);
+//                        break;
                     default:
 
                         loadContent(viewPage, false);
