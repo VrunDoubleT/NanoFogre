@@ -4,10 +4,12 @@ import DAOs.CategoryDAO;
 import DAOs.ProductDAO;
 import DAOs.StaffDAO;
 import DAOs.BrandDAO;
+import DAOs.OrderDAO;
 import Models.Category;
 import Models.Product;
 import Models.ProductStat;
 import Models.Brand;
+import Models.Order;
 import java.io.IOException;
 import java.util.List;
 import jakarta.servlet.ServletException;
@@ -24,6 +26,7 @@ public class AdminViewServerlet extends HttpServlet {
             throws ServletException, IOException {
         ProductDAO pDao = new ProductDAO();
         CategoryDAO categoryDao = new CategoryDAO();
+        OrderDAO orderDao = new OrderDAO();
         StaffDAO sDao = new StaffDAO();
         BrandDAO brandDao = new BrandDAO();
         String viewPage = request.getParameter("viewPage");
@@ -36,9 +39,9 @@ public class AdminViewServerlet extends HttpServlet {
                 viewPath = "/WEB-INF/employees/components/customerComponent.jsp";
                 break;
             case "category":
-                 List<Category> categor = categoryDao.getCategories();
-                 int total = categoryDao.countCategory();
-                 request.setAttribute("total",total);
+                List<Category> categor = categoryDao.getCategories();
+                int total = categoryDao.countCategory();
+                request.setAttribute("total", total);
                 request.setAttribute("categories", categor);
                 viewPath = "/WEB-INF/employees/components/categoryComponent.jsp";
                 break;
@@ -61,6 +64,14 @@ public class AdminViewServerlet extends HttpServlet {
                 request.setAttribute("viewPath", viewPath);
                 request.getRequestDispatcher("/brand").forward(request, response);
                 return;
+            case "order":
+                List<Order> order = orderDao.getOrders();
+                int totalOrder = orderDao.countOrders();
+                request.setAttribute("total", totalOrder);
+                request.setAttribute("orders", order);
+                viewPath = "/WEB-INF/employees/components/orderComponent.jsp";
+
+                break;
             case "dashboard":
                 viewPath = "/WEB-INF/employees/components/adminDashboardComponent.jsp";
                 break;
