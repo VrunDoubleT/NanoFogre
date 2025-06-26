@@ -28,12 +28,15 @@ public class BrandDAO extends DBContext {
     // READ 
     public List<Brand> getBrandsPaginated(int page, int pageSize) {
         List<Brand> brands = new ArrayList<>();
-        int offset = (page - 1) * pageSize;
         String query = "SELECT brandId, brandName, image FROM Brands ORDER BY brandId DESC OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
-        Object[] params = {offset, pageSize};
-        try ( ResultSet rs = execSelectQuery(query, params)) {
-            while (rs.next()) {
-                brands.add(mapResultSetToBrand(rs));
+        try ( Connection conn = this.getConnection();  PreparedStatement stmt = conn.prepareStatement(query)) {
+            int offset = (page - 1) * pageSize;
+            stmt.setInt(1, offset);
+            stmt.setInt(2, pageSize);
+            try ( ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    brands.add(mapResultSetToBrand(rs));
+                }
             }
         } catch (SQLException e) {
             e.printStackTrace();

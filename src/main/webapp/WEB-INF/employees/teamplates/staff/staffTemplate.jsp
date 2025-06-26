@@ -38,7 +38,7 @@
 
     <td class="px-9 py-3 whitespace-nowrap">
         <% if (st.isIsBlock()) { %>
-        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-200 text-gray-800">Disable</span>
+        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-200 text-red-800">Block</span>
         <% } else { %>
         <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">Active</span>
         <% }%>
