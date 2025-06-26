@@ -2,6 +2,7 @@ package DAOs;
 
 import Models.Brand;
 import Models.Category;
+import Models.ProductAttribute;
 import Models.Product;
 import Models.ProductImage;
 import Models.ProductStat;
@@ -28,9 +29,10 @@ public class ProductDAO extends DB.DBContext {
                 + "left join Categories c\n"
                 + "on p.categoryId = c.categoryId\n"
                 + "left join Brands b\n"
-                + "on p.brandId = b.brandId\n";
+                + "on p.brandId = b.brandId\n"
+                + "where p._destroy = 0";
         if (categoryId > 0) {
-            query += "where p.categoryId = " + categoryId + "\n";
+            query += " AND p.categoryId = " + categoryId + "\n";
         }
         try ( ResultSet rs = execSelectQuery(query)) {
             if (rs.next()) {
@@ -39,7 +41,6 @@ public class ProductDAO extends DB.DBContext {
         } catch (SQLException e) {
             e.printStackTrace();
         }
-
         return 0;
     }
 
@@ -51,9 +52,10 @@ public class ProductDAO extends DB.DBContext {
                 + "left join Categories c\n"
                 + "on p.categoryId = c.categoryId\n"
                 + "left join Brands b\n"
-                + "on p.brandId = b.brandId\n";
+                + "on p.brandId = b.brandId\n"
+                + "where p._destroy = 0";
         if (categoryId > 0) {
-            query += "where p.categoryId = " + categoryId + "\n";
+            query += " AND p.categoryId = " + categoryId + "\n";
         }
         query += "ORDER BY p.productId desc\n"
                 + "OFFSET " + row + " ROWS FETCH NEXT " + limit + " ROWS ONLY;";
@@ -65,18 +67,11 @@ public class ProductDAO extends DB.DBContext {
                 product.setTitle(rs.getString("productTitle"));
                 product.setSlug(rs.getString("slug"));
                 product.setDescription(rs.getString("productDescription"));
-                product.setScale(rs.getString("scale"));
                 product.setMaterial(rs.getString("material"));
                 product.setPrice(rs.getDouble("productPrice"));
                 product.setQuantity(rs.getInt("productQuantity"));
-                product.setPaint(rs.getString("paint"));
-                product.setFeatures(rs.getString("features"));
-                product.setManufacturer(rs.getString("manufacturer"));
-                product.setLength(rs.getDouble("length"));
-                product.setWidth(rs.getDouble("width"));
-                product.setHeight(rs.getDouble("height"));
-                product.setWeight(rs.getDouble("length"));
                 product.setDestroy(rs.getBoolean("_destroy"));
+                product.setIsActive(rs.getBoolean("isActive"));
                 Object brandIdObj = rs.getObject("brandId");
                 if (brandIdObj != null) {
                     int brandId = (int) brandIdObj;
@@ -123,7 +118,6 @@ public class ProductDAO extends DB.DBContext {
         } catch (SQLException e) {
             e.printStackTrace();
         }
-
         return images;
     }
 
@@ -144,17 +138,10 @@ public class ProductDAO extends DB.DBContext {
                 product.setTitle(rs.getString("productTitle"));
                 product.setSlug(rs.getString("slug"));
                 product.setDescription(rs.getString("productDescription"));
-                product.setScale(rs.getString("scale"));
                 product.setMaterial(rs.getString("material"));
                 product.setPrice(rs.getDouble("productPrice"));
                 product.setQuantity(rs.getInt("productQuantity"));
-                product.setPaint(rs.getString("paint"));
-                product.setFeatures(rs.getString("features"));
-                product.setManufacturer(rs.getString("manufacturer"));
-                product.setLength(rs.getDouble("length"));
-                product.setWidth(rs.getDouble("width"));
-                product.setHeight(rs.getDouble("height"));
-                product.setWeight(rs.getDouble("length"));
+                product.setIsActive(rs.getBoolean("isActive"));
                 product.setDestroy(rs.getBoolean("_destroy"));
                 Object brandIdObj = rs.getObject("brandId");
                 if (brandIdObj != null) {
@@ -188,7 +175,7 @@ public class ProductDAO extends DB.DBContext {
 
     public ProductStat getProductStat() {
         ProductStat stat = new ProductStat();
-        String sql = "select COUNT(p.productId) as total, SUM(p.productQuantity) as inventory, SUM((p.productQuantity * p.productPrice)) as inventoryValue, SUM(CASE WHEN p.productQuantity = 0 THEN 1 ELSE 0 END) AS outProducts from Products p";
+        String sql = "select COUNT(p.productId) as total, SUM(p.productQuantity) as inventory, SUM((p.productQuantity * p.productPrice)) as inventoryValue, SUM(CASE WHEN p.productQuantity = 0 THEN 1 ELSE 0 END) AS outProducts from Products p where p._destroy = 0";
 
         try ( ResultSet rs = execSelectQuery(sql)) {
 
@@ -202,7 +189,6 @@ public class ProductDAO extends DB.DBContext {
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        System.out.println(stat);
         return stat;
     }
 
@@ -235,31 +221,29 @@ public class ProductDAO extends DB.DBContext {
 
     public boolean createProduct(Product product) {
         String sql = "INSERT INTO Products (\n"
-                + "    productTitle, productDescription, scale, material, slug, productPrice, productQuantity,\n"
-                + "    paint, features, manufacturer, length, width, height, weight,\n"
-                + "    _destroy, categoryId, brandId\n"
+                + "    productTitle,\n"
+                + "    productDescription,\n"
+                + "    material,\n"
+                + "    slug,\n"
+                + "    productPrice,\n"
+                + "    productQuantity,\n"
+                + "    isActive,\n"
+                + "    _destroy,\n"
+                + "    categoryId,\n"
+                + "    brandId\n"
                 + ")\n"
-                + "VALUES (\n"
-                + "    ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?\n"
-                + ")";
+                + "VALUES (?,?,?,?,?,?,?,?,?,?);";
         String sqlUrls = "INSERT INTO ProductImages (productId, url) VALUES\n";
         Object categoryIdConvert = product.getCategory().getId() == 0 ? null : product.getCategory().getId();
         Object brandIdConvert = product.getBrand().getId() == 0 ? null : product.getBrand().getId();
         Object[] paramsObj = {
             product.getTitle(),
             product.getDescription(),
-            product.getScale(),
             product.getMaterial(),
             product.getSlug(),
             product.getPrice(),
             product.getQuantity(),
-            product.getPaint(),
-            product.getFeatures(),
-            product.getManufacturer(),
-            product.getLength(),
-            product.getWidth(),
-            product.getHeight(),
-            product.getWeight(),
+            product.isActive(),
             product.isDestroy(),
             categoryIdConvert,
             brandIdConvert
@@ -267,8 +251,9 @@ public class ProductDAO extends DB.DBContext {
 
         try {
             int generateId = execQueryReturnId(sql, paramsObj);
+            System.out.println(generateId);
             if (generateId > 0) {
-                if (product.getUrls().size() > 0) {
+                if (!product.getUrls().isEmpty()) {
                     for (int i = 0; i < product.getUrls().size(); i++) {
                         sqlUrls += String.format("(%d, N'%s')", generateId, product.getUrls().get(i));
                         if (i < product.getUrls().size() - 1) {
@@ -276,12 +261,20 @@ public class ProductDAO extends DB.DBContext {
                         }
                     }
                     int rowEffect = execQuery(sqlUrls);
-                    if (rowEffect > 0) {
-                        return true;
-                    }
                 }
+                if (!product.getAttributes().isEmpty()) {
+                    String sqlAttribute = "INSERT INTO ProductAttributeValues (productId, attributeId, value) VALUES\n";
+                    for (int i = 0; i < product.getAttributes().size(); i++) {
+                        sqlAttribute += String.format("(%d, %d, N'%s')", generateId, product.getAttributes().get(i).getId(), product.getAttributes().get(i).getValue());
+                        if (i < product.getAttributes().size() - 1) {
+                            sqlAttribute += ",";
+                        }
+                    }
+                    System.out.println(sqlAttribute);
+                    int rowEffect = execQuery(sqlAttribute);
+                }
+                return true;
             }
-
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -292,18 +285,11 @@ public class ProductDAO extends DB.DBContext {
         String sql = "UPDATE Products SET\n"
                 + "    productTitle = ?,\n"
                 + "    productDescription = ?,\n"
-                + "    scale = ?,\n"
                 + "    material = ?,\n"
                 + "    slug = ?,\n"
                 + "    productPrice = ?,\n"
                 + "    productQuantity = ?,\n"
-                + "    paint = ?,\n"
-                + "    features = ?,\n"
-                + "    manufacturer = ?,\n"
-                + "    length = ?,\n"
-                + "    width = ?,\n"
-                + "    height = ?,\n"
-                + "    weight = ?,\n"
+                + "    isActive = ?,\n"
                 + "    _destroy = ?,\n"
                 + "    categoryId = ?,\n"
                 + "    brandId = ?\n"
@@ -315,18 +301,11 @@ public class ProductDAO extends DB.DBContext {
         Object[] paramsObj = {
             product.getTitle(),
             product.getDescription(),
-            product.getScale(),
             product.getMaterial(),
             product.getSlug(),
             product.getPrice(),
             product.getQuantity(),
-            product.getPaint(),
-            product.getFeatures(),
-            product.getManufacturer(),
-            product.getLength(),
-            product.getWidth(),
-            product.getHeight(),
-            product.getWeight(),
+            product.isActive(),
             product.isDestroy(),
             categoryIdConvert,
             brandIdConvert,
@@ -356,7 +335,7 @@ public class ProductDAO extends DB.DBContext {
         }
     }
 
-    public boolean hideProduct(int productId) {
+    public boolean deleteProduct(int productId) {
         String sql = "UPDATE Products SET _destroy = 1 WHERE productId = ?";
         Object[] paramsObj = {productId};
 
@@ -370,18 +349,123 @@ public class ProductDAO extends DB.DBContext {
         return false;
     }
 
-    public boolean enableProduct(int productId) {
-        String sql = "UPDATE Products SET _destroy = 0 WHERE productId = ?";
-        Object[] paramsObj = {productId};
+    public List<ProductAttribute> getAttributesByProductId(int productId) {
+        List<ProductAttribute> attributes = new ArrayList<>();
 
-        try {
-            int rf = execQuery(sql, paramsObj);
-            return rf > 0;
+        String query = "select pa.*, pav.value \n"
+                + "from Products p\n"
+                + "left join Categories  c\n"
+                + "on p.categoryId = c.categoryId\n"
+                + "left join ProductAttributes pa\n"
+                + "on c.categoryId = pa.categoryId\n"
+                + "left join ProductAttributeValues pav\n"
+                + "on pa.attributeId = pav.attributeId AND pav.productId = p.productId\n"
+                + "where p.productId = ?";
+        Object[] params = {productId};
+        try ( ResultSet rs = this.execSelectQuery(query, params)) {
+            while (rs.next()) {
+                ProductAttribute pa = new ProductAttribute();
+                pa.setId(rs.getInt("attributeId"));
+                pa.setName(rs.getString("attributeName"));
+                pa.setUnit(rs.getString("unit"));
+                pa.setMinValue(rs.getString("minValue"));
+                pa.setMaxValue(rs.getString("maxValue"));
+                pa.setDataType(rs.getString("dataType"));
+                pa.setIsRequired(rs.getBoolean("isRequired"));
+                pa.setIsActive(rs.getBoolean("isActive"));
+                pa.setValue(rs.getString("value"));
+                attributes.add(pa);
+            }
         } catch (SQLException e) {
             e.printStackTrace();
         }
+        return attributes;
+    }
 
-        return false;
+    public List<ProductAttribute> getAttributesByProductIdAndCategoryId(int productId, int categoryId) {
+        List<ProductAttribute> attributes = new ArrayList<>();
+
+        String query = "SELECT pa.*, pav.value\n"
+                + "FROM Categories c\n"
+                + "JOIN ProductAttributes pa \n"
+                + "ON c.categoryId = pa.categoryId\n"
+                + "LEFT JOIN ProductAttributeValues pav \n"
+                + "    ON pa.attributeId = pav.attributeId \n"
+                + "    AND pav.productId = ?\n"
+                + "WHERE c.categoryId = ?;";
+        Object[] params = {productId, categoryId};
+        try ( ResultSet rs = this.execSelectQuery(query, params)) {
+            while (rs.next()) {
+                ProductAttribute pa = new ProductAttribute();
+                pa.setId(rs.getInt("attributeId"));
+                pa.setName(rs.getString("attributeName"));
+                pa.setUnit(rs.getString("unit"));
+                pa.setMinValue(rs.getString("minValue"));
+                pa.setMaxValue(rs.getString("maxValue"));
+                pa.setDataType(rs.getString("dataType"));
+                pa.setIsRequired(rs.getBoolean("isRequired"));
+                pa.setIsActive(rs.getBoolean("isActive"));
+                pa.setValue(rs.getString("value"));
+                attributes.add(pa);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return attributes;
+    }
+
+    public List<ProductAttribute> getAttributesByCategoryId(int categoryId) {
+        List<ProductAttribute> attributes = new ArrayList<>();
+
+        String query = "select *\n"
+                + "from ProductAttributes pa\n"
+                + "where pa.categoryId = ?";
+        Object[] params = {categoryId};
+        try ( ResultSet rs = this.execSelectQuery(query, params)) {
+            while (rs.next()) {
+                ProductAttribute pa = new ProductAttribute();
+                pa.setId(rs.getInt("attributeId"));
+                pa.setName(rs.getString("attributeName"));
+                pa.setUnit(rs.getString("unit"));
+                pa.setMinValue(rs.getString("minValue"));
+                pa.setMaxValue(rs.getString("maxValue"));
+                pa.setDataType(rs.getString("dataType"));
+                pa.setIsRequired(rs.getBoolean("isRequired"));
+                pa.setIsActive(rs.getBoolean("isActive"));
+                attributes.add(pa);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return attributes;
+    }
+
+    public boolean upsertProductAttributeValues(int productId, List<ProductAttribute> attributes) {
+        String selectSql = "SELECT attributeId FROM ProductAttributeValues WHERE productId = ? AND attributeId = ?";
+        String updateSql = "UPDATE ProductAttributeValues SET value = ? WHERE productId = ? AND attributeId = ?";
+        String insertSql = "INSERT INTO ProductAttributeValues (productId, attributeId, value) VALUES (?, ?, ?)";
+
+        try {
+            for (ProductAttribute attr : attributes) {
+                int attributeId = attr.getId();
+                String value = (attr.getValue() != null && !attr.getValue().isEmpty()) ? attr.getValue() : null;
+                Object[] selectParams = {productId, attributeId};
+                ResultSet rs = execSelectQuery(selectSql, selectParams);
+                if (rs.next()) {
+                    System.out.println("Update");
+                    Object[] updateParams = {value, productId, attributeId};
+                    execQuery(updateSql, updateParams);
+                } else {
+                    System.out.println("Insert");
+                    Object[] insertParams = {productId, attributeId, value};
+                    execQuery(insertSql, insertParams);
+                }
+            }
+            return true;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
     }
 
 }

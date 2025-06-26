@@ -3,9 +3,11 @@ package Controllers;
 import DAOs.BrandDAO;
 import DAOs.CategoryDAO;
 import DAOs.ProductDAO;
+import Models.Attribute;
 import Models.Brand;
 import Models.Category;
 import Models.Product;
+import Models.ProductAttribute;
 import Models.ProductImage;
 import Models.ProductStat;
 import Utils.CloudinaryConfig;
@@ -29,6 +31,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+
+import java.lang.reflect.Type;
+import java.util.List;
 
 /**
  *
@@ -68,7 +75,9 @@ public class ProductViewServlet extends HttpServlet {
             case "item":
                 String productId = request.getParameter("productId");
                 Product product = pDao.getProductById(Integer.parseInt(productId));
+                List<ProductAttribute> productAttributes = pDao.getAttributesByProductId(Integer.parseInt(productId));
                 request.setAttribute("product", product);
+                request.setAttribute("productAttributes", productAttributes);
                 request.getRequestDispatcher("/WEB-INF/employees/teamplates/products/productDetailTeamplate.jsp").forward(request, response);
                 break;
             case "pagination":
@@ -94,22 +103,34 @@ public class ProductViewServlet extends HttpServlet {
                 List<Category> cas = categoryDao.getCategories();
                 List<Brand> bras = brandDao.getAllBrands();
                 List<ProductImage> productImages = pDao.getProductImagesByProductId(productIdToEdit);
+                List<ProductAttribute> paEdit = pDao.getAttributesByProductId(productIdToEdit);
                 request.setAttribute("categories", cas);
                 request.setAttribute("brands", bras);
                 request.setAttribute("type", "edit");
                 request.setAttribute("product", productToEdit);
                 request.setAttribute("productImages", productImages);
-                request.getRequestDispatcher("/WEB-INF/employees/teamplates/products/createProductTeamplate.jsp").forward(request, response);
+                request.setAttribute("productAttributes", paEdit);
+                request.getRequestDispatcher("/WEB-INF/employees/teamplates/products/editProductTeamplate.jsp").forward(request, response);
                 break;
             case "stat":
                 ProductStat productStat = pDao.getProductStat();
                 responseJson(response, true, "Success", "Error", productStat);
+                break;
+            case "productAttribute":
+                List<ProductAttribute> pa = pDao.getAttributesByProductIdAndCategoryId(Converter.parseOption(request.getParameter("productId"), 0),Converter.parseOption(request.getParameter("categoryId"), 0));
+                request.setAttribute("productAttributes", pa);
+                request.getRequestDispatcher("/WEB-INF/employees/teamplates/products/productAttributeTeamplate.jsp").forward(request, response);
+                break;
+            case "productAttributeData":
+                List<ProductAttribute> productAttributesData = pDao.getAttributesByCategoryId(Converter.parseOption(request.getParameter("categoryId"), 0));
+                responseJson(response, true, "Get product attribute success", "Something went wrong", productAttributesData);
+                break;
             default:
                 break;
         }
     }
 
-    private Product getProductByRequest(HttpServletRequest request)throws ServletException, IOException {
+    private Product getProductByRequest(HttpServletRequest request) throws ServletException, IOException {
         Product product = new Product();
         List<Part> imageParts = Common.extractImageParts(request.getParts(), "imageFiles");
         List<String> urls = CloudinaryConfig.uploadImages(imageParts);
@@ -117,22 +138,27 @@ public class ProductViewServlet extends HttpServlet {
         product.setTitle(request.getParameter("title"));
         product.setSlug(request.getParameter("title"));
         product.setDescription(request.getParameter("description"));
-        product.setScale(request.getParameter("scale"));
         product.setMaterial(request.getParameter("material"));
         product.setPrice(Double.parseDouble(request.getParameter("price").replace(",", ".")));
         product.setQuantity(Integer.parseInt(request.getParameter("quantity")));
-        product.setPaint(request.getParameter("paint"));
-        product.setFeatures(request.getParameter("features"));
-        product.setManufacturer(request.getParameter("manufacturer"));
-        product.setLength(Double.parseDouble(request.getParameter("length").replace(",", ".")));
-        product.setWidth(Double.parseDouble(request.getParameter("width").replace(",", ".")));
-        product.setHeight(Double.parseDouble(request.getParameter("height").replace(",", ".")));
-        product.setWeight(Double.parseDouble(request.getParameter("weight").replace(",", ".")));
         product.setDestroy(Boolean.parseBoolean(request.getParameter("destroy")));
+        product.setIsActive(Boolean.parseBoolean(request.getParameter("isActive")));
         product.setBrand(new Brand(Integer.parseInt(request.getParameter("brandId")), null, null));
         product.setCategory(new Category(Integer.parseInt(request.getParameter("categoryId")), null));
         product.setUrls(urls);
-
+        String json = request.getParameter("attributes");
+        Gson gson = new Gson();
+        Type listType = new TypeToken<List<Attribute>>() {
+        }.getType();
+        List<Attribute> attributes = gson.fromJson(json, listType);
+        List<ProductAttribute> pas = new ArrayList<>();
+        for (Attribute attribute : attributes) {
+            ProductAttribute pa = new ProductAttribute();
+            pa.setId(attribute.getId());
+            pa.setValue(attribute.getValue());
+            pas.add(pa);
+        }
+        product.setAttributes(pas);
         return product;
     }
 
@@ -146,7 +172,7 @@ public class ProductViewServlet extends HttpServlet {
         String json = gson.toJson(returnData);
         response.getWriter().write(json);
     }
-    
+
     public void responseJson(HttpServletResponse response, boolean isSuccess, String successMessage, String errorMessage, Object data) throws ServletException, IOException {
         response.setContentType("application/json");
         response.setCharacterEncoding("UTF-8");
@@ -175,17 +201,14 @@ public class ProductViewServlet extends HttpServlet {
                 String[] alreadyUrlsId = request.getParameterValues("urlsId");
                 pDao.deleteUnusedProductImages(productToUpdate.getProductId(), alreadyUrlsId);
                 boolean isUpdateSuccess = pDao.updateProduct(productToUpdate);
+                pDao.upsertProductAttributeValues(productToUpdate.getProductId(), productToUpdate.getAttributes());
+                System.out.println(productToUpdate.isActive());
                 responseJson(response, isUpdateSuccess, "Product has been updated successfully", "An error occurred while update the product");
                 break;
             case "delete":
-                int productIdToHide = Integer.parseInt(request.getParameter("productId"));
-                boolean isHidden = pDao.hideProduct(productIdToHide);
-                responseJson(response, isHidden, "The product has been successfully hidden", "An error occurred while hide the product");
-                break;
-            case "enable":
-                int productIdToEnable = Integer.parseInt(request.getParameter("productId"));
-                boolean isEnable = pDao.enableProduct(productIdToEnable);
-                responseJson(response, isEnable, "The product has been successfully restored", "An error occurred while restoring the product"); 
+                int productIdToDelete = Integer.parseInt(request.getParameter("productId"));
+                boolean isHidden = pDao.deleteProduct(productIdToDelete);
+                responseJson(response, isHidden, "The product has been successfully deleted", "An error occurred while deleted the product");
                 break;
             default:
                 break;

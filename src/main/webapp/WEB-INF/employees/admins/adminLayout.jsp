@@ -6,7 +6,7 @@
 
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <!DOCTYPE html>
-<html>
+<html lang="en">
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
         <title>Admin</title>
@@ -219,5 +219,6 @@
         <script src="../../../js/staff.js"></script> 
         <script src="../../../js/loading.js"></script>
         <script src="../../../js/voucher.js"></script>
+        <script src="../../../js/skeletonLoading.js"></script>
     </body>
 </html>
