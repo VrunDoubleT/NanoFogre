@@ -2,10 +2,14 @@ package Controllers;
 
 import DAOs.CategoryDAO;
 import Models.Category;
+import Models.ProductAttribute;
 import Utils.CloudinaryConfig;
 import Utils.Common;
 import Utils.Converter;
 import com.google.gson.Gson;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonSyntaxException;
+import com.google.gson.reflect.TypeToken;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -19,10 +23,16 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.Part;
 import java.io.File;
+import static java.lang.System.out;
 import java.nio.file.Paths;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import jdk.nashorn.internal.ir.BreakNode;
+import org.cloudinary.json.JSONObject;
 
 @MultipartConfig(
         fileSizeThreshold = 1024 * 1024 * 1, // 1 MB
@@ -64,6 +74,20 @@ public class CategoryViewServlet extends HttpServlet {
 
                 request.getRequestDispatcher("/WEB-INF/employees/teamplates/category/createCategoryTeamplate.jsp").forward(request, response);
                 break;
+            case "detail":
+                int categoryIds = Integer.parseInt(request.getParameter("categoryId"));
+
+                CategoryDAO categoryDAO = new CategoryDAO();
+                Category categorys = categoryDAO.getCategoryById(categoryIds);
+                List<ProductAttribute> attributes = categoryDAO.getAttributesByCategoryId(categoryIds);
+
+                request.setAttribute("category", categorys);
+                request.setAttribute("attributes", attributes);
+
+                request.getRequestDispatcher("/WEB-INF/employees/teamplates/category/detailCategoryTeamplate.jsp")
+                        .forward(request, response);
+                break;
+
             case "edit":
                 int categoryId = Integer.parseInt(request.getParameter("categoryId"));
                 Category category = categoryDao.getCategoryById(categoryId);
@@ -87,7 +111,6 @@ public class CategoryViewServlet extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         Category category = new Category();
-
         String type = request.getParameter("type") != null ? request.getParameter("type") : "create";
         CategoryDAO categoryDAO = new CategoryDAO();
         String categoryName = request.getParameter("categoryName");
@@ -95,67 +118,110 @@ public class CategoryViewServlet extends HttpServlet {
         switch (type) {
 
             case "create":
-                Part imagePart = request.getPart("categoryImage");
+                CategoryDAO dao = new CategoryDAO();
+                Gson gson = new Gson();
+
+                String newName = request.getParameter("categoryName");
+
+                if (dao.isCategoryNameExists(newName)) {
+                    response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                    Map<String, Object> err = new HashMap<>();
+                    err.put("isSuccess", false);
+                    err.put("message", "Category name already exists.");
+                    response.setContentType("application/json");
+                    response.setCharacterEncoding("UTF-8");
+                    response.getWriter().write(new Gson().toJson(err));
+                    return;
+                }
+
+                String attrsJson = request.getParameter("attributes"); // JSON từ front-end, có thể null hoặc "[]"
+
                 String imageUrl = null;
-                if (imagePart != null && imagePart.getSize() > 0) {
-                    List<Part> images = new ArrayList<>();
-                    images.add(imagePart);
-                    List<String> urls = CloudinaryConfig.uploadImages(images);
-                    if (!urls.isEmpty()) {
-                        imageUrl = urls.get(0);
+                try {
+                    Part imagePart = request.getPart("categoryImage");
+                    if (imagePart != null && imagePart.getSize() > 0) {
+                        List<Part> parts = Collections.singletonList(imagePart);
+                        List<String> urls = CloudinaryConfig.uploadImages(parts);
+                        if (!urls.isEmpty()) {
+                            imageUrl = urls.get(0);
+                        }
+                    }
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+
+                }
+
+                // 4) save Category and ID new
+                category.setName(newName);
+                category.setAvatar(imageUrl);
+                int newCategoryId = dao.createCategoryAndReturnId(category);
+                if (newCategoryId <= 0) {
+                    responseJson(response, false, "Failed to create category.");
+                    return;
+                }
+
+                List<Map<String, Object>> attrMaps = new ArrayList<>();
+                if (attrsJson != null && !attrsJson.trim().isEmpty()) {
+                    try {
+                        attrMaps = gson.fromJson(
+                                attrsJson,
+                                new TypeToken<List<Map<String, Object>>>() {
+                                }.getType()
+                        );
+                    } catch (JsonSyntaxException e) {
+                        responseJson(response, false, "Invalid attributes format.");
+                        return;
                     }
                 }
 
-                category.setName(categoryName);
-                category.setAvatar(imageUrl);
+                if (!attrMaps.isEmpty()) {
+                    List<ProductAttribute> attrs = new ArrayList<>();
+                    for (Map<String, Object> m : attrMaps) {
+                        ProductAttribute a = new ProductAttribute();
+                        a.setAttributeName((String) m.get("name"));
+                        a.setDataType((String) m.get("datatype"));
+                        a.setUnit((String) m.get("unit"));
 
-                if (categoryDAO.isCategoryNameExists(categoryName)) {
-                    response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                    Map<String, Object> errorResponse = new HashMap<>();
-                    errorResponse.put("isSuccess", false);
-                    errorResponse.put("message", "Category name already exists.");
-                    response.setContentType("application/json");
-                    response.setCharacterEncoding("UTF-8");
-                    response.getWriter().write(new Gson().toJson(errorResponse));
-                    return;
+                        Object rawMin = m.get("minValue");
+                        Object rawMax = m.get("maxValue");
+                        a.setMinValue(rawMin != null ? rawMin.toString() : null);
+                        a.setMaxValue(rawMax != null ? rawMax.toString() : null);
+
+                        a.setIsRequired(Boolean.TRUE.equals(m.get("required")));
+                        a.setCategoryId(newCategoryId);
+                        attrs.add(a);
+                    }
+                    try {
+                        dao.insertAttributes(newCategoryId, attrs);
+                    } catch (SQLException ex) {
+                        Logger.getLogger(CategoryViewServlet.class.getName()).log(Level.SEVERE, null, ex);
+                    }
                 }
 
-                boolean isCreated = categoryDAO.createCategory(category);
-                returnData.put("isSuccess", isCreated);
-                returnData.put("message", isCreated ? "Category created successfully" : "An error occurred while creating the category");
-                response.setContentType("application/json");
-                response.setCharacterEncoding("UTF-8");
-                String jsonResponse = new Gson().toJson(returnData);
-                response.getWriter().write(jsonResponse);
+                responseJson(response, true, "Category created successfully.");
                 break;
 
-            case "update": 
+            case "update":
+                CategoryDAO daose = new CategoryDAO();
+                Gson gsonse = new Gson();
+
+                // 1.  params
                 int categoryId = Integer.parseInt(request.getParameter("categoryId"));
-                String newName = request.getParameter("categoryName");
-                Category current = categoryDAO.getCategoryById(categoryId);
+                String newNamese = request.getParameter("categoryName");
+                String attrsJsonse = request.getParameter("attributes");
 
-                if (categoryDAO.isCategoryNameExists(newName)) {
-                    response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                    Map<String, Object> errorResponseUpdate = new HashMap<>();
-                    errorResponseUpdate.put("isSuccess", false);
-                    errorResponseUpdate.put("message", "Category name already exists.");
-                    response.setContentType("application/json");
-                    response.setCharacterEncoding("UTF-8");
-                    response.getWriter().write(new Gson().toJson(errorResponseUpdate));
-                    return;
-                }
-
+                // 2. update image
+                Category current = daose.getCategoryById(categoryId);
                 boolean updateImage = false;
-                String imageUrls = current.getAvatar();
-                Part imageParts = null;
+                String imageUrlse = current.getAvatar();
                 try {
-                    imageParts = request.getPart("categoryImage");
+                    Part imageParts = request.getPart("categoryImage");
                     if (imageParts != null && imageParts.getSize() > 0) {
                         List<Part> images = new ArrayList<>();
                         images.add(imageParts);
                         List<String> urls = CloudinaryConfig.uploadImages(images);
                         if (!urls.isEmpty()) {
-                            imageUrls = urls.get(0);
+                            imageUrlse = urls.get(0);
                             updateImage = true;
                         }
                     }
@@ -163,19 +229,66 @@ public class CategoryViewServlet extends HttpServlet {
                     ex.printStackTrace();
                 }
 
-                current.setName(newName);
-                current.setAvatar(imageUrls);
+                current.setName(newNamese);
+                if (updateImage) {
+                    current.setAvatar(imageUrlse);
+                }
+                daose.updateCategory(current, updateImage);
 
-                boolean isUpdated = categoryDAO.updateCategory(current, updateImage);
+                // 3. Parse JSON attributes
+                List<Map<String, Object>> maps = gsonse.fromJson(
+                        attrsJsonse,
+                        new TypeToken<List<Map<String, Object>>>() {
+                        }.getType()
+                );
 
-                Map<String, Object> returnDataUpdate = new HashMap<>();
-                returnDataUpdate.put("isSuccess", isUpdated);
-                returnDataUpdate.put("message", isUpdated ? "Category updated successfully" : "An error occurred while updating the category");
-                response.setContentType("application/json");
-                response.setCharacterEncoding("UTF-8");
-                response.getWriter().write(new Gson().toJson(returnDataUpdate));
+                // 4.  toUpdate vs toInsert
+                List<ProductAttribute> toUpdate = new ArrayList<>();
+                List<ProductAttribute> toInsert = new ArrayList<>();
+
+                for (Map<String, Object> m : maps) {
+                    Number rawId = (Number) m.get("attributeId");
+                    int attrId = rawId != null ? rawId.intValue() : 0;
+
+                    ProductAttribute a = new ProductAttribute();
+                    if (attrId > 0) {
+                        a.setAttributeId(attrId);
+                    }
+                    a.setAttributeName((String) m.get("attributeName"));
+                    a.setDataType((String) m.get("datatype"));
+                    a.setUnit((String) m.get("unit"));
+
+                    Object rawMin = m.get("minValue"), rawMax = m.get("maxValue");
+                    a.setMinValue(rawMin != null ? rawMin.toString() : null);
+                    a.setMaxValue(rawMax != null ? rawMax.toString() : null);
+
+                    a.setIsRequired(Boolean.TRUE.equals(m.get("isRequired")));
+                    a.setIsActive(Boolean.TRUE.equals(m.get("isActive")));
+                    a.setCategoryId(categoryId);
+
+                    if (attrId > 0) {
+                        toUpdate.add(a);
+                    } else {
+                        toInsert.add(a);
+                    }
+                }
+
+                // 5. Call DAO o DB
+                if (!toUpdate.isEmpty()) {
+                    daose.saveAttributes(categoryId, toUpdate);
+                }
+                if (!toInsert.isEmpty()) {
+                    try {
+                        daose.insertAttributes(categoryId, toInsert);
+                    } catch (SQLException e) {
+                        e.printStackTrace();
+                        responseJson(response, false, "Failed to insert new attributes: " + e.getMessage());
+                        return;
+                    }
+                }
+
+                responseJson(response, true, "Category updated successfully.");
                 break;
-            
 
             case "delete":
                 int categoryIdToHide = Integer.parseInt(request.getParameter("categoryId"));
@@ -186,6 +299,17 @@ public class CategoryViewServlet extends HttpServlet {
                 int categoryIdToEnable = Integer.parseInt(request.getParameter("categoryId"));
                 boolean isEnable = categoryDAO.enableCategory(categoryIdToEnable);
                 responseJson(response, isEnable, "The product has been successfully restored", "An error occurred while restoring the product");
+                break;
+            case "deleteAttribute":
+                int attrId = Integer.parseInt(request.getParameter("attributeId"));
+                boolean deleted = categoryDAO.deleteAttribute(attrId);
+
+                JSONObject json = new JSONObject();
+                json.put("isSuccess", deleted);
+                json.put("message", deleted ? "Attribute deleted successfully" : "Deletion failed");
+
+                response.setContentType("application/json");
+                response.getWriter().write(json.toString());
                 break;
         }
     }

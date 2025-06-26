@@ -8,7 +8,7 @@ public class Category {
 
     private int id;
     private String name;
-    private boolean isActive; 
+    private boolean isActive;
     private String avatar;
 
     public Category() {
@@ -24,14 +24,6 @@ public class Category {
     public Category(int id, String name) {
         this.id = id;
         this.name = name;
-    }
-
-    public String getAvatar() {
-        return avatar;
-    }
-
-    public void setAvatar(String avatar) {
-        this.avatar = avatar;
     }
 
     public int getId() {
@@ -56,6 +48,14 @@ public class Category {
 
     public void setIsActive(boolean isActive) {
         this.isActive = isActive;
+    }
+
+    public String getAvatar() {
+        return avatar;
+    }
+
+    public void setAvatar(String avatar) {
+        this.avatar = avatar;
     }
 
 }
