@@ -293,13 +293,12 @@ function handleCreateBrand() {
     })
             .then(response => response.json())
             .then(data => {
+                hiddenLoading();
                 if (data.success) {
                     showToast(data.message, 'success');
                     closeCreateModal();
-                    hiddenLoading();
                     loadBrandContentAndEvent(1);
                 } else {
-
                     showToast(data.message, 'error');
                 }
             })
@@ -349,6 +348,7 @@ function handleUpdateBrand() {
     })
             .then(async response => {
                 const data = await response.json().catch(() => ({}));
+                hiddenLoading();
                 if (!response.ok) {
                     throw new Error(data.message || 'An error occurred.');
                 }
@@ -357,7 +357,7 @@ function handleUpdateBrand() {
             .then(data => {
                 showToast(data.message, 'success');
                 closeEditModal();
-                hiddenLoading();
+                
                 let currentPage = parseInt(getQueryParam('page')) || 1;
                 loadBrandContentAndEvent(currentPage);
             })
