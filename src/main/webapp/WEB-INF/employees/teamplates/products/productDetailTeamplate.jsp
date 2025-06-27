@@ -33,7 +33,7 @@
     </div>
 
     <!-- Tab Content -->
-    <div class="p-8 h-full w-full overflow-y-auto">
+    <div id="containerScroll" class="p-8 h-full w-full overflow-y-auto">
         <!-- Details Tab -->
         <div id="details-content" class="tab-content w-full">
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -177,63 +177,14 @@
 
         <!-- Preview Tab -->
         <div id="preview-content" class="tab-content hidden w-full">
-            <div class="bg-gradient-to-br from-blue-50 to-purple-50 rounded-2xl p-8 border border-blue-100">
-                <div class="w-full mx-auto">
-                    <!-- Preview Card -->
-                    <div class="bg-white rounded-xl shadow-lg overflow-hidden">
-                        <div class="relative">
-                            <img src="${product.urls[0]}" alt="${product.title}" class="w-full h-64 object-cover">
-                            <div class="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center">
-                                <div class="text-center text-white">
-                                    <h2 class="text-2xl font-bold mb-2">${product.title}</h2>
-                                    <p class="text-lg">${CurrencyFormatter.formatVietNamCurrency(product.price)}</p>
-                                </div>
-                            </div>
-                        </div>
+            <input id="productDetailId" value="${product.productId}" class="hidden" />
+            <div id="reviewStats">
 
-                        <div class="p-6">
-                            <div class="flex items-center justify-between mb-4">
-                                <div class="flex items-center space-x-2">
-                                    <span class="px-3 py-1 bg-blue-100 text-blue-800 text-sm rounded-full">${product.category != null ? product.category.name : "No category"}</span>
-                                    <span class="px-3 py-1 bg-purple-100 text-purple-800 text-sm rounded-full">${product.brand != null ? product.brand.name : "No brand"}</span>
-                                </div>
-                                <div class="flex items-center space-x-1 text-yellow-500">
-                                    <i class="fas fa-star"></i>
-                                    <i class="fas fa-star"></i>
-                                    <i class="fas fa-star"></i>
-                                    <i class="fas fa-star"></i>
-                                    <i class="fas fa-star"></i>
-                                </div>
-                            </div>
-
-                            <p class="text-gray-600 mb-4">${product.description}</p>
-
-                            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                                <div class="text-center p-3 bg-gray-50 rounded-lg">
-                                    <i class="fas fa-tag text-blue-600 mb-1"></i>
-                                    <p class="font-medium">${product.category != null ? product.category.name : "N/A"}</p>
-                                    <p class="text-gray-500">Category</p>
-                                </div>
-                                <div class="text-center p-3 bg-gray-50 rounded-lg">
-                                    <i class="fas fa-cube text-green-600 mb-1"></i>
-                                    <p class="font-medium">${product.material}</p>
-                                    <p class="text-gray-500">Material</p>
-                                </div>
-                                <div class="text-center p-3 bg-gray-50 rounded-lg">
-                                    <i class="fas fa-industry text-purple-600 mb-1"></i>
-                                    <p class="font-medium">${product.brand != null ? product.brand.name : "N/A"}</p>
-                                    <p class="text-gray-500">Brand</p>
-                                </div>
-                                <div class="text-center p-3 bg-gray-50 rounded-lg">
-                                    <i class="fas fa-boxes text-orange-600 mb-1"></i>
-                                    <p class="font-medium">${product.quantity}</p>
-                                    <p class="text-gray-500">Available</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
             </div>
+            <div id="reviewList">
+
+            </div>
+            <div id="reviewListLoading"></div>
         </div>
     </div>
 </div>
