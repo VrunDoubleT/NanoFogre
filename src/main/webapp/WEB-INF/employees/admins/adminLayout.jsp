@@ -19,6 +19,9 @@
         <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
         <!-- SweetAlert2 CDN -->
         <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+        <!-- JS of chart -->
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
 
 
     </head>
@@ -139,9 +142,20 @@
                                 default:
                                     break;
                             }
+                            //dashboard
+                            if (path === "dashboard") {
+                                setTimeout(function () {
+                                    if (typeof window.initDashboardTabs === 'function') {
+                                        window.initDashboardTabs();
+                                    } else {
+                                        var event = document.createEvent('Event');
+                                        event.initEvent('DOMContentLoaded', true, true);
+                                        window.dispatchEvent(event);
+                                    }
+                                }, 50);
+                            }
                         });
             }
-
 
             const updateAvtiveSidebar = (page) => {
                 document.querySelectorAll(".nav-link").forEach((element) => {
@@ -220,5 +234,6 @@
         <script src="../../../js/loading.js"></script>
         <script src="../../../js/voucher.js"></script>
         <script src="../../../js/skeletonLoading.js"></script>
+        <script src="../../../js/dashboard.js"></script>    
     </body>
 </html>

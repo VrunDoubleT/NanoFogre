@@ -65,8 +65,9 @@ public class AdminViewServerlet extends HttpServlet {
                 viewPath = "/WEB-INF/employees/components/voucherComponent.jsp";
                 break;
             case "dashboard":
-                viewPath = "/WEB-INF/employees/components/adminDashboardComponent.jsp";
-                break;
+                // Forward request DashboardServlet
+                request.getRequestDispatcher("/dashboard").forward(request, response);
+                return;
             default:
                 viewPath = "/WEB-INF/employees/components/adminDashboardComponent.jsp";
         }
