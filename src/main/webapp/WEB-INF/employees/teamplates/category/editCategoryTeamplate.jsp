@@ -129,10 +129,13 @@
                     <!--  hidden input cho attributeId -->
                     <input type="hidden" name="attributeId" value="0"/>
 
-                    <!-- Delete -->
+
+
+                    <!--  Delete -->
                     <button type="button"
-                            class="remove-attribute absolute top-1/2 right-4 -translate-y-1/2 text-red-500 flex items-center gap-1 px-2 py-1 rounded">
-                        <i data-lucide="x" class="w-4 h-4"></i> 
+                            class="remove-attribute absolute pt-[38px]  right-4 -translate-y-1/2 text-red-500 hover:text-red-700 transition-colors flex items-center gap-1 px-3 py-1 rounded"
+                            title="Delete attribute">
+                        <i data-lucide="x" class="w-5 h-5"></i> Delete
                     </button>
 
                     <!-- Attribute Name -->
@@ -142,7 +145,7 @@
                                 Attribute Name <span class="text-red-500">*</span>
                             </label>
                             <input type="text" name="attributeName"
-                                   class="w-full px-3 py-2 border rounded-lg" placeholder="Enter attribute name" required>
+                                   class="w-full px-3 py-2 border rounded-lg" placeholder="Enter new attribute name" required>
                         </div>
                         <div class="flex items-center space-x-2 ml-4">
                             <input type="checkbox" name="attributeRequired" class="h-4 w-4 text-blue-600" checked>

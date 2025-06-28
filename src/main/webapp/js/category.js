@@ -404,15 +404,19 @@ function loadEditCategoryEvent(categoryId, currentPage) {
                     inp.style.display = "";
             });
             // restore checkbox (Min/Max)
+            // restore checkbox (Min/Max)
             mm.querySelectorAll('.show-min-input').forEach(chk => {
                 const minInp = mm.querySelector('.min-input');
-                        chk.checked = minInp?.style.display !== "none";
+                // thay optional chaining bằng kiểm tra tồn tại trước
+                chk.checked = !!(minInp && minInp.style.display !== "none");
             });
+
             mm.querySelectorAll('.show-max-input').forEach(chk => {
                 const maxInp = mm.querySelector('.max-input');
-                        chk.checked = maxInp?.style.display !== "none";
+                chk.checked = !!(maxInp && maxInp.style.display !== "none");
             });
         };
+
         dt.addEventListener('change', () => {
             // Save information current
             saveState();
@@ -613,7 +617,7 @@ function loadEditCategoryEvent(categoryId, currentPage) {
                     showError(minInput, "Min value must be less than Max value.");
                     showError(maxInput, "Max value must be greater than Min value.");
                 } else {
-                    // nếu range OK, mới tô xanh cả hai
+                   
                     [minInput, maxInput].forEach(i =>
                         i.classList.add("ring-1", "ring-green-500")
                     );
@@ -694,7 +698,7 @@ function loadEditCategoryEvent(categoryId, currentPage) {
             return acc;
         }, {});
 
-        
+
         nameInputs.forEach(inp => {
             const v = inp.value.trim().toLowerCase();
             if (counts[v] > 1) {
@@ -805,7 +809,7 @@ function loadEditCategoryEvent(categoryId, currentPage) {
                 minValue: minEl ? minEl.value.trim() : null,
                 maxValue: maxEl ? maxEl.value.trim() : null,
                 isRequired: reqEl ? reqEl.checked : false,
-                isActive: actEl ? actEl.checked : false
+                  isActive: actEl ? actEl.value === "true" : false 
             });
         });
         fd.append("attributes", JSON.stringify(attrs));
