@@ -18,95 +18,442 @@
     }
 %>
 
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+    * {
+        font-family: 'Inter', sans-serif;
+    }
+
+    .custom-attr-show {
+        background: #f5faff;
+        border-radius: 18px;
+        border: 1.5px solid #dbeafe;
+        box-shadow: 0 2px 7px 0 rgba(80,80,180,0.07);
+        margin-bottom: 20px;
+        padding: 26px 30px 16px 30px;
+        position: relative;
+    }
+
+    .custom-card {
+
+        box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.12);
+        background: #fff;
+    }
+    .custom-header-gradient {
+        background: linear-gradient(90deg, #4176fa 0%, #9c5cff 100%);
+        border-top-left-radius: 20px;
+        border-top-right-radius: 20px;
+    }
+    .custom-section {
+        background: #f6f8fa;
+        border-radius: 14px;
+        padding: 24px 32px;
+        margin-bottom: 24px;
+        box-shadow: 0 2px 8px 0 rgba(60, 72, 120, 0.08);
+    }
+    .custom-input, .custom-select {
+        border-radius: 10px !important;
+        font-size: 16px !important;
+        background: #f7fafc;
+        border: 1px solid #e5e7eb !important;
+        box-shadow: 0 1px 4px 0 rgba(60,72,120,0.04);
+        height: 42px !important;
+        padding-left: 14px !important;
+        padding-right: 14px !important;
+        color: #24292f !important;
+    }
+    .custom-input:focus, .custom-select:focus {
+        border-color: #7158e2 !important;
+        background: #fff;
+        box-shadow: 0 2px 12px 0 rgba(70, 123, 245, 0.08);
+    }
+    .custom-checkbox {
+        width: 18px;
+        height: 18px;
+        accent-color: #6d28d9;
+        margin-right: 6px;
+    }
+    .custom-btn-main {
+        background: linear-gradient(90deg, #7158e2 0%, #46aefa 100%);
+        color: #fff;
+        font-weight: bold;
+        border-radius: 12px;
+        padding: 12px 28px;
+        box-shadow: 0 2px 12px 0 rgba(70, 123, 245, 0.13);
+        font-size: 16px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.2s;
+        border: none;
+        outline: none;
+    }
+    .custom-btn-main:hover {
+        background: linear-gradient(90deg, #4176fa 0%, #9c5cff 100%);
+        transform: translateY(-2px) scale(1.01);
+        box-shadow: 0 4px 16px 0 rgba(70, 123, 245, 0.18);
+    }
+    .custom-label {
+        font-size: 15px !important;
+        font-weight: 600;
+        color: #3f4864;
+        margin-bottom: 5px;
+        display: block;
+    }
+    .custom-section-title {
+        font-weight: 700;
+        font-size: 18px;
+        color: #6046fa;
+        background: #eceafd;
+        padding: 7px 14px;
+        border-radius: 14px;
+        margin-bottom: 16px;
+        display: inline-block;
+    }
+    .custom-advanced {
+        background: #f5f3ff;
+        border-radius: 10px;
+        padding: 12px 20px 8px 20px;
+        margin: 0 0 18px 0;
+        box-shadow: 0 1px 5px 0 rgba(123,97,255,0.04);
+        display: flex;
+        gap: 32px;
+        align-items: center;
+    }
+    .custom-delete-btn {
+        color: #f87171;
+        font-weight: 500;
+        font-size: 15px;
+        background: #fff0f0;
+        border-radius: 8px;
+        padding: 5px 14px;
+        border: none;
+        outline: none;
+        transition: background 0.13s;
+    }
+    .custom-delete-btn:hover {
+        background: #ffe5e5;
+        color: #dc2626;
+    }
+    .custom-unit-input {
+        width: 180px !important;
+    }
+    .custom-minmax-label {
+        font-weight: 500;
+        color: #444;
+        margin-right: 4px;
+    }
+
+    .custom-attr-item {
+        background: #fff;
+        border-radius: 18px;
+        border: 1.5px solid #e5e7eb;
+        box-shadow: 0 2px 7px 0 rgba(200,210,230,0.08);
+        margin-bottom: 20px;
+        padding: 26px 30px 16px 30px;
+        position: relative;
+    }
+
+    .custom-status-select {
+        width: 130px !important;
+        padding-left: 10px !important;
+        padding-right: 10px !important;
+        border-radius: 8px !important;
+        font-size: 15px !important;
+        height: 38px !important;
+    }
+    .custom-avatar-gradient {
+        background: linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%);
+    }
+    .custom-upload-box {
+        min-height: 128px;
+        border-radius: 14px;
+        border: 2px dashed #d1d5db;
+        background: #f6f8fa;
+        cursor: pointer;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        transition: background 0.18s;
+    }
+    .custom-upload-box:hover {
+        background: #f0f5ff;
+    }
+    .btn-add {
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    }
+    .btn-add:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 10px 20px rgba(16,185,129,0.17);
+    }
+    .attr-delete-btn {
+        color: #ef4444;
+        background: #fff0f0;
+        border-radius: 8px;
+        padding: 5px 12px;
+        border: none;
+        outline: none;
+        font-weight: 500;
+        font-size: 15px;
+        transition: background .13s, color .13s;
+        position: absolute;
+        right: 22px;
+        bottom: 18px;
+    }
+    .attr-delete-btn:hover {
+        background: #ffe5e5;
+        color: #dc2626;
+    }
+</style>
 
 <!-- Modal Background -->
-<div class="bg-gray-100 w-[820px] mx-auto h-[90vh] flex flex-col bg-white shadow-2xl overflow-hidden">
+<div class="custom-card bg-gray-100 w-[1000px] mx-auto h-[90vh] flex flex-col bg-white shadow-2xl overflow-hidden">
 
-    <!-- Header Section -->
-    <div class="bg-gradient-to-r from-blue-600 to-purple-600 px-8 py-4 flex justify-between items-center rounded-t-xl">
+    <!--     Header Section     -->
+    <div class=" bg-gradient-to-r from-blue-600 to-purple-600 px-8 py-4 flex justify-between items-center rounded-t-xl">
 
-        <h2 class="text-2xl font-bold text-white">Edit Category</h2>
+        <div>
+            <h1 class="text-3xl text-white font-bold mb-2">Edit Category</h1>
+        </div>
         <form id="edit-category-form" enctype="multipart/form-data">
-            <!-- Action Buttons -->
-            <div class="flex items-center space-x-4">
+
+            <div class="flex space-x-4">
                 <button
                     type="submit"
                     id="update-category-btn"
-                    class="px-4 flex py-2 bg-green-500 rounded-lg text-white hover:bg-green-600 transition-all"
-                    >
-                    <i data-lucide="pencil" class="mr-1"></i>
+                    class="custom-btn-main custom-btn gradient-success text-white px-6 py-3 rounded-xl font-semibold flex items-center space-x-2">
+                    <i data-lucide="save" class="w-5 h-5"></i>
                     <span>Update</span>
                 </button>
             </div>
         </form>
+
     </div>
 
     <!-- Form Section -->
-    <div class="p-8 h-full w-full overflow-y-auto ">
+    <div class="p-8 h-full w-full overflow-y-auto bg-gradient-to-r ">
 
         <!-- Hidden Input -->
         <input type="hidden" id="categoryId" value="<%= category.getId()%>" />
 
         <!-- Category Name Input -->
-        <div class="mb-3">
+        <div class="custom-section mb-4">
             <label for="categoryName" class="block text-sm font-semibold text-gray-700 mb-1">Category Name</label>
             <input
                 type="text"
                 id="categoryName"
                 value="<%= category.getName()%>"
-                class="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                class="custom-input w-full"
                 required
                 />
             <span id="categoryNameError" class="text-red-500 text-sm"></span>
-        </div>
+        </div>  
 
+        <!-- Image Section -->
+        <div class="bg-gradient-to-r from-gray-50 to-blue-50 rounded-2xl p-6">
+            <h3 class="text-lg font-bold text-gray-800 mb-6 flex items-center">
+                <i data-lucide="image" class="w-6 h-6 mr-3 text-blue-600"></i>
+                Category Image
+            </h3>
 
-        <!-- avater curent -->
-        <div class="mb-3"> 
-            <label class="block text-sm font-semibold text-gray-700 mb-1">Category Image Current</label>
-            <div class="flex justify-center">
+            <div class="grid md:grid-cols-2 gap-8 items-center">
+                <!-- avater curent -->
+                <div class="custom-section mb-4 flex flex-col gap-3"> 
+                    <label class="custom-label">Category Image Current</label>
+                    <div class="flex justify-center">
+                        <div class="relative custom-avatar-gradient p-2 rounded-full flex items-center justify-center">
+                            <img
+                                src="<%= imageUrl%>"
+                                alt="Category Avatar"
+                                class="h-[245px] w-auto rounded-full object-cover border-4 border-white shadow-lg ring-2 ring-blue-200 transition-all duration-300"
+                                style="background: linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%);"
+                                />
+                        </div>
+                    </div>
+                </div>
 
-                <div class="relative">
-                    <img
-                        src="<%= imageUrl%>"
-                        alt="Category Avatar"
-                        class="h-36 w-36 rounded-full object-cover border-4 border-white shadow-lg ring-2 ring-blue-200 transition-all duration-300"
-                        style="background: linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%);"
-                        />
+                <!-- Upload New -->
+                <div>
+                    <h4 class="text-sm font-semibold text-gray-600 mb-4">Upload New Image</h4>
+                    <div id="image-preview" class="flex justify-center mb-3">
+                        <img src="<%= imageUrl%>" id="category-image-preview-tag"
+                             class="h-32 w-32 object-cover rounded-full border border-gray-200 shadow"
+                             alt="Category Image Preview"
+                             hidden=""/>
+                    </div>
+                    <div class="upload-zone rounded-2xl p-8 text-center cursor-pointer">
+
+                        <label for="categoryImage"
+                               class="custom-upload-box w-full h-32">
+                            <i data-lucide="upload-cloud" class="w-12 h-12 mx-auto text-gray-400 mb-4"></i>
+                            <span class="text-gray-500 text-sm">Click to upload or drag & drop</span>
+                            <span class="text-gray-400 text-xs">PNG, JPG, JPEG, GIF (max 5MB)</span>
+
+                        </label>
+                        <p id="categoryImageError" class="text-red-500 text-sm mt-1"></p>
+                        <input type="file"
+
+                               id="categoryImage"
+                               name="categoryImage"
+                               accept="image/*"
+                               class="hidden" />
+                    </div>
                 </div>
             </div>
         </div>
 
 
-        <!-- Upload input -->
-        <div class="mb-4">
-            <label class="block text-sm font-semibold text-gray-700 mb-1">Category Image</label>
 
-            <div id="image-preview" class="flex justify-center mb-3">
-                <img src="<%= imageUrl%>" id="category-image-preview-tag"
-                     class="h-32 w-32 object-cover rounded-full border border-gray-200 shadow"
-                     alt="Category Image Preview"
-                     hidden=""/>
+        <!--////////////////////////////////ShowAttribute/////////////////////////////////////////////////////////////////////////-->
+
+        <div id="attributes-container" class="mt-4 space-y-4 pb-[20px]">
+            <% for (ProductAttribute attr : attributes) {
+                    String dataType = attr.getDataType();
+                    String minVal = attr.getMinValue() != null ? attr.getMinValue() : "";
+                    String maxVal = attr.getMaxValue() != null ? attr.getMaxValue() : "";
+            %>
+
+            <div class="attribute-item custom-attr-show">
+                <input type="hidden" name="attributeId" value="<%= attr.getAttributeId()%>"/>
+
+
+                <!-- Category Basic Info -->
+                <div class="flex items-center gap-8 mb-4">
+                    <!-- Attribute Name -->
+                    <div class="flex-1">
+                        <label class="block text-sm font-semibold text-gray-700 mb-1">
+                            Attribute Name <span class="text-red-500">*</span>
+                        </label>
+                        <input type="text" name="attributeName"
+                               class="custom-input w-full"
+                               value="<%= attr.getAttributeName()%>" required/>
+                    </div>
+                    <!-- Status -->
+                    <div>
+                        <label for="attributeActive" class="text-sm text-gray-700 font-medium">Status</label>
+                        <select name="attributeActive" class="custom-select custom-status-select text-center" required>
+                            <option value="true"  <%= attr.getIsActive() != null && attr.getIsActive() ? "selected" : ""%>>Active</option>
+                            <option value="false" <%= attr.getIsActive() != null && !attr.getIsActive() ? "selected" : ""%>>Inactive</option>
+                        </select>
+                    </div>
+                    <!-- Required Field -->
+                    <div class="flex items-center gap-2">
+                        <input type="checkbox" name="attributeRequired"
+                               class="custom-checkbox"
+                               <%= attr.getIsRequired() != null && attr.getIsRequired() ? "checked" : ""%> />
+                        <label class="text-sm text-gray-700 font-medium">Required Field</label>
+                    </div>
+                    <!-- Delete -->
+                    <button type="button"
+                            class="remove-attribute attr-delete-btn ml-4"
+                            title="Delete attribute">
+                        <i data-lucide="trash-2" class="w-5 h-5"></i>
+                    </button>
+                </div>
+
+
+
+                <!-- Data Type + Min/Max -->
+                <div class="flex items-start gap-4">
+                    <div class="min-w-[200px] flex flex-col">
+                        <label class="custom-label">Data Type <span class="text-red-500">*</span></label>
+                        <select name="attributeDatatype" class="custom-select w-full" required>
+                            <option value="">Select data type</option>
+                            <option value="text"  <%= dataType.equals("text") ? "selected" : ""%>>Text</option>
+                            <option value="int"   <%= dataType.equals("int") ? "selected" : ""%>>Integer</option>
+                            <option value="float" <%= dataType.equals("float") ? "selected" : ""%>>Float</option>
+                            <option value="date"  <%= dataType.equals("date") ? "selected" : ""%>>Date</option>
+                        </select>
+                    </div>
+
+                    <div class="min-max-container flex-1 flex gap-4">
+                        <% if ("int".equals(dataType) || "float".equals(dataType)) {%>
+                        <div class="flex flex-col flex-1">
+                            <label class="flex items-center gap-2 mb-1 custom-minmax-label">
+                                <input  class="show-min-input" <%= !minVal.isEmpty() ? "checked" : ""%>> Min:
+                            </label>
+                            <input type="<%= "float".equals(dataType) ? "number\" step=\"0.1" : "number"%>"
+                                   name="attributeMin"
+                                   class="min-input custom-input w-full"
+                                   style="<%= minVal.isEmpty() ? "display:none;" : ""%>"
+                                   placeholder="Min Value"
+                                   value="<%= minVal%>">
+                        </div>
+
+                        <div class="flex flex-col flex-1">
+                            <label class="flex items-center gap-2 mb-1 custom-minmax-label">
+                                <input  class="show-max-input" <%= !maxVal.isEmpty() ? "checked" : ""%>> Max:
+                            </label>
+                            <input type="<%= "float".equals(dataType) ? "number\" step=\"0.1" : "number"%>"
+                                   name="attributeMax"
+                                   class="custom-input max-input w-full"
+                                   style="<%= maxVal.isEmpty() ? "display:none;" : ""%>"
+                                   placeholder="Max Value"
+                                   value="<%= maxVal%>">
+                        </div>
+                        <% } else if ("date".equals(dataType)) {%>
+                        <div class="flex flex-col flex-1 min-w-[140px]">
+                            <label class="flex items-center gap-2 mb-1 custom-minmax-label">
+                                <input  class="custom-checkbox show-min-input" <%= !minVal.isEmpty() ? "checked" : ""%> />
+                                Min date:
+                            </label>
+                            <input type="date" name="attributeMin"
+                                   class="custom-input min-input w-ful"
+                                   style="<%= minVal.isEmpty() ? "display:none;" : ""%>"
+                                   value="<%= minVal%>">
+                        </div>
+
+                        <div class="flex flex-col flex-1 min-w-[140px]">
+                            <label class="flex items-center gap-2 mb-1 custom-minmax-label">
+                                <input  class="custom-checkbox show-max-input" <%= !maxVal.isEmpty() ? "checked" : ""%> />
+                                Max date:
+                            </label>
+                            <input type="date" name="attributeMax"
+                                   class="custom-input max-input w-full"
+                                   style="<%= maxVal.isEmpty() ? "display:none;" : ""%>"
+                                   value="<%= maxVal%>">
+                        </div>
+                        <% }%>
+                    </div>
+                </div>
+
+                <!-- Unit & Status -->
+                <div class="mt-2 flex items-center gap-4">
+                    <label class="text-sm text-gray-700 font-medium ">Unit:</label>
+                    <input type="text" name="attributeUnit"
+                           class="custom-input custom-unit-input"
+                           value="<%= attr.getUnit() != null ? attr.getUnit() : ""%>"
+                           placeholder="eg: cm, g, % ..." />
+
+
+                </div>
             </div>
-            <!-- Upload input -->
-            <input type="file"
-                   id="categoryImage"
-                   name="categoryImage"
-                   accept="image/*"
-                   class="hidden" />
-            <label for="categoryImage"
-                   class="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 transition-colors">
-                <span class="text-gray-500 text-sm">Click to upload or drag & drop</span>
-                <span class="text-gray-400 text-xs">PNG, JPG, JPEG, GIF (max 5MB)</span>
-            </label>
-            <p id="categoryImageError" class="text-red-500 text-sm mt-1"></p>
+            <% }%>
         </div>
 
-        <!--//=========================================================================================-->
-        <!-- Add attributeProduct-->
+
+        <!-- Error Message -->
+        <div id="error-message" class="text-red-600 text-sm hidden"></div>
+
+        <!-- Status/Error -->
+        <div id="upload-status" class="hidden flex justify-center items-center">
+            <div class="bg-blue-50 border border-blue-200 rounded-lg p-2">
+                <span id="status-text" class="text-blue-700 text-sm"></span>
+            </div>
+        </div>
+        <div id="upload-error" class="hidden flex justify-center items-center">
+            <div class="bg-red-50 border border-red-200 rounded-lg p-2">
+                <span id="error-text" class="text-red-700 text-sm"></span>
+            </div>
+        </div>
+
+
+        <!--//============================Add attributeProduct=============================================================-->
 
         <button type="button"
-                class="openAddAttributeProduct bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-lg flex items-center gap-2">
+                class="openAddAttributeProduct custom-btn-main"  style="gap:10px;font-size:15px;">
+
             <i data-lucide="diamond-plus" class="w-5 h-5"></i>
             <span>Add Attribute Product</span>
         </button>
@@ -125,40 +472,37 @@
 
             <!-- TEMPLATE ITEM -->
             <div id="attribute-item-template" class="hidden">
-                <div id="main-attribute-item" class="hidden border border-gray-200 rounded-lg p-4 mb-4 bg-gray-50 relative">
+                <div id="main-attribute-item" class="custom-attr-item">
                     <!--  hidden input cho attributeId -->
                     <input type="hidden" name="attributeId" value="0"/>
 
 
-
                     <!--  Delete -->
                     <button type="button"
-                            class="remove-attribute absolute pt-[38px]  right-4 -translate-y-1/2 text-red-500 hover:text-red-700 transition-colors flex items-center gap-1 px-3 py-1 rounded"
+                            class="remove-attribute attr-delete-btn"
                             title="Delete attribute">
-                        <i data-lucide="x" class="w-5 h-5"></i> Delete
+                        <i data-lucide="trash-2" class="w-5 h-5"></i>
                     </button>
 
                     <!-- Attribute Name -->
                     <div class="flex items-center mb-3 gap-4 pr-32">
                         <div class="flex-1">
-                            <label class="block text-sm font-semibold text-gray-700 mb-1">
+                            <label class="custom-label">
                                 Attribute Name <span class="text-red-500">*</span>
                             </label>
                             <input type="text" name="attributeName"
-                                   class="w-full px-3 py-2 border rounded-lg" placeholder="Enter new attribute name" required>
+                                   class="custom-input w-full" placeholder="Enter new attribute name" required>
                         </div>
                         <div class="flex items-center space-x-2 ml-4">
-                            <input type="checkbox" name="attributeRequired" class="h-4 w-4 text-blue-600" checked>
-                            <label class="text-sm text-gray-700">Required Field</label>
+                            <input type="checkbox" name="attributeRequired" class="custom-checkbox" checked>
+                            <label class="text-sm text-gray-700 font-medium">Required Field</label>
                         </div>
                     </div>
 
                     <!-- Data Type + Min/Max -->
                     <div class="flex items-start gap-4 pr-32">
                         <div class="min-w-[200px] flex flex-col">
-                            <label class="block text-sm font-semibold text-gray-700 mb-1">
-                                Data Type <span class="text-red-500">*</span>
-                            </label>
+                            <label class="custom-label">Data Type <span class="text-red-500">*</span></label>
                             <select name="attributeDatatype" class="w-[200px] px-3 py-2 border rounded-lg" required>
                                 <option value="">Select data type</option>
                                 <option value="text">Text</option>
@@ -174,7 +518,7 @@
                     <div class="mt-2">
                         <label class="block text-sm font-semibold text-gray-700 mb-1">Unit (optional):</label>
                         <input type="text" name="attributeUnit"
-                               class="w-[222px] px-3 py-1 border rounded-lg" placeholder="eg: cm, g, % ...">
+                               class="custom-input custom-unit-input" placeholder="eg: cm, g, % ...">
                     </div>
                 </div>
             </div>
@@ -184,203 +528,54 @@
         <div id="int-template" class="hidden">
             <div class="flex gap-4 w-full">
                 <div class="flex flex-col flex-1">
-                    <label class="flex items-center gap-2 mb-1"><input type="checkbox" class="show-min-input">Min:</label>
-                    <input type="number" name="attributeMin" class="min-input w-full px-3 py-2 border rounded-lg" style="display:none;" placeholder="Min Value">
+                    <label class="flex items-center gap-2 mb-1 custom-minmax-label"><input type="checkbox" class="show-min-input">Min:</label>
+                    <input type="number" name="attributeMin" class="min-input custom-input w-full" style="display:none;" placeholder="Min Value">
                 </div>
                 <div class="flex flex-col flex-1">
-                    <label class="flex items-center gap-2 mb-1"><input type="checkbox" class="show-max-input">Max:</label>
-                    <input type="number" name="attributeMax" class="max-input w-full px-3 py-2 border rounded-lg" style="display:none;" placeholder="Max Value">
+                    <label class="flex items-center gap-2 mb-1 custom-minmax-label"><input type="checkbox" class="show-max-input">Max:</label>
+                    <input type="number" name="attributeMax" class="max-input custom-input w-full" style="display:none;" placeholder="Max Value">
                 </div>
             </div>
         </div>
         <div id="float-template" class="hidden">
             <div class="flex gap-4 w-full">
                 <div class="flex flex-col flex-1">
-                    <label class="flex items-center gap-2 mb-1"><input type="checkbox"  class="show-min-input">Min:</label>
-                    <input type="number" name="attributeMin" class="min-input w-full px-3 py-2 border rounded-lg" step="0.1" style="display:none;" placeholder="Min Value">
+                    <label class="flex items-center gap-2 mb-1 custom-minmax-label"><input type="checkbox"  class="show-min-input">Min:</label>
+                    <input type="number" name="attributeMin" class="min-input custom-input w-full" step="0.1" style="display:none;" placeholder="Min Value">
                 </div>
                 <div class="flex flex-col flex-1">
-                    <label class="flex items-center gap-2 mb-1"><input type="checkbox" class="show-max-input">Max:</label>
-                    <input type="number" name="attributeMax" class="max-input w-full px-3 py-2 border rounded-lg" step="0.1" style="display:none;" placeholder="Max Value">
+                    <label class="flex items-center gap-2 mb-1 custom-minmax-label"><input type="checkbox" class="show-max-input">Max:</label>
+                    <input type="number" name="attributeMax" class="max-input custom-input w-full" step="0.1" style="display:none;" placeholder="Max Value">
                 </div>
             </div>
         </div>
-        <div id="text-template" class="hidden">
-            <div class="flex flex-col">
-                <label class="mb-1">Text value:</label>
-                <input type="text" name="attributeTextValue" class="px-3 py-2 border rounded-lg" placeholder="Enter text value">
-            </div>
-        </div>
+
         <div id="date-template" class="hidden">
             <div class="flex flex-row gap-4 w-full">
                 <!-- Min date -->
                 <div class="flex flex-col flex-1 min-w-[140px]">
                     <div class="flex items-center gap-2 mb-1">
                         <input type="checkbox" class="show-min-input h-4 w-4" />
-                        <label class="block text-sm font-medium text-gray-700">Min date:</label>
+                        <label class="flex items-center gap-2 mb-1 custom-minmax-label">Min date:</label>
                     </div>
                     <input type="date" name="attributeMin"
-                           class="min-input w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-400 transition"
+                           class="min-input custom-input w-full"
                            placeholder="Min date" style="display:none;" />
                 </div>
                 <!-- Max date -->
                 <div class="flex flex-col flex-1 min-w-[140px]">
                     <div class="flex items-center gap-2 mb-1">
                         <input type="checkbox" class="show-max-input h-4 w-4" />
-                        <label class="block text-sm font-medium text-gray-700">Max date:</label>
+                        <label class="flex items-center gap-2 mb-1 custom-minmax-label">Max date:</label>
                     </div>
                     <input type="date" name="attributeMax"
-                           class="max-input w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-400 transition"
+                           class="max-input custom-input w-full"
                            placeholder="Max date" style="display:none;" />
                 </div>
             </div>
         </div>
 
         <!-- Add attributeProduct-->
-
-        <!-- Error Message -->
-        <div id="error-message" class="text-red-600 text-sm hidden"></div>
-
-        <!-- Status/Error -->
-        <div id="upload-status" class="hidden flex justify-center items-center">
-            <div class="bg-blue-50 border border-blue-200 rounded-lg p-2">
-                <span id="status-text" class="text-blue-700 text-sm"></span>
-            </div>
-        </div>
-        <div id="upload-error" class="hidden flex justify-center items-center">
-            <div class="bg-red-50 border border-red-200 rounded-lg p-2">
-                <span id="error-text" class="text-red-700 text-sm"></span>
-            </div>
-        </div>
-
-        <!--/////////////////////////////////////////////////////////////////////////////////////////////////////////-->
-
-        <div id="attributes-container" class="mt-4 space-y-4">
-            <% for (ProductAttribute attr : attributes) {
-                    String dataType = attr.getDataType();
-                    String minVal = attr.getMinValue() != null ? attr.getMinValue() : "";
-                    String maxVal = attr.getMaxValue() != null ? attr.getMaxValue() : "";
-            %>
-
-            <div class="attribute-item border border-gray-200 rounded-lg p-4 mb-4 bg-gray-50 relative">
-                <input type="hidden" name="attributeId" value="<%= attr.getAttributeId()%>"/>
-
-                <div class="flex items-center mb-3 gap-4 pr-32">
-                    <div class="flex-1">
-                        <label class="block text-sm font-semibold text-gray-700 mb-1">
-                            Attribute Name <span class="text-red-500">*</span>
-                        </label>
-                        <input type="text" name="attributeName"
-                               class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
-                               value="<%= attr.getAttributeName()%>" required/>
-                    </div>
-                    <div class="flex items-center space-x-2 ml-4">
-                        <input type="checkbox" name="attributeRequired"
-                               class="h-4 w-4 text-blue-600 border-gray-300 rounded"
-                               <%= attr.getIsRequired() != null && attr.getIsRequired() ? "checked" : ""%> />
-                        <label class="text-sm text-gray-700 font-medium">Required Field</label>
-                    </div>
-
-                    <!--  Delete -->
-                    <button type="button"
-                            class="remove-attribute absolute  right-4 -translate-y-1/2 text-red-500 hover:text-red-700 transition-colors flex items-center gap-1 px-3 py-1 rounded"
-                            title="Delete attribute">
-                        <i data-lucide="x" class="w-5 h-5"></i> Delete
-                    </button>
-                </div>
-
-                <!-- Data Type + Min/Max -->
-                <div class="flex items-start gap-4">
-                    <div class="min-w-[200px]">
-                        <label class="block text-sm font-semibold text-gray-700 mb-1">Data Type <span class="text-red-500">*</span></label>
-                        <select name="attributeDatatype" class="w-full px-3 py-2 border rounded-lg" required>
-                            <option value="">Select data type</option>
-                            <option value="text"  <%= dataType.equals("text") ? "selected" : ""%>>Text</option>
-                            <option value="int"   <%= dataType.equals("int") ? "selected" : ""%>>Integer</option>
-                            <option value="float" <%= dataType.equals("float") ? "selected" : ""%>>Float</option>
-                            <option value="date"  <%= dataType.equals("date") ? "selected" : ""%>>Date</option>
-                        </select>
-                    </div>
-
-                    <div class="min-max-container flex-1 flex gap-4">
-                        <% if ("int".equals(dataType) || "float".equals(dataType)) {%>
-                        <div class="flex flex-col flex-1">
-                            <label class="flex items-center gap-2 mb-1">
-                                <input  class="show-min-input" <%= !minVal.isEmpty() ? "checked" : ""%>> Min:
-                            </label>
-                            <input type="<%= "float".equals(dataType) ? "number\" step=\"0.1" : "number"%>"
-                                   name="attributeMin"
-                                   class="min-input w-full px-3 py-2 border rounded-lg"
-                                   style="<%= minVal.isEmpty() ? "display:none;" : ""%>"
-                                   placeholder="Min Value"
-                                   value="<%= minVal%>">
-                        </div>
-
-                        <div class="flex flex-col flex-1">
-                            <label class="flex items-center gap-2 mb-1">
-                                <input  class="show-max-input" <%= !maxVal.isEmpty() ? "checked" : ""%>> Max:
-                            </label>
-                            <input type="<%= "float".equals(dataType) ? "number\" step=\"0.1" : "number"%>"
-                                   name="attributeMax"
-                                   class="max-input w-full px-3 py-2 border rounded-lg"
-                                   style="<%= maxVal.isEmpty() ? "display:none;" : ""%>"
-                                   placeholder="Max Value"
-                                   value="<%= maxVal%>">
-                        </div>
-                        <% } else if ("date".equals(dataType)) {%>
-                        <div class="flex flex-col flex-1 min-w-[140px]">
-                            <label class="flex items-center gap-2 mb-1">
-                                <input  class="show-min-input h-4 w-4" <%= !minVal.isEmpty() ? "checked" : ""%> />
-                                Min date:
-                            </label>
-                            <input type="date" name="attributeMin"
-                                   class="min-input w-full px-3 py-2 border rounded-lg"
-                                   style="<%= minVal.isEmpty() ? "display:none;" : ""%>"
-                                   value="<%= minVal%>">
-                        </div>
-
-                        <div class="flex flex-col flex-1 min-w-[140px]">
-                            <label class="flex items-center gap-2 mb-1">
-                                <input  class="show-max-input h-4 w-4" <%= !maxVal.isEmpty() ? "checked" : ""%> />
-                                Max date:
-                            </label>
-                            <input type="date" name="attributeMax"
-                                   class="max-input w-full px-3 py-2 border rounded-lg"
-                                   style="<%= maxVal.isEmpty() ? "display:none;" : ""%>"
-                                   value="<%= maxVal%>">
-                        </div>
-                        <% } else if ("text".equals(dataType)) { %>
-                        <div class="flex flex-col w-full">
-                            <label class="mb-1">Text value:</label>
-                            <input type="text" name="attributeTextValue"
-                                   class="px-3 py-2 border rounded-lg"
-                                   placeholder="Enter text value">
-                        </div>
-                        <% }%>
-                    </div>
-                </div>
-
-                <!-- Unit & Status -->
-                <div class="mt-2 flex items-center gap-4">
-                    <label class="text-sm text-gray-700 font-medium ">Unit:</label>
-                    <input type="text" name="attributeUnit"
-                           class="w-[222px] px-3 py-1 border rounded-lg"
-                           value="<%= attr.getUnit() != null ? attr.getUnit() : ""%>"
-                           placeholder="eg: cm, g, % ..." />
-
-                    <div class="flex items-center gap-2 ml-4">
-                        <label for="attributeActive" class="text-sm text-gray-700 font-medium ">Status</label>
-                        <select name="attributeActive" class="w-[133px] px-3 py-1 border rounded-lg text-center" required>
-                            <option value="true"  <%= attr.getIsActive() != null && attr.getIsActive() ? "selected" : ""%>>Active</option>
-                            <option value="false" <%= attr.getIsActive() != null && !attr.getIsActive() ? "selected" : ""%>>Inactive</option>
-                        </select>
-                    </div>
-                </div>
-            </div>
-            <% }%>
-        </div>
-
-
 
     </div>
 

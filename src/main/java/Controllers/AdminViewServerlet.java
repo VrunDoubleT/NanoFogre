@@ -65,11 +65,11 @@ public class AdminViewServerlet extends HttpServlet {
                 request.getRequestDispatcher("/brand").forward(request, response);
                 return;
             case "order":
+                viewPath = "/WEB-INF/employees/components/orderComponent.jsp";
                 List<Order> order = orderDao.getOrders();
                 int totalOrder = orderDao.countOrders();
                 request.setAttribute("total", totalOrder);
                 request.setAttribute("orders", order);
-                viewPath = "/WEB-INF/employees/components/orderComponent.jsp";
 
                 break;
             case "dashboard":

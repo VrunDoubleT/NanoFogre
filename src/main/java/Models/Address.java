@@ -5,6 +5,7 @@ package Models;
  * @author Tran Thanh Van - CE181019
  */
 public class Address {
+
     private int id;
     private String province;
     private String district;
@@ -12,6 +13,7 @@ public class Address {
     private String extraInfo;
     private String phone;
     private int customerId;
+    private String fullAddress;
 
     public Address() {
     }
@@ -24,6 +26,14 @@ public class Address {
         this.extraInfo = extraInfo;
         this.phone = phone;
         this.customerId = customerId;
+    }
+
+    public String getFullAddress() {
+        return fullAddress;
+    }
+
+    public void setFullAddress(String fullAddress) {
+        this.fullAddress = fullAddress;
     }
 
     public int getId() {
@@ -86,6 +96,5 @@ public class Address {
     public String toString() {
         return "Address{" + "id=" + id + ", province=" + province + ", district=" + district + ", commune=" + commune + ", extraInfo=" + extraInfo + ", phone=" + phone + ", customerId=" + customerId + '}';
     }
-    
-    
+
 }

@@ -303,7 +303,7 @@ function loadEditCategoryEvent(categoryId, currentPage) {
         });
     }
 
-// --------Add new attribute--------------------
+// --------Add new attribute-------------------- //
     let attributeCounter = document.querySelectorAll('#attributes-container .attribute-item').length;
     const btnAdd = document.querySelector('.openAddAttributeProduct');
     const container = document.getElementById('attributes-container');
@@ -376,7 +376,7 @@ function loadEditCategoryEvent(categoryId, currentPage) {
             el.textContent = `${cnt} attribute${cnt !== 1 ? 's' : ''}`;
     }
 
-    /////////ShowAttribute
+    /////////=======ShowAttribute======////////
     const attributeState = new WeakMap();
     document.querySelectorAll('#attributes-container .attribute-item').forEach(item => {
         const dt = item.querySelector('select[name^="attributeDatatype"]');
@@ -404,10 +404,9 @@ function loadEditCategoryEvent(categoryId, currentPage) {
                     inp.style.display = "";
             });
             // restore checkbox (Min/Max)
-            // restore checkbox (Min/Max)
             mm.querySelectorAll('.show-min-input').forEach(chk => {
                 const minInp = mm.querySelector('.min-input');
-                // thay optional chaining bằng kiểm tra tồn tại trước
+
                 chk.checked = !!(minInp && minInp.style.display !== "none");
             });
 
@@ -416,7 +415,6 @@ function loadEditCategoryEvent(categoryId, currentPage) {
                 chk.checked = !!(maxInp && maxInp.style.display !== "none");
             });
         };
-
         dt.addEventListener('change', () => {
             // Save information current
             saveState();
@@ -432,6 +430,8 @@ function loadEditCategoryEvent(categoryId, currentPage) {
                     inp.style.display = chk.checked ? '' : 'none';
                     if (!chk.checked)
                         inp.value = '';
+                    validateAttributeNumberFields();
+                    validateDateFields();
                 };
             });
             clone.querySelectorAll('.show-max-input').forEach(chk => {
@@ -440,11 +440,18 @@ function loadEditCategoryEvent(categoryId, currentPage) {
                     inp.style.display = chk.checked ? '' : 'none';
                     if (!chk.checked)
                         inp.value = '';
+                    validateAttributeNumberFields();
+                    validateDateFields();
                 };
             });
             mm.appendChild(clone);
             restoreState();
+            // VALIDATE  TYPE
+            validateAttributeNumberFields();
+            validateAttributeTextFields();
+            validateDateFields();
         });
+
         if (dt.value)
             dt.dispatchEvent(new Event('change'));
     });
@@ -460,17 +467,8 @@ function loadEditCategoryEvent(categoryId, currentPage) {
             const minInput = item.querySelector('input.min-input[type="date"]');
             const maxInput = item.querySelector('input.max-input[type="date"]');
 
-            // xoá lỗi & class cũ
-            [minInput, maxInput].forEach(inp => {
-                if (!inp)
-                    return;
-                inp.parentElement
-                        .querySelectorAll('.date-error-msg')
-                        .forEach(el => el.remove());
-                inp.classList.remove("border-red-500", "ring-1", "ring-green-500");
-            });
+            clearDateErrors(minInput, maxInput);
 
-            // validate từng ô
             [minInput, maxInput].forEach(inp => {
                 if (!inp || !inp.value)
                     return;
@@ -487,49 +485,51 @@ function loadEditCategoryEvent(categoryId, currentPage) {
                     isValid = false;
                     inp.classList.add("border-red-500");
                     inp.insertAdjacentHTML('afterend',
-                            `<span class="text-red-500 text-xs mt-1 date-error-msg">${msg}</span>`
-                            );
+                            `<span class="text-red-500 text-xs mt-1 date-error-msg">${msg}</span>`);
                 } else {
                     inp.classList.add("ring-1", "ring-green-500");
                 }
             });
 
-            // validate quan hệ Min < Max
-            if (minInput && maxInput && minInput.value && maxInput.value) {
+            // validate quan hệ Min < Max 
+            if (
+                    minInput && maxInput &&
+                    minInput.value && maxInput.value &&
+                    !minInput.classList.contains("border-red-500") &&
+                    !maxInput.classList.contains("border-red-500")
+                    ) {
                 const minDate = new Date(minInput.value);
                 const maxDate = new Date(maxInput.value);
 
-
-                [minInput, maxInput].forEach(inp => {
-                    inp.parentElement
-                            .querySelectorAll('.date-error-msg')
-                            .forEach(el => el.remove());
-                    inp.classList.remove("ring-green-500");
-                });
-
                 if (minDate.getTime() >= maxDate.getTime()) {
                     isValid = false;
-                    [minInput, maxInput].forEach(inp =>
-                        inp.classList.add("border-red-500")
-                    );
+                    [minInput, maxInput].forEach(inp => {
+                        inp.classList.remove("ring-green-500");
+                        inp.classList.add("border-red-500");
+                    });
+
                     minInput.insertAdjacentHTML('afterend',
-                            `<span class="text-red-500 text-xs mt-1">Min date must be earlier than Max date</span>`
+                            `<span class="text-red-500 text-xs mt-1 date-error-msg">Min date must be earlier than Max date</span>`
                             );
                     maxInput.insertAdjacentHTML('afterend',
-                            `<span class="text-red-500 text-xs mt-1">Max date must be later than Min date</span>`
+                            `<span class="text-red-500 text-xs mt-1 date-error-msg">Max date must be later than Min date</span>`
                             );
-                } else {
-
-                    [minInput, maxInput].forEach(inp =>
-                        inp.classList.add("ring-1", "ring-green-500")
-                    );
                 }
             }
         });
-
         return isValid;
     }
 
+    function clearDateErrors(...inputs) {
+        inputs.forEach(inp => {
+            if (!inp)
+                return;
+            inp.parentElement
+                    .querySelectorAll('.date-error-msg')
+                    .forEach(el => el.remove());
+            inp.classList.remove("border-red-500", "ring-1", "ring-green-500");
+        });
+    }
 
 //===================================================
 /////Valid Int and Float 
@@ -617,7 +617,7 @@ function loadEditCategoryEvent(categoryId, currentPage) {
                     showError(minInput, "Min value must be less than Max value.");
                     showError(maxInput, "Max value must be greater than Min value.");
                 } else {
-                   
+
                     [minInput, maxInput].forEach(i =>
                         i.classList.add("ring-1", "ring-green-500")
                     );
@@ -656,8 +656,8 @@ function loadEditCategoryEvent(categoryId, currentPage) {
         // 1)  validate input individual 
         document.querySelectorAll('.attribute-item').forEach(item => {
             const nameInput = item.querySelector('input[name^="attributeName"]');
-            const unitInput = item.querySelector('input[name^="attributeUnit"]');
-            [nameInput, unitInput].forEach(input => {
+
+            [nameInput].forEach(input => {
                 if (!input)
                     return;
                 clearErrors(input);
@@ -680,7 +680,7 @@ function loadEditCategoryEvent(categoryId, currentPage) {
                 }
                 if (!validPattern.test(value)) {
                     isValid = false;
-                    showError(input, `${fieldLabel} không được chứa ký tự đặc biệt.`);
+                    showError(input, `${fieldLabel} cannot contain special characterst.`);
                     return;
                 }
 
@@ -703,7 +703,6 @@ function loadEditCategoryEvent(categoryId, currentPage) {
             const v = inp.value.trim().toLowerCase();
             if (counts[v] > 1) {
                 isValid = false;
-                // xóa highlight xanh nếu có
                 inp.classList.remove("ring-green-500");
                 showError(inp, "Attribute Name already exists.");
             }
@@ -715,20 +714,20 @@ function loadEditCategoryEvent(categoryId, currentPage) {
 //===================================================
     /// real-time check rightnow valid when input
     const attrsContainer = document.getElementById('attributes-container');
-
-
-    attrsContainer.addEventListener('input', e => {
-        const tgt = e.target;
-        if (tgt.matches('input[name^="attributeMin"], input[name^="attributeMax"]')) {
-            validateAttributeNumberFields();
-        }
-        if (tgt.matches('input[name^="attributeName"], input[name^="attributeUnit"]')) {
-            validateAttributeTextFields();
-        }
-        if (tgt.matches('input.min-input[type="date"], input.max-input[type="date"]')) {
-            validateDateFields();
-        }
-    });
+    if (attrsContainer) {
+        attrsContainer.addEventListener('input', e => {
+            const tgt = e.target;
+            if (tgt.matches('input[name^="attributeMin"], input[name^="attributeMax"]')) {
+                validateAttributeNumberFields();
+            }
+            if (tgt.matches('input[name^="attributeName"], input[name^="attributeUnit"]')) {
+                validateAttributeTextFields();
+            }
+            if (tgt.matches('input.min-input[type="date"], input.max-input[type="date"]')) {
+                validateDateFields();
+            }
+        });
+    }
 
 
     attrsContainer.addEventListener('blur', e => {
@@ -809,7 +808,7 @@ function loadEditCategoryEvent(categoryId, currentPage) {
                 minValue: minEl ? minEl.value.trim() : null,
                 maxValue: maxEl ? maxEl.value.trim() : null,
                 isRequired: reqEl ? reqEl.checked : false,
-                  isActive: actEl ? actEl.value === "true" : false 
+                isActive: actEl ? actEl.value === "true" : false
             });
         });
         fd.append("attributes", JSON.stringify(attrs));
@@ -1697,7 +1696,6 @@ function loadCreateCategoryEvent() {
         errorDiv.classList.add("hidden");
         statusDiv.classList.add("hidden");
         if (!validateForm()) {
-            showError("Please fix the errors above before submitting");
             return;
         }
 

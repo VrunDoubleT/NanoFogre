@@ -129,13 +129,13 @@
                                     }
                                     loadCategoryContentAndEvent(categoryPage);
                                     break;
-//                                case 'order':
-//                                    let orderPage = 1;
-//                                    if (params.length > 0) {
-//                                        orderPage = parseOptionNumber(params[0].value, 1);
-//                                    }
-//                                    loadOrderContentAndEvent(orderPage);
-//                                    break;
+                                case 'order':
+                                    let orderPage = 1;
+                                    if (params.length > 0) {
+                                        orderPage = parseOptionNumber(params[0].value, 1);
+                                    }
+                                    loadOrderContentAndEvent(orderPage);
+                                    break;
                                 default:
                                     break;
                             }
@@ -183,6 +183,7 @@
                         const staffPage = params.get('page') || '1';
                         loadContent(viewPage, false, [{name: 'page', value: staffPage}
                         ]);
+                        break;
                     case "brand":
                         const brandPage = params.get('page') || '1';
                         loadContent(viewPage, false, [{name: 'page', value: brandPage}]);
@@ -191,10 +192,10 @@
                         const categoryPage = params.get('page') || '1';
                         loadContent(viewPage, false, [{name: 'page', value: categoryPage}]);
                         break;
-//                    case "order":
-//                        const categoryPage = params.get('page') || '1';
-//                        loadContent(viewPage, false, [{name: 'page', value: categoryPage}]);
-//                        break;
+                    case "order":
+                        const orderPage = params.get('page') || '1';
+                        loadContent(viewPage, false, [{name: 'page', value: orderPage}]);
+                        break;
                     default:
 
                         loadContent(viewPage, false);
@@ -212,5 +213,6 @@
         <script src="../../../js/category.js"></script>       
         <script src="../../../js/staff.js"></script> 
         <script src="../../../js/loading.js"></script>
+        <script src="../../../js/order.js"></script>
     </body>
 </html>
