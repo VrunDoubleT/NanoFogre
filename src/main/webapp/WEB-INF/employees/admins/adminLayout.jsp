@@ -6,7 +6,7 @@
 
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <!DOCTYPE html>
-<html lang="en">
+<html>
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
         <title>Admin</title>
@@ -129,12 +129,12 @@
                                     }
                                     loadCategoryContentAndEvent(categoryPage);
                                     break;
-                                case 'voucher':
-                                    let voucherPage = 1;
+                                case 'order':
+                                    let orderPage = 1;
                                     if (params.length > 0) {
-                                        voucherPage = parseOptionNumber(params[0].value, 1);
+                                        orderPage = parseOptionNumber(params[0].value, 1);
                                     }
-                                    loadVoucherContentAndEvent(voucherPage);
+                                    loadOrderContentAndEvent(orderPage);
                                     break;
                                 default:
                                     break;
@@ -188,18 +188,13 @@
                         const brandPage = params.get('page') || '1';
                         loadContent(viewPage, false, [{name: 'page', value: brandPage}]);
                         break;
-//                    case "category":
-//                        const categoryPage = params.get('page') || '1';
-//                        loadContent(viewPage, false, [{name: 'page', value: categoryPage}]);
-//                        break;
                     case "category":
                         const categoryPage = params.get('page') || '1';
                         loadContent(viewPage, false, [{name: 'page', value: categoryPage}]);
                         break;
-                    case "voucher":
-                        const voucherPage = params.get('page') || '1';
-                        loadContent(viewPage, false, [{name: 'page', value: voucherPage}
-                        ]);
+                    case "order":
+                        const orderPage = params.get('page') || '1';
+                        loadContent(viewPage, false, [{name: 'page', value: orderPage}]);
                         break;
                     default:
 
@@ -218,7 +213,6 @@
         <script src="../../../js/category.js"></script>       
         <script src="../../../js/staff.js"></script> 
         <script src="../../../js/loading.js"></script>
-        <script src="../../../js/voucher.js"></script>
-        <script src="../../../js/skeletonLoading.js"></script>
+        <script src="../../../js/order.js"></script>
     </body>
 </html>
