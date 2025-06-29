@@ -20,12 +20,9 @@
 <% for (Order order : orders) {%>
 <tr data-order-id="<%= order.getId()%>" class="hover:bg-gray-50 transition-colors duration-200">
     <!-- Order ID with enhanced styling -->
-    <td class="px-6 py-5 whitespace-nowrap text-center">
-        <div class="flex items-center justify-center">
-            <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-bold bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-sm">
-                #<%= order.getId()%>
-            </span>
-        </div>
+    <!-- Order ID -->
+    <td class="px-4 py-4 whitespace-nowrap text-center ">
+        <span class="font-bold text-lg text-gray-900 ">#<%= order.getId()%></span>
     </td>
 
     <!-- Customer Name with avatar placeholder -->
