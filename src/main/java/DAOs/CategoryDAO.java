@@ -223,14 +223,14 @@ public class CategoryDAO extends DB.DBContext {
         for (ProductAttribute attr : list) {
             try {
                 Object[] params = new Object[]{
-                    attr.getAttributeName(),
+                    attr.getName(),
                     attr.getUnit(),
                     attr.getMinValue(),
                     attr.getMaxValue(),
                     attr.getDataType(),
                     attr.getIsRequired() != null && attr.getIsRequired(),
                     attr.getIsActive() != null && attr.getIsActive(),
-                    attr.getAttributeId() // <-- chỉ cung cấp attributeId
+                    attr.getId() // <-- chỉ cung cấp attributeId
                 };
                 execQuery(updateSql, params);
             } catch (SQLException e) {
@@ -239,40 +239,15 @@ public class CategoryDAO extends DB.DBContext {
         }
     }
 
-    /**
-     * Insert a list of ProductAttribute objects into the database.
-     *
-     * @param categoryId the ID of the category to which these attributes belong
-     * @param list list of ProductAttribute to insert
-     */
-//    public void insertAttributes(int categoryId, List<ProductAttribute> list) throws SQLException {
-//        String insertSql
-//                = "INSERT INTO ProductAttributes "
-//                + "(attributeName, unit, minValue, maxValue, dataType, isRequired, isActive, categoryId) "
-//                + "VALUES (?, ?, ?, ?, ?, ?, 1, ?)";
-//        for (ProductAttribute attr : list) {
-//            Object[] params = new Object[]{
-//                attr.getAttributeName(),
-//                attr.getUnit(),
-//                attr.getMinValue(),
-//                attr.getMaxValue(),
-//                attr.getDataType(),
-//                // isRequired → ? thứ 6
-//                attr.getIsRequired() != null && attr.getIsRequired(),
-//                // bỏ attr.getIsActive() vì isActive đã là 1
-//                categoryId // ? thứ 7
-//            };
-//            execQuery(insertSql, params);
-//        }
-//    }
+
     public List<ProductAttribute> getAttributesByCategoryId(int categoryId) {
         List<ProductAttribute> list = new ArrayList<>();
         String sql = "SELECT * FROM ProductAttributes WHERE categoryId = ?";
         try ( ResultSet rs = execSelectQuery(sql, new Object[]{categoryId})) {
             while (rs.next()) {
                 ProductAttribute attr = new ProductAttribute();
-                attr.setAttributeId(rs.getInt("attributeId"));
-                attr.setAttributeName(rs.getString("attributeName"));
+                attr.setId(rs.getInt("attributeId"));
+                attr.setName(rs.getString("attributeName"));
                 attr.setUnit(rs.getString("unit"));
                 // đọc chuỗi nguyên gốc
                 attr.setMinValue(rs.getString("minValue"));
@@ -289,71 +264,6 @@ public class CategoryDAO extends DB.DBContext {
         return list;
     }
 
-//    public void insertAttributes(int categoryId, List<ProductAttribute> list) throws SQLException {
-//        if (list == null || list.isEmpty()) {
-//            return; // Nothing to insert
-//        }
-//
-//        String insertSql
-//                = "INSERT INTO ProductAttributes "
-//                + "(attributeName, unit, minValue, maxValue, dataType, isRequired, isActive, categoryId) "
-//                + "VALUES (?, ?, ?, ?, ?, ?, 1, ?)";
-//
-//        Connection conn = null;
-//        PreparedStatement pstmt = null;
-//
-//        try {
-//            conn = getConnection(); // Your method to get connection
-//            pstmt = conn.prepareStatement(insertSql);
-//
-//            for (ProductAttribute attr : list) {
-//                // Validate required fields
-//                if (attr.getAttributeName() == null || attr.getAttributeName().trim().isEmpty()) {
-//                    throw new SQLException("Attribute name cannot be null or empty");
-//                }
-//                if (attr.getDataType() == null || attr.getDataType().trim().isEmpty()) {
-//                    throw new SQLException("Data type cannot be null or empty");
-//                }
-//
-//                pstmt.setString(1, attr.getAttributeName().trim());
-//                pstmt.setString(2, attr.getUnit());
-//
-//                // Handle nullable numeric values
-//                if (attr.getMinValue() != null) {
-//                    pstmt.setDouble(3, attr.getMinValue());
-//                } else {
-//                    pstmt.setNull(3, java.sql.Types.DOUBLE);
-//                }
-//
-//                if (attr.getMaxValue() != null) {
-//                    pstmt.setDouble(4, attr.getMaxValue());
-//                } else {
-//                    pstmt.setNull(4, java.sql.Types.DOUBLE);
-//                }
-//
-//                pstmt.setString(5, attr.getDataType());
-//                pstmt.setBoolean(6, attr.getIsRequired() != null && attr.getIsRequired());
-//                pstmt.setInt(7, categoryId);
-//
-//                pstmt.addBatch(); // Use batch for better performance
-//            }
-//
-//            pstmt.executeBatch();
-//
-//        } catch (SQLException e) {
-//            System.err.println("SQL Error in insertAttributes: " + e.getMessage());
-//            throw e;
-//        } finally {
-//            if (pstmt != null) try {
-//                pstmt.close();
-//            } catch (SQLException e) {
-//            }
-//            if (conn != null) try {
-//                conn.close();
-//            } catch (SQLException e) {
-//            }
-//        }
-//    }
     public void insertAttributes(int categoryId, List<ProductAttribute> list) throws SQLException {
         if (list == null || list.isEmpty()) {
             return;
@@ -367,14 +277,14 @@ public class CategoryDAO extends DB.DBContext {
         try ( Connection conn = getConnection();  PreparedStatement pstmt = conn.prepareStatement(insertSql)) {
 
             for (ProductAttribute attr : list) {
-                if (attr.getAttributeName() == null || attr.getAttributeName().trim().isEmpty()) {
+                if (attr.getName() == null || attr.getName().trim().isEmpty()) {
                     throw new SQLException("Attribute name cannot be null or empty");
                 }
                 if (attr.getDataType() == null || attr.getDataType().trim().isEmpty()) {
                     throw new SQLException("Data type cannot be null or empty");
                 }
 
-                pstmt.setString(1, attr.getAttributeName().trim());
+                pstmt.setString(1, attr.getName().trim());
                 pstmt.setString(2, attr.getUnit());
 
                 // ghi nguyên chuỗi (có thể là số hoặc yyyy-MM-dd)

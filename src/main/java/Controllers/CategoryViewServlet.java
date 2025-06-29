@@ -178,7 +178,7 @@ public class CategoryViewServlet extends HttpServlet {
                     List<ProductAttribute> attrs = new ArrayList<>();
                     for (Map<String, Object> m : attrMaps) {
                         ProductAttribute a = new ProductAttribute();
-                        a.setAttributeName((String) m.get("name"));
+                        a.setName((String) m.get("name"));
                         a.setDataType((String) m.get("datatype"));
                         a.setUnit((String) m.get("unit"));
 
@@ -253,9 +253,9 @@ public class CategoryViewServlet extends HttpServlet {
 
                     ProductAttribute a = new ProductAttribute();
                     if (attrId > 0) {
-                        a.setAttributeId(attrId);
+                        a.setId(attrId);
                     }
-                    a.setAttributeName((String) m.get("attributeName"));
+                    a.setName((String) m.get("attributeName"));
                     a.setDataType((String) m.get("datatype"));
                     a.setUnit((String) m.get("unit"));
 

@@ -291,7 +291,7 @@
                                 </div>
                                 <div>
                                     <span class="text-xs font-medium text-gray-500 uppercase tracking-wide">Attribute Name</span>
-                                    <h4 class="text-lg font-semibold text-gray-800 capitalize"><%= attr.getAttributeName()%></h4>
+                                    <h4 class="text-lg font-semibold text-gray-800 capitalize"><%= attr.getName()%></h4>
                                 </div>
                             </div>
                             <% if (attr.getIsRequired() != null && attr.getIsRequired()) { %>

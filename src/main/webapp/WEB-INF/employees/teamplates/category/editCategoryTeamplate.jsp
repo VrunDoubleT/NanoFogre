@@ -315,7 +315,7 @@
             %>
 
             <div class="attribute-item custom-attr-show">
-                <input type="hidden" name="attributeId" value="<%= attr.getAttributeId()%>"/>
+                <input type="hidden" name="attributeId" value="<%= attr.getId()%>"/>
 
 
                 <!-- Category Basic Info -->
@@ -327,7 +327,7 @@
                         </label>
                         <input type="text" name="attributeName"
                                class="custom-input w-full"
-                               value="<%= attr.getAttributeName()%>" required/>
+                               value="<%= attr.getName()%>" required/>
                     </div>
                     <!-- Status -->
                     <div>

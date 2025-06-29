@@ -10,29 +10,55 @@ package Models;
  */
 public class ProductAttribute {
 
-    private Integer attributeId;
-    private String attributeName;
+    private Integer id;
+    private String name;
     private String unit;
     private String minValue;
     private String maxValue;
     private String dataType;
-    private Boolean isActive;
+    private String value;
     private Boolean isRequired;
+    private Boolean isActive;
     private Category category;
 
     public ProductAttribute() {
     }
 
-    public ProductAttribute(Integer attributeId, String attributeName, String unit, String minValue, String maxValue, String dataType, Boolean isActive, Boolean isRequired, Category category) {
-        this.attributeId = attributeId;
-        this.attributeName = attributeName;
+    public ProductAttribute(Integer id, String name, String unit, String minValue, String maxValue, String dataType, String value, Boolean isRequired, Boolean isActive, Category category) {
+        this.id = id;
+        this.name = name;
         this.unit = unit;
         this.minValue = minValue;
         this.maxValue = maxValue;
         this.dataType = dataType;
-        this.isActive = isActive;
+        this.value = value;
         this.isRequired = isRequired;
+        this.isActive = isActive;
         this.category = category;
+    }
+
+    public Integer getId() {
+        return id;
+    }
+
+    public void setId(Integer id) {
+        this.id = id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getUnit() {
+        return unit;
+    }
+
+    public void setUnit(String unit) {
+        this.unit = unit;
     }
 
     public String getMinValue() {
@@ -51,30 +77,6 @@ public class ProductAttribute {
         this.maxValue = maxValue;
     }
 
-    public Integer getAttributeId() {
-        return attributeId;
-    }
-
-    public void setAttributeId(Integer attributeId) {
-        this.attributeId = attributeId;
-    }
-
-    public String getAttributeName() {
-        return attributeName;
-    }
-
-    public void setAttributeName(String attributeName) {
-        this.attributeName = attributeName;
-    }
-
-    public String getUnit() {
-        return unit;
-    }
-
-    public void setUnit(String unit) {
-        this.unit = unit;
-    }
-
     public String getDataType() {
         return dataType;
     }
@@ -83,12 +85,12 @@ public class ProductAttribute {
         this.dataType = dataType;
     }
 
-    public Boolean getIsActive() {
-        return isActive;
+    public String getValue() {
+        return value;
     }
 
-    public void setIsActive(Boolean isActive) {
-        this.isActive = isActive;
+    public void setValue(String value) {
+        this.value = value;
     }
 
     public Boolean getIsRequired() {
@@ -97,6 +99,14 @@ public class ProductAttribute {
 
     public void setIsRequired(Boolean isRequired) {
         this.isRequired = isRequired;
+    }
+
+    public Boolean getIsActive() {
+        return isActive;
+    }
+
+    public void setIsActive(Boolean isActive) {
+        this.isActive = isActive;
     }
 
     public Category getCategory() {
