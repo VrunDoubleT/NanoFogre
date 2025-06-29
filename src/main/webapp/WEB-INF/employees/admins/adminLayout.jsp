@@ -146,6 +146,13 @@
                                     }
                                     loadCustomerContentAndEvent(customerPage);
                                     break;
+                                case 'voucher':
+                                    let voucherPage = 1;
+                                    if (params.length > 0) {
+                                        voucherPage = parseOptionNumber(params[0].value, 1);
+                                    }
+                                    loadVoucherContentAndEvent(voucherPage);
+                                    break;
                                 default:
                                     break;
                             }
@@ -221,8 +228,13 @@
                         const customerPage = params.get('page') || '1';
                         loadContent(viewPage, false, [{name: 'page', value: customerPage}
                         ]);
+                        break;
+                    case "voucher":
+                        const voucherPage = params.get('page') || '1';
+                        loadContent(viewPage, false, [{name: 'page', value: voucherPage}
+                        ]);
+                        break;
                     default:
-
                         loadContent(viewPage, false);
                         break;
                 }

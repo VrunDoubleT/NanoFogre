@@ -40,8 +40,8 @@
                 <div class="text-sm font-medium text-gray-900"><%= product.getTitle().length() > 30 ? product.getTitle().substring(0, 27) + "..." : product.getTitle()%></div>
 
                 <div class="flex items-center mt-1">
-                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800"><%= product.getCategory().getName()%></span>
-                    <span class="ml-2 inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800"><%= product.getBrand().getName()%></span>
+                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800"><%= (product.getCategory() != null && product.getCategory().getName() != null && product.getCategory().getName().trim().length() > 0) ? product.getCategory().getName() : "No category"%></span>
+                    <span class="ml-2 inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800"><%= (product.getBrand() != null && product.getBrand().getName() != null && product.getBrand().getName().trim().length() > 0) ? product.getBrand().getName() : "No brand"%></span>
                 </div>
             </div>
         </div>
