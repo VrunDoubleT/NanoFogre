@@ -2,7 +2,6 @@
     Document   : orderTemplate
     Created on : Jun 26, 2025, 6:39:55 PM
     Author     : iphon
-    Updated    : Enhanced UI with modern design
 --%>
 
 <%@ page import="Models.Order" %>
@@ -19,9 +18,7 @@
 %>
 
 <% for (Order order : orders) {%>
-<tr data-order-id="<%= order.getId()%>" 
-    class="group hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 transition-all duration-300 border-b border-gray-100 hover:shadow-sm">
-
+<tr data-order-id="<%= order.getId()%>" class="hover:bg-gray-50 transition-colors duration-200">
     <!-- Order ID with enhanced styling -->
     <td class="px-6 py-5 whitespace-nowrap text-center">
         <div class="flex items-center justify-center">
@@ -34,29 +31,15 @@
     <!-- Customer Name with avatar placeholder -->
     <td class="px-4 py-5 whitespace-nowrap">
         <div class="flex items-center justify-center">
-            <div class="flex-shrink-0 h-8 w-8 mr-3">
-                <div class="h-8 w-8 rounded-full bg-gradient-to-r from-purple-400 to-pink-400 flex items-center justify-center text-white text-xs font-semibold">
-                    <%= order.getCustomer() != null && order.getCustomer().getName() != null
-                            ? order.getCustomer().getName().substring(0, 1).toUpperCase() : "?"%>
-                </div>
-            </div>
-            <div class="text-sm font-medium text-gray-900">
+            <div class="text-md font-medium text-gray-900">
                 <%= order.getCustomer() != null ? order.getCustomer().getName() : "N/A"%>
             </div>
         </div>
     </td>
 
-    <!-- Total Amount with currency styling -->
-    <td class="px-4 py-5 whitespace-nowrap text-center">
-        <div class="flex items-center justify-center">
-            <span class="inline-flex items-center px-3 py-1 rounded-lg text-sm font-bold bg-green-100 text-green-800 border border-green-200">
-                <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                <path d="M8.433 7.418c.155-.103.346-.196.567-.267v1.698a2.305 2.305 0 01-.567-.267C8.07 8.34 8 8.114 8 8c0-.114.07-.34.433-.582zM11 12.849v-1.698c.22.071.412.164.567.267.364.243.433.468.433.582 0 .114-.07.34-.433.582a2.305 2.305 0 01-.567.267z"/>
-                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-13a1 1 0 10-2 0v.092a4.535 4.535 0 00-1.676.662C6.602 6.234 6 7.009 6 8c0 .99.602 1.765 1.324 2.246.48.32 1.054.545 1.676.662v1.941c-.391-.127-.68-.317-.843-.504a1 1 0 10-1.51 1.31c.562.649 1.413 1.076 2.353 1.253V15a1 1 0 102 0v-.092a4.535 4.535 0 001.676-.662C13.398 13.766 14 12.991 14 12c0-.99-.602-1.765-1.324-2.246A4.535 4.535 0 0011 9.092V7.151c.391.127.68.317.843.504a1 1 0 101.51-1.31c-.562-.649-1.413-1.076-2.353-1.253V5z" clip-rule="evenodd"/>
-                </svg>
-                <%= String.format("%.2f", order.getTotalAmount() + order.getShippingFee())%>VND
-            </span>
-        </div>
+    <!-- Total Amount -->
+    <td class="px-3 py-3 whitespace-nowrap text-gray-700 text-center">
+        <span class="text-md font-semibold text-green-600 text-md"><%= String.format("%.2f", order.getTotalAmount() + order.getShippingFee())%>VND</span>
     </td>
 
     <!-- Payment Method -->
@@ -72,7 +55,6 @@
     </td>
 
     <!-- Payment Status-->
-
     <td class="px-4 py-5 whitespace-nowrap text-center">
         <% if (order.getPaymentStatus() != null) {
                 String payStatus = order.getPaymentStatus().getName();
@@ -81,7 +63,7 @@
                         : "Pending".equals(payStatus) ? "bg-yellow-50 text-yellow-700 border-yellow-200"
                         : "bg-red-50 text-red-700 border-red-200";
         %>
-        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold border-2 <%= payClass%>">
+        <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold border-2 <%= payClass%>">
             <% if ("Paid".equals(payStatus) || "Completed".equals(payStatus)) { %>
             <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
             <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
@@ -108,11 +90,10 @@
         <% } %>
     </td>
 
-
     <!-- Order Status -->
     <td class="px-4 py-5 whitespace-nowrap text-center">
         <% if (order.getOrderStatus() != null) {%>
-        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold border-2 <%="Delivered".equals(order.getOrderStatus().getName()) ? "bg-green-50 text-green-700 border-green-200"
+        <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold border-2 <%="Delivered".equals(order.getOrderStatus().getName()) ? "bg-green-50 text-green-700 border-green-200"
                 : "Processing".equals(order.getOrderStatus().getName()) ? "bg-blue-50 text-blue-700 border-blue-200"
                 : "Shipped".equals(order.getOrderStatus().getName()) ? "bg-purple-50 text-purple-700 border-purple-200"
                 : "Cancelled".equals(order.getOrderStatus().getName()) ? "bg-red-50 text-red-700 border-red-200"
@@ -166,33 +147,30 @@
         </span>
         <% }%>
     </td>
+    <!-- End status -->
+    <td class="px-4 py-4 whitespace-nowrap text-sm font-medium">
+        <div class="flex items-center justify-center space-x-4">
 
-    <!-- Action Buttons with enhanced styling -->
-    <td class="px-6 py-5 whitespace-nowrap text-center">
-        <div class="flex items-center justify-center space-x-3">
-            <!-- View Details Button -->
             <button type="button" data-id="<%= order.getId()%>" 
-                    class="detail-order-button group relative inline-flex items-center px-4 py-2 rounded-lg text-sm font-medium bg-gradient-to-r from-blue-500 to-blue-600 text-white hover:from-blue-600 hover:to-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transform hover:scale-105 transition-all duration-200 shadow-sm hover:shadow-md"
-                    title="View order details">
-                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    class="detail-order-button bg-blue-100 text-blue-700 hover:bg-blue-200 px-3 py-1.5 rounded-lg transition-colors">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                       d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                       d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
                 </svg>
-                Details
             </button>   
 
             <!-- Edit Button -->
             <button data-order-id="<%= order.getId()%>"
-                    class="openEditOrderStatus group relative inline-flex items-center px-4 py-2 rounded-lg text-sm font-medium bg-gradient-to-r from-amber-500 to-orange-500 text-white hover:from-amber-600 hover:to-orange-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500 transform hover:scale-105 transition-all duration-200 shadow-sm hover:shadow-md"
+                    class="openEditOrderStatus bg-yellow-100 text-yellow-700 hover:bg-yellow-200 px-3 py-1.5 rounded-lg transition-colors"
                     title="Edit order status">
-                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
                       d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
                 </svg>
-                Edit
             </button>
+
         </div>
     </td>
 </tr>
@@ -200,38 +178,13 @@
 
 <% } else { %>
 <tr>
-    <td colspan="9" class="px-6 py-16 text-center">
-        <div class="flex flex-col items-center justify-center space-y-4">
-            <!-- Enhanced empty state icon -->
-            <div class="relative">
-                <svg class="w-20 h-20 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" 
-                      d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"/>
-                </svg>
-                <div class="absolute -top-1 -right-1 w-6 h-6 bg-gray-200 rounded-full flex items-center justify-center">
-                    <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                    </svg>
-                </div>
-            </div>
-
-            <!-- Enhanced empty state text -->
-            <div class="text-center">
-                <h3 class="text-xl font-semibold text-gray-700 mb-2">No Orders Found</h3>
-                <p class="text-gray-500 max-w-md">
-                    There are currently no orders to display. Orders will appear here once customers start placing them.
-                </p>
-            </div>
-
-            <!-- Optional call-to-action -->
-            <div class="mt-4">
-                <button class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-blue-700 bg-blue-100 hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200">
-                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
-                    </svg>
-                    Refresh
-                </button>
-            </div>
+    <td colspan="11" class="px-6 py-8 text-center text-gray-500">
+        <div class="flex flex-col items-center">
+            <svg class="w-12 h-12 text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"></path>
+            </svg>
+            <p class="text-lg font-medium">No orders found</p>
+            <p class="text-sm">There are no orders to display at the moment.</p>
         </div>
     </td>
 </tr>
