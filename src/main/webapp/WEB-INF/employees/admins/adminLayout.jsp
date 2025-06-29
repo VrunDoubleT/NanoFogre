@@ -136,6 +136,13 @@
                                     }
                                     loadVoucherContentAndEvent(voucherPage);
                                     break;
+                                case 'customer':
+                                    let customerPage = 1;
+                                    if (params.length > 0) {
+                                        customerPage = parseOptionNumber(params[0].value, 1);
+                                    }
+                                    loadCustomerContentAndEvent(customerPage);
+                                    break;
                                 default:
                                     break;
                             }
@@ -201,6 +208,11 @@
                         loadContent(viewPage, false, [{name: 'page', value: voucherPage}
                         ]);
                         break;
+                    case "customer":
+                        const customerPage = params.get('page') || '1';
+                        loadContent(viewPage, false, [{name: 'page', value: customerPage}
+                        ]);
+                        break;
                     default:
 
                         loadContent(viewPage, false);
@@ -220,5 +232,6 @@
         <script src="../../../js/loading.js"></script>
         <script src="../../../js/voucher.js"></script>
         <script src="../../../js/skeletonLoading.js"></script>
+        <script src="../../../js/customer.js"></script>
     </body>
 </html>

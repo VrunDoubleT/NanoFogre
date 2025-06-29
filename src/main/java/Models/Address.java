@@ -5,24 +5,25 @@ package Models;
  * @author Tran Thanh Van - CE181019
  */
 public class Address {
+
     private int id;
-    private String province;
-    private String district;
-    private String commune;
-    private String extraInfo;
-    private String phone;
+    private String name;          
+    private String recipientName;
+    private String details;        
+    private String phone;          
+    private boolean isDefault;     
     private int customerId;
 
     public Address() {
     }
 
-    public Address(int id, String province, String district, String commune, String extraInfo, String phone, int customerId) {
+    public Address(int id, String name, String recipientName, String details, String phone, boolean isDefault, int customerId) {
         this.id = id;
-        this.province = province;
-        this.district = district;
-        this.commune = commune;
-        this.extraInfo = extraInfo;
+        this.name = name;
+        this.recipientName = recipientName;
+        this.details = details;
         this.phone = phone;
+        this.isDefault = isDefault;
         this.customerId = customerId;
     }
 
@@ -34,36 +35,28 @@ public class Address {
         this.id = id;
     }
 
-    public String getProvince() {
-        return province;
+    public String getName() {
+        return name;
     }
 
-    public void setProvince(String province) {
-        this.province = province;
+    public void setName(String name) {
+        this.name = name;
     }
 
-    public String getDistrict() {
-        return district;
+    public String getRecipientName() {
+        return recipientName;
     }
 
-    public void setDistrict(String district) {
-        this.district = district;
+    public void setRecipientName(String recipientName) {
+        this.recipientName = recipientName;
     }
 
-    public String getCommune() {
-        return commune;
+    public String getDetails() {
+        return details;
     }
 
-    public void setCommune(String commune) {
-        this.commune = commune;
-    }
-
-    public String getExtraInfo() {
-        return extraInfo;
-    }
-
-    public void setExtraInfo(String extraInfo) {
-        this.extraInfo = extraInfo;
+    public void setDetails(String details) {
+        this.details = details;
     }
 
     public String getPhone() {
@@ -72,6 +65,14 @@ public class Address {
 
     public void setPhone(String phone) {
         this.phone = phone;
+    }
+
+    public boolean isIsDefault() {
+        return isDefault;
+    }
+
+    public void setIsDefault(boolean isDefault) {
+        this.isDefault = isDefault;
     }
 
     public int getCustomerId() {
@@ -84,8 +85,6 @@ public class Address {
 
     @Override
     public String toString() {
-        return "Address{" + "id=" + id + ", province=" + province + ", district=" + district + ", commune=" + commune + ", extraInfo=" + extraInfo + ", phone=" + phone + ", customerId=" + customerId + '}';
+        return "Address{" + "id=" + id + ", name=" + name + ", recipientName=" + recipientName + ", details=" + details + ", phone=" + phone + ", isDefault=" + isDefault + ", customerId=" + customerId + '}';
     }
-    
-    
 }

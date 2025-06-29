@@ -7,6 +7,7 @@ import java.time.LocalDateTime;
  * @author Tran Thanh Van - CE181019
  */
 public class Customer {
+
     private int id;
     private String email;
     private String password;
@@ -14,11 +15,12 @@ public class Customer {
     private String avatar;
     private String phone;
     private LocalDateTime createdAt;
+    private boolean isBlock;
 
     public Customer() {
     }
 
-    public Customer(int id, String email, String password, String name, String avatar, String phone, LocalDateTime createdAt) {
+    public Customer(int id, String email, String password, String name, String avatar, String phone, LocalDateTime createdAt, boolean isBlock) {
         this.id = id;
         this.email = email;
         this.password = password;
@@ -26,6 +28,7 @@ public class Customer {
         this.avatar = avatar;
         this.phone = phone;
         this.createdAt = createdAt;
+        this.isBlock = isBlock;
     }
 
     public int getId() {
@@ -84,10 +87,17 @@ public class Customer {
         this.createdAt = createdAt;
     }
 
+    public boolean isIsBlock() {
+        return isBlock;
+    }
+
+    public void setIsBlock(boolean isBlock) {
+        this.isBlock = isBlock;
+    }
+
     @Override
     public String toString() {
         return "Customer{" + "id=" + id + ", email=" + email + ", password=" + password + ", name=" + name + ", avatar=" + avatar + ", phone=" + phone + ", createdAt=" + createdAt + '}';
     }
-    
-    
+
 }
