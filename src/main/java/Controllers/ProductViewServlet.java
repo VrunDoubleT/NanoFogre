@@ -3,6 +3,7 @@ package Controllers;
 import DAOs.BrandDAO;
 import DAOs.CategoryDAO;
 import DAOs.ProductDAO;
+import DAOs.ReviewDAO;
 import Models.Attribute;
 import Models.Brand;
 import Models.Category;
@@ -10,6 +11,8 @@ import Models.Product;
 import Models.ProductAttribute;
 import Models.ProductImage;
 import Models.ProductStat;
+import Models.Review;
+import Models.ReviewStats;
 import Utils.CloudinaryConfig;
 import Utils.Common;
 import Utils.Converter;
@@ -32,6 +35,7 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
 
 import java.lang.reflect.Type;
@@ -58,6 +62,7 @@ public class ProductViewServlet extends HttpServlet {
             throws ServletException, IOException {
         int limit = 10;
         ProductDAO pDao = new ProductDAO();
+        ReviewDAO rDao = new ReviewDAO();
         CategoryDAO categoryDao = new CategoryDAO();
         BrandDAO brandDao = new BrandDAO();
         String type = request.getParameter("type") != null ? request.getParameter("type") : "item";
@@ -117,13 +122,26 @@ public class ProductViewServlet extends HttpServlet {
                 responseJson(response, true, "Success", "Error", productStat);
                 break;
             case "productAttribute":
-                List<ProductAttribute> pa = pDao.getAttributesByProductIdAndCategoryId(Converter.parseOption(request.getParameter("productId"), 0),Converter.parseOption(request.getParameter("categoryId"), 0));
+                List<ProductAttribute> pa = pDao.getAttributesByProductIdAndCategoryId(Converter.parseOption(request.getParameter("productId"), 0), Converter.parseOption(request.getParameter("categoryId"), 0));
                 request.setAttribute("productAttributes", pa);
                 request.getRequestDispatcher("/WEB-INF/employees/teamplates/products/productAttributeTeamplate.jsp").forward(request, response);
                 break;
             case "productAttributeData":
                 List<ProductAttribute> productAttributesData = pDao.getAttributesByCategoryId(Converter.parseOption(request.getParameter("categoryId"), 0));
                 responseJson(response, true, "Get product attribute success", "Something went wrong", productAttributesData);
+                break;
+            case "reviewStats":
+                ReviewStats reviewStats = rDao.getReviewStatsByProductId(Converter.parseOption(request.getParameter("productId"), 0));
+                request.setAttribute("reviewStats", reviewStats);
+                request.getRequestDispatcher("/WEB-INF/employees/teamplates/products/reviewStatsTeamplate.jsp").forward(request, response);
+                System.out.println(reviewStats);
+                break;
+            case "review":
+                int limitReview = 5;
+                int pageReview = Converter.parseOption(request.getParameter("page"), 1);
+                List<Review> reviews = rDao.getReviewsByProductId(Converter.parseOption(request.getParameter("productId"), 0), Converter.parseOption(request.getParameter("star"), 0), pageReview, limitReview);
+                request.setAttribute("reviews", reviews);
+                request.getRequestDispatcher("/WEB-INF/employees/teamplates/products/reviewTeamplate.jsp").forward(request, response);
                 break;
             default:
                 break;
@@ -189,7 +207,7 @@ public class ProductViewServlet extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         String type = request.getParameter("type") != null ? request.getParameter("type") : "create";
         ProductDAO pDao = new ProductDAO();
-
+        ReviewDAO rDao = new ReviewDAO();
         switch (type) {
             case "create":
                 Product product = getProductByRequest(request);
@@ -209,6 +227,21 @@ public class ProductViewServlet extends HttpServlet {
                 int productIdToDelete = Integer.parseInt(request.getParameter("productId"));
                 boolean isHidden = pDao.deleteProduct(productIdToDelete);
                 responseJson(response, isHidden, "The product has been successfully deleted", "An error occurred while deleted the product");
+                break;
+            case "reply":
+                Gson gson = new Gson();
+                JsonObject json = gson.fromJson(request.getReader(), JsonObject.class);
+
+                int reviewId = json.get("reviewId").getAsInt();
+                String replyText = json.get("replyText").getAsString();
+                int employeeId = json.get("employeeId").getAsInt();
+                
+                boolean isSuccessReply = rDao.addReply(reviewId, employeeId, replyText);
+                if(isSuccessReply){
+                    Review newReview = rDao.getReviewById(reviewId);
+                    request.setAttribute("review", newReview);
+                    request.getRequestDispatcher("/WEB-INF/employees/teamplates/products/reviewItemTeamplate.jsp").forward(request, response);
+                }
                 break;
             default:
                 break;

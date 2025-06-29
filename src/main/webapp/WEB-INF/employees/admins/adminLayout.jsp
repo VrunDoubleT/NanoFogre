@@ -146,13 +146,6 @@
                                     }
                                     loadCustomerContentAndEvent(customerPage);
                                     break;
-                                case 'order':
-                                    let orderPage = 1;
-                                    if (params.length > 0) {
-                                        orderPage = parseOptionNumber(params[0].value, 1);
-                                    }
-                                    loadOrderContentAndEvent(orderPage);
-                                    break;
                                 default:
                                     break;
                             }
@@ -228,10 +221,6 @@
                         const customerPage = params.get('page') || '1';
                         loadContent(viewPage, false, [{name: 'page', value: customerPage}
                         ]);
-                    case "order":
-                        const orderPage = params.get('page') || '1';
-                        loadContent(viewPage, false, [{name: 'page', value: orderPage}]);
-                        break;
                     default:
 
                         loadContent(viewPage, false);

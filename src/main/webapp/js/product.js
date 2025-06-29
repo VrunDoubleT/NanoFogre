@@ -5,6 +5,11 @@ let handleCategoryProductChangeEvent = null
 let handleBrandChangeEvent = null
 let selectedImages = []
 let productAttributes = null
+let pageReviewList = 1;
+let isLoadingReviewList = false;
+let isLastPageReview = false;
+let isLoadScroll = false
+let starActive = 0
 
 // UPDATE URL WHEN CLICK PAGE
 function updatePageUrl(page) {
@@ -140,7 +145,6 @@ const loadProductContentAndEvent = (categoryId, page) => {
                 }
             })
         }
-
 
         // ADD EVENT FOR DISABLE PRODUCT
         document.querySelectorAll('.openDeleteProdct').forEach((element) => {
@@ -914,8 +918,8 @@ const loadCreateProductEvent = async (categoryIdURL, pageIdURL) => {
         },
         getValueSelect(element.selectCategoryId)
     )
-    const createProductButton = document.getElementById("create-product-btn")
-    if(createProductButton){
+    const createProductButton = document.getElementById('create-product-btn')
+    if (createProductButton) {
         createProductButton.onclick = async () => {
             const resultValidateBasic = handleValidateAndGetBasicProductData(
                 configValidateBasicInfo
@@ -932,7 +936,7 @@ const loadCreateProductEvent = async (categoryIdURL, pageIdURL) => {
                     optionId: element.brandValueId,
                 }
             )
-            if(stateImages.selectedImages.length === 0){
+            if (stateImages.selectedImages.length === 0) {
                 document
                     .getElementById(configValidateImageUpload.uploadErrorId)
                     .classList.remove('hidden')
@@ -1219,89 +1223,329 @@ const loadUpdateProductEvent = async (categoryIdURL, pageIdURL) => {
 }
 
 const updateProductStat = () => {
-            const totalProductELm = document.getElementById('totalProduct')
-            const totalInventoryELm = document.getElementById('totalInventory')
-            const inventoryValueELm = document.getElementById('inventoryValue')
-            const outOfStockELm = document.getElementById('outOfStock')
+    const totalProductELm = document.getElementById('totalProduct')
+    const totalInventoryELm = document.getElementById('totalInventory')
+    const inventoryValueELm = document.getElementById('inventoryValue')
+    const outOfStockELm = document.getElementById('outOfStock')
 
-            function formatCurrencyShort(amount) {
-                if (amount >= 1000000000) {
-                    return (amount / 1000000000).toFixed(2) + 'B'
-                } else if (amount >= 1000000) {
-                    return (amount / 1000000).toFixed(2) + 'M'
-                } else if (amount >= 1000) {
-                    return (amount / 1000).toFixed(2) + 'K'
-                } else {
-                    return Math.floor(amount).toString()
-                }
-            }
-
-            fetch('/product/view?type=stat', {
-                method: 'GET',
-            })
-                .then((response) => response.json())
-                .then((data) => {
-                    console.log(data)
-                    totalProductELm.textContent = data.data.totalProducts + ''
-                    totalInventoryELm.textContent = data.data.inventory + ''
-                    inventoryValueELm.textContent = formatCurrencyShort(
-                        data.data.inventoryValue
-                    )
-                    outOfStockELm.textContent =
-                        data.data.outOfStockProducts + ''
-                })
+    function formatCurrencyShort(amount) {
+        if (amount >= 1000000000) {
+            return (amount / 1000000000).toFixed(2) + 'B'
+        } else if (amount >= 1000000) {
+            return (amount / 1000000).toFixed(2) + 'M'
+        } else if (amount >= 1000) {
+            return (amount / 1000).toFixed(2) + 'K'
+        } else {
+            return Math.floor(amount).toString()
         }
+    }
 
-        // HANDLE SHOW SELECT TAB
-        function showTab(tabName) {
-            document.querySelectorAll('.tab-content').forEach((content) => {
-                content.classList.add('hidden')
-            })
-            document.querySelectorAll('.tab-button').forEach((button) => {
-                button.classList.remove(
-                    'active',
-                    'text-gray-500',
-                    'border-transparent',
-                    'hover:text-blue-600',
-                    'hover:border-blue-300',
-                    'transition-all',
-                    'duration-200'
-                )
-                button.classList.add(
-                    'text-gray-500',
-                    'border-transparent',
-                    'hover:text-blue-600',
-                    'hover:border-blue-300',
-                    'transition-all',
-                    'duration-200'
-                )
-            })
-            document
-                .getElementById(tabName + '-content')
-                .classList.remove('hidden')
-            document.getElementById(tabName + '-tab').classList.add('active')
-        }
-
-        function validateBorderInput(elm, isSuccess, isRequired = true) {
-            if (!elm) {
-                return
-            }
-            elm.classList.remove(
-                'border-gray-300',
-                'border-yellow-400',
-                'border-red-500',
-                'border-green-600'
+    fetch('/product/view?type=stat', {
+        method: 'GET',
+    })
+        .then((response) => response.json())
+        .then((data) => {
+            console.log(data)
+            totalProductELm.textContent = data.data.totalProducts + ''
+            totalInventoryELm.textContent = data.data.inventory + ''
+            inventoryValueELm.textContent = formatCurrencyShort(
+                data.data.inventoryValue
             )
-            if (!isSuccess) {
-                if (isRequired) {
-                    elm.classList.add('border-red-500')
+            outOfStockELm.textContent = data.data.outOfStockProducts + ''
+        })
+}
+
+function toggleReplyForm(reviewId) {
+                const replyForm = document.getElementById(
+                    `replyForm${reviewId}`
+                )
+                const replyText = document.getElementById(
+                    `replyText${reviewId}`
+                )
+
+                if (replyForm.classList.contains('hidden')) {
+                    replyForm.classList.remove('hidden')
+                    replyForm.classList.add('animate-slide-down')
+                    replyText.focus()
                 } else {
-                    elm.classList.add('border-yellow-400')
+                    replyForm.classList.add('hidden')
+                    replyText.value = ''
                 }
-            } else {
-                elm.classList.add('border-green-600')
             }
+
+const toggleReviewLoading = (show) => {
+    const loadingContainer = document.getElementById('reviewListLoading');
+
+    if (show) {
+        loadingContainer.innerHTML = `
+            <div class="flex w-full justify-center items-center h-32">
+                <div class="w-10 h-10 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+            </div>
+        `;
+    } else {
+        loadingContainer.innerHTML = '';
+    }
+};
+
+
+const loadReviews = async (productId, star = 0, page = 1) => {
+    toggleReviewLoading(true)
+    const response = await fetch('/product/view?type=review&productId=' + productId + "&star=" + star + "&page=" + page);
+    const HTML = await response.text();
+    if (HTML === null || HTML.trim().length === 0) {
+        isLastPageReview = true;
+        toggleReviewLoading(false)
+        const noMoreReviewHTML = `
+    <div class="w-full mt-8 relative overflow-hidden rounded-xl bg-gradient-to-br from-blue-50 to-indigo-100 px-8 py-6 shadow-lg border border-blue-200/50 backdrop-blur-sm">
+        <!-- Decorative elements -->
+        <div class="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-blue-200/30 to-transparent rounded-full -mr-10 -mt-10"></div>
+        <div class="absolute bottom-0 left-0 w-16 h-16 bg-gradient-to-tr from-indigo-200/30 to-transparent rounded-full -ml-8 -mb-8"></div>
+        
+        <!-- Icon -->
+        <div class="flex items-center justify-center mb-3">
+            <div class="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center shadow-md">
+                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                </svg>
+            </div>
+        </div>
+        
+        <!-- Content -->
+        <div class="text-center relative z-10">
+            <h3 class="text-lg font-semibold text-gray-800 mb-1">All Reviews Displayed</h3>
+            <p class="text-sm text-gray-600 leading-relaxed">You've reached the end of all available reviews.</p>
+        </div>
+        
+        <!-- Bottom accent line -->
+        <div class="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-16 h-1 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full"></div>
+    </div>
+`;
+
+
+        document.getElementById("reviewList").insertAdjacentHTML('beforeend', noMoreReviewHTML);
+        return;
+    }
+    document.getElementById("reviewList").insertAdjacentHTML('beforeend', HTML);
+    toggleReviewLoading(false)
+    lucide.createIcons();
+}
+
+
+function sendReply(reviewId) {
+    const isValidData = handleBlurReplyText(reviewId)
+    if(!isValidData){
+        return
+    }
+    const replyText = document.getElementById(`replyText${reviewId}`).value.trim()
+    const employeeId = 1
+    fetch("/product/view?type=reply",{
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            reviewId: reviewId,
+            replyText: replyText,
+            employeeId: employeeId
+        })
+    })
+    .then((response) => response.text())
+    .then((HTML) => {
+        document.getElementById(`wrapper-review-${reviewId}`).innerHTML = HTML
+    })
+            .then(()=>{
+                lucide.createIcons()
+                Toastify({
+                            text: "Reply submitted successfully!",
+                            duration: 5000,
+                            gravity: 'top',
+                            position: 'right',
+                            style: {
+                                background: true
+                                    ? '#2196F3'
+                                    : '#f44336',
+                            },
+                            close: true,
+                        }).showToast()
+            })        
+}
+
+const handleLoadActiveStarFilter = (star) => {
+    // Loop through all star filter buttons
+    document.querySelectorAll(".star-filter-btn").forEach(elm => {
+        // For each button, check its classes
+        elm.classList.forEach(cls => {
+            // If the class is a hover:* class, remove the equivalent non-hover version
+            if (cls.startsWith("hover:")) {
+                const normalCls = cls.replace("hover:", "");
+                elm.classList.remove(normalCls);
+            }
+        });
+
+        // Remove any previously added highlight classes (optional custom highlight)
+        elm.classList.remove("border-[#fbbf24]", "bg-[#fef3c7]", "text-[#f59e0b]");
+    });
+
+    // Get the clicked star button by ID
+    const selectedBtn = document.getElementById("star-" + star);
+
+    // Loop through its classes
+    selectedBtn.classList.forEach(cls => {
+        // If the class is a hover:* class, add its normal version to apply hover style permanently
+        if (cls.startsWith("hover:")) {
+            const normalCls = cls.replace("hover:", "");
+            selectedBtn.classList.add(normalCls);
         }
+    });
+
+    // Optionally add some custom highlight classes to the selected button
+    selectedBtn.classList.add("border-[#fbbf24]", "bg-[#fef3c7]", "text-[#f59e0b]");
+};
+
+const handleFocusReplyText = (reviewId) => {
+//    const value = document.getElementById(`replyForm${reviewId}`).value.trim()
+                console.log(reviewId);
+    document.getElementById(`replyText${reviewId}`).classList.remove("border-green-500","border-red-500")
+    document.getElementById(`replyText${reviewId}`).classList.add("border-green-500")
+}
+
+const handleBlurReplyText = (reviewId) => {
+    document.getElementById(`replyText${reviewId}`).classList.remove("border-green-500", "border-red-500")
+    const value = document.getElementById(`replyText${reviewId}`).value.trim()
+    if(!value){
+        document.getElementById(`replyText${reviewId}`).classList.add("border-red-500")
+        return false;
+    }else{
+        document.getElementById(`replyText${reviewId}`).classList.add("border-green-500")
+        return true;
+    }
+    
+}
+
+const handleClickStarFilter = async (star) => {
+    if(star === starActive){
+        return
+    }
+    handleLoadActiveStarFilter(star);
+    starActive = star;
+    
+    const productId = parseOptionNumber(
+        document.getElementById('productDetailId').value,
+        0
+    );
+    pageReviewList = 1;
+    isLastPageReview = false;
+    isLoadingReviewList = true;
+    const contentContainer = document.getElementById("reviewList");
+    const currentHeight = contentContainer.offsetHeight;
+    contentContainer.style.minHeight = currentHeight + "px";
+    document.getElementById("reviewList").innerHTML = '';
+    await loadReviews(productId, star, pageReviewList);
+    isLoadingReviewList = false;
+    contentContainer.style.minHeight = null;
+}
+
+
+
+const loadReviewEvent = () => {
+    if (isLoadScroll) return;
+
+    isLoadScroll = true;
+    const container = document.getElementById('containerScroll');
+    const productId = parseOptionNumber(
+            document.getElementById('productDetailId').value,
+            0
+    )
+    container.addEventListener('scroll', async () => {
+        const nearBottom = container.scrollTop + container.clientHeight >= container.scrollHeight - 50;
+
+        if (nearBottom && !isLoadingReviewList && !isLastPageReview) {
+            isLoadingReviewList = true;
+            pageReviewList++;
+            try {
+                await loadReviews(productId, starActive, pageReviewList);
+            } catch (error) {
+                console.error('Lỗi tải dữ liệu:', error);
+            }
+            isLoadingReviewList = false;
+        }
+    });
+};
+
+
+
+// HANDLE SHOW SELECT TAB
+function showTab(tabName) {
+    document.querySelectorAll('.tab-content').forEach((content) => {
+        content.classList.add('hidden')
+    })
+    document.querySelectorAll('.tab-button').forEach((button) => {
+        button.classList.remove(
+            'active',
+            'text-gray-500',
+            'border-transparent',
+            'hover:text-blue-600',
+            'hover:border-blue-300',
+            'transition-all',
+            'duration-200'
+        )
+        button.classList.add(
+            'text-gray-500',
+            'border-transparent',
+            'hover:text-blue-600',
+            'hover:border-blue-300',
+            'transition-all',
+            'duration-200'
+        )
+    })
+    document.getElementById(tabName + '-content').classList.remove('hidden')
+    document.getElementById(tabName + '-tab').classList.add('active')
+    const container = document.getElementById('containerScroll');
+    container.scrollTop = 0;
+    if (tabName === 'preview') {
+        pageReviewList = 1;
+        isLastPageReview = false;
+        starActive = 0
+        const productId = parseOptionNumber(
+            document.getElementById('productDetailId').value,
+            0
+        )
+        document.getElementById("reviewList").innerHTML = ''
+        Promise.all([
+            fetch('/product/view?type=reviewStats&productId=' + productId).then(
+                (res) => res.text()
+            ),
+            loadReviews(productId)
+        ]).then(([reviewStatsHTML, paginationHTML]) => {
+            document.getElementById('reviewStats').innerHTML = reviewStatsHTML
+        }).then(() => {
+            lucide.createIcons()
+            handleLoadActiveStarFilter(0)
+            loadReviewEvent()
+        })
+    }
+}
+
+function validateBorderInput(elm, isSuccess, isRequired = true) {
+    if (!elm) {
+        return
+    }
+    elm.classList.remove(
+        'border-gray-300',
+        'border-yellow-400',
+        'border-red-500',
+        'border-green-600'
+    )
+    if (!isSuccess) {
+        if (isRequired) {
+            elm.classList.add('border-red-500')
+        } else {
+            elm.classList.add('border-yellow-400')
+        }
+    } else {
+        elm.classList.add('border-green-600')
+    }
+}
 
 const addEventForOldImages = () => {
     // Init all checkbox is ticked
