@@ -76,8 +76,6 @@ public class OrderViewServlet extends HttpServlet {
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-
-        // Đọc tham số
         String type = request.getParameter("type");
         response.setContentType("application/json");
         response.setCharacterEncoding("UTF-8");

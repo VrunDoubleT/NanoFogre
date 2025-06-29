@@ -61,7 +61,6 @@ const loadOrderContentAndEvent = (page) => {
             }
         });
 //////////////
-// Hàm confirm chọn status mới
         function confirmEditOrderStatus(orderId, currentStatus) {
             Swal.fire({
                 title: 'Update Order Status',
@@ -130,12 +129,6 @@ const loadOrderContentAndEvent = (page) => {
             });
         }
 
-
-
-
-
-
-// Sau khi inject HTML mới, gắn sự kiện cho nút Edit Status
         document.querySelectorAll(".openEditOrderStatus").forEach(btn => {
             btn.addEventListener("click", e => {
                 const wrapper = e.target.closest("[data-order-id]");

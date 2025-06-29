@@ -33,7 +33,6 @@
                 </div>
                 <div>
                     <h2 class="text-3xl font-bold text-white drop-shadow-sm">Order Details</h2>
-                    <p class="text-blue-100 text-sm mt-1">Complete order information</p>
                 </div>
             </div>
             <div class="text-right">
@@ -79,7 +78,7 @@
                         </div>
                         <div>
                             <p class="text-sm text-gray-500 mb-1">Customer Name</p>
-                            <p class="font-semibold text-xl text-gray-800">
+                            <p class="font-semibold text-3xl text-gray-800">
                                 <%= order.getCustomer() != null ? order.getCustomer().getName() : "N/A"%>
                             </p>
                         </div>
@@ -125,8 +124,7 @@
                 </svg>
                 <h3 class="text-lg font-semibold text-gray-800">Order Status</h3>
             </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-4xl w-full">
                 <!-- Payment Method -->
                 <div class="bg-white border border-gray-200 rounded-xl p-6 text-center shadow-sm hover:shadow-md transition-all duration-200 hover:border-blue-300">
                     <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3">
@@ -318,7 +316,7 @@
 
 
                                 <td class="px-6 py-4">
-                                    <span class="text-sm font-semibold text-gray-800">$<%= String.format("%.2f", d.getPrice())%></span>
+                                    <span class="text-sm font-semibold text-gray-800"><%= String.format("%.2f", d.getPrice())%>VND</span>
                                 </td>
                                 <td class="px-6 py-4 text-center">
                                     <span class="inline-flex items-center justify-center w-8 h-8 bg-blue-100 text-blue-800 rounded-full text-sm font-semibold">
@@ -326,7 +324,7 @@
                                     </span>
                                 </td>
                                 <td class="px-6 py-4 text-right">
-                                    <span class="text-sm font-bold text-gray-900">$<%= String.format("%.2f", lineTotal)%></span>
+                                    <span class="text-sm font-bold text-gray-900"><%= String.format("%.2f", lineTotal)%>VND</span>
                                 </td>
                             </tr>
                             <% }%>
@@ -342,7 +340,7 @@
                 <div class="w-80 space-y-4">
                     <div class="flex justify-between items-center py-2 border-b border-gray-100">
                         <span class="text-gray-600">Subtotal:</span>
-                        <span class="font-semibold text-gray-800">$<%= String.format("%.2f", order.getTotalAmount())%></span>
+                        <span class="font-semibold text-gray-800"><%= String.format("%.2f", order.getTotalAmount())%>VND</span>
                     </div>
                     <div class="flex justify-between items-center py-2 border-b border-gray-100">
                         <div class="flex items-center gap-2">
@@ -351,13 +349,13 @@
                             </svg>
                             <span class="text-gray-600">Shipping Fee:</span>
                         </div>
-                        <span class="font-semibold text-gray-800">$<%= String.format("%.2f", order.getShippingFee())%></span>
+                        <span class="font-semibold text-gray-800"><%= String.format("%.2f", order.getShippingFee())%>VND</span>
                     </div>
                     <div class="flex justify-between items-center py-3 border-t-2 border-gray-200">
                         <span class="text-lg font-semibold text-gray-800">Total Amount:</span>
                         <div class="text-right">
                             <span class="text-2xl font-bold text-green-600">
-                                $<%= String.format("%.2f", order.getTotalAmount() + order.getShippingFee())%>
+                                <%= String.format("%.2f", order.getTotalAmount() + order.getShippingFee())%>VND
                             </span>
                             <p class="text-sm text-gray-500 mt-1">Including all fees</p>
                         </div>
