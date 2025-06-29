@@ -13,6 +13,7 @@ public class Address {
     private String phone;          
     private boolean isDefault;     
     private int customerId;
+    private String fullAddress;
 
     public Address() {
     }
@@ -25,6 +26,14 @@ public class Address {
         this.phone = phone;
         this.isDefault = isDefault;
         this.customerId = customerId;
+    }
+
+    public String getFullAddress() {
+        return fullAddress;
+    }
+
+    public void setFullAddress(String fullAddress) {
+        this.fullAddress = fullAddress;
     }
 
     public int getId() {

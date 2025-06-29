@@ -2,7 +2,7 @@ package Models;
 
 /**
  *
- * @author Tran Thanh Van - CE181019
+ * @author iphon
  */
 public class ProductAttribute {
     private Integer id;
@@ -14,19 +14,22 @@ public class ProductAttribute {
     private String value;
     private Boolean isRequired;
     private Boolean isActive;
+    private Category category;
 
     public ProductAttribute() {
     }
 
-    public ProductAttribute(Integer id, String name, String unit, String minValue, String maxValue, String dataType, Boolean isRequired, Boolean isActive, Category category) {
+    public ProductAttribute(Integer id, String name, String unit, String minValue, String maxValue, String dataType, String value, Boolean isRequired, Boolean isActive, Category category) {
         this.id = id;
         this.name = name;
         this.unit = unit;
         this.minValue = minValue;
         this.maxValue = maxValue;
         this.dataType = dataType;
+        this.value = value;
         this.isRequired = isRequired;
         this.isActive = isActive;
+        this.category = category;
     }
 
     public Integer getId() {
@@ -101,10 +104,28 @@ public class ProductAttribute {
         this.isActive = isActive;
     }
 
-    @Override
-    public String toString() {
-        return "ProductAttribute{" + "id=" + id + ", name=" + name + ", unit=" + unit + ", minValue=" + minValue + ", maxValue=" + maxValue + ", dataType=" + dataType + ", value=" + value + ", isRequired=" + isRequired + ", isActive=" + isActive + '}';
+    public Category getCategory() {
+        return category;
     }
-    
-    
+
+    public void setCategory(Category category) {
+        this.category = category;
+    }
+
+    /**
+     * Get CategoryId quickly for DAO operations
+     */
+    public Integer getCategoryId() {
+        return category != null ? category.getId() : null;
+    }
+
+    /**
+     * Set Category by id (for quick mapping in DAO)
+     */
+    public void setCategoryId(Integer categoryId) {
+        if (this.category == null) {
+            this.category = new Category();
+        }
+        this.category.setId(categoryId);
+    }
 }

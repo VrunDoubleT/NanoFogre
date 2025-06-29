@@ -143,6 +143,13 @@
                                     }
                                     loadCustomerContentAndEvent(customerPage);
                                     break;
+                                case 'order':
+                                    let orderPage = 1;
+                                    if (params.length > 0) {
+                                        orderPage = parseOptionNumber(params[0].value, 1);
+                                    }
+                                    loadOrderContentAndEvent(orderPage);
+                                    break;
                                 default:
                                     break;
                             }
@@ -195,10 +202,6 @@
                         const brandPage = params.get('page') || '1';
                         loadContent(viewPage, false, [{name: 'page', value: brandPage}]);
                         break;
-//                    case "category":
-//                        const categoryPage = params.get('page') || '1';
-//                        loadContent(viewPage, false, [{name: 'page', value: categoryPage}]);
-//                        break;
                     case "category":
                         const categoryPage = params.get('page') || '1';
                         loadContent(viewPage, false, [{name: 'page', value: categoryPage}]);
@@ -212,6 +215,9 @@
                         const customerPage = params.get('page') || '1';
                         loadContent(viewPage, false, [{name: 'page', value: customerPage}
                         ]);
+                    case "order":
+                        const orderPage = params.get('page') || '1';
+                        loadContent(viewPage, false, [{name: 'page', value: orderPage}]);
                         break;
                     default:
 
@@ -233,5 +239,6 @@
         <script src="../../../js/voucher.js"></script>
         <script src="../../../js/skeletonLoading.js"></script>
         <script src="../../../js/customer.js"></script>
+        <script src="../../../js/order.js"></script>
     </body>
 </html>
