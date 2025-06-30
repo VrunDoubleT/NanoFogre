@@ -321,7 +321,7 @@
                             <div class="bg-gray-50 rounded-lg p-3">
                                 <span class="font-medium text-gray-600">Unit:</span>
                                 <p class="font-semibold text-gray-800 mt-1">
-                                    <%= (attr.getUnit() != null && !attr.getUnit().isEmpty()) ? attr.getUnit() : "—"%>
+                                    <%= (attr.getUnit() != null) ? attr.getUnit() : "—"%>
                                 </p>
                             </div>
                         </div>

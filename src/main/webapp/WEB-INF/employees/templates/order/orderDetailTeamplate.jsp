@@ -16,13 +16,8 @@
     DateTimeFormatter fmt = DateTimeFormatter.ofPattern("MMM dd, yyyy 'at' hh:mm a");
 %>
 
-<div class="bg-white w-[900px] mx-auto max-h-[80vh] flex flex-col shadow-2xl rounded-2xl overflow-hidden border border-gray-100">
-    <!-- Enhanced Header with gradient and icons -->
+<div class="bg-gray-100 w-[820px] mx-auto h-[90vh] flex flex-col bg-white shadow-2xl overflow-hidden">
     <div class="bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-700 px-8 py-6 relative overflow-hidden">
-        <!-- Background decoration -->
-        <div class="absolute inset-0 bg-gradient-to-r from-blue-500/20 to-purple-500/20"></div>
-        <div class="absolute -top-4 -right-4 w-24 h-24 bg-white/10 rounded-full blur-xl"></div>
-        <div class="absolute -bottom-4 -left-4 w-32 h-32 bg-white/5 rounded-full blur-xl"></div>
 
         <div class="relative flex justify-between items-center">
             <div class="flex items-center gap-4">
@@ -124,6 +119,8 @@
                 </svg>
                 <h3 class="text-lg font-semibold text-gray-800">Order Status</h3>
             </div>
+
+
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-4xl w-full">
                 <!-- Payment Method -->
                 <div class="bg-white border border-gray-200 rounded-xl p-6 text-center shadow-sm hover:shadow-md transition-all duration-200 hover:border-blue-300">

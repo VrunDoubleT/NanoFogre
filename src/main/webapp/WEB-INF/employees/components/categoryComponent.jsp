@@ -26,13 +26,13 @@
                     </svg>
                 </div>
             </div>
-
-            <!-- Add Category Button -->
-            <button id="create-category-button" class=" bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-lg shadow-lg hover:shadow-xl transform transition-all duration-200 flex items-center space-x-2">
-                <i data-lucide="diamond-plus" class="w-5 h-5"></i>
-                <span>Add New Category</span>
-            </button>
-
+            <c:if test="${not empty sessionScope.employee && sessionScope.employee.role.id == 1}">
+                <!-- Add Category Button -->
+                <button id="create-category-button" class=" bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-lg shadow-lg hover:shadow-xl transform transition-all duration-200 flex items-center space-x-2">
+                    <i data-lucide="diamond-plus" class="w-5 h-5"></i>
+                    <span>Add New Category</span>
+                </button>
+            </c:if>
         </div>
 
         <!-- Table Section -->

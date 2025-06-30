@@ -101,7 +101,12 @@ public class CategoryServlet extends HttpServlet {
 
                 response.getWriter().write("{\"total\":" + totalCategoryCount + "}");
                 break;
-
+            case "check-name":
+                String checkName = request.getParameter("categoryName");
+                boolean exists = categoryDao.isCategoryNameExists(checkName);
+                response.setContentType("application/json");
+                response.getWriter().write("{\"exists\":" + exists + "}");
+                break;
             default:
                 break;
         }
@@ -312,7 +317,9 @@ public class CategoryServlet extends HttpServlet {
                 response.setContentType("application/json");
                 response.getWriter().write(json.toString());
                 break;
+
         }
+
     }
 
     public void responseJson(HttpServletResponse response, boolean isSuccess, String successMessage, String errorMessage) throws ServletException, IOException {

@@ -1115,6 +1115,102 @@ function loadCreateCategoryEvent() {
         }
     }
 
+////
+    let lastCheckedName = "";
+    let lastCheckedExists = false;
+    let checkingNameInProgress = false;
+
+// Validate category name (có check trùng)
+    function validateCategoryName(asyncCheck = false) {
+        const name = nameInput.value.trim();
+
+        // Basic validate
+        if (name === "") {
+            nameError.textContent = "Category name is required";
+            nameInput.classList.add("border-red-500");
+            nameInput.classList.remove("ring-1", "ring-green-500");
+            return false;
+        }
+        if (name.length < 2) {
+            nameError.textContent = "Category name must be at least 2 characters";
+            nameInput.classList.add("border-red-500");
+            nameInput.classList.remove("ring-1", "ring-green-500");
+            return false;
+        }
+        if (name.length > 100) {
+            nameError.textContent = "Category name must be less than 100 characters";
+            nameInput.classList.add("border-red-500");
+            nameInput.classList.remove("ring-1", "ring-green-500");
+            return false;
+        }
+
+        // Nếu asyncCheck thì check trùng qua API
+        if (asyncCheck) {
+            if (name === lastCheckedName) {
+                // dùng lại kết quả cũ
+                if (lastCheckedExists) {
+                    nameError.textContent = "Category name already exists";
+                    nameInput.classList.add("border-red-500");
+                    nameInput.classList.remove("ring-1", "ring-green-500");
+                    return false;
+                } else {
+                    nameError.textContent = "";
+                    nameInput.classList.remove("border-red-500");
+                    nameInput.classList.add("ring-1", "ring-green-500");
+                    return true;
+                }
+            }
+            if (checkingNameInProgress) {
+                nameError.textContent = "Checking...";
+                return false;
+            }
+            // gọi API
+            lastCheckedName = name;
+            checkingNameInProgress = true;
+            nameError.textContent = "Checking...";
+            fetch(`/category/view?type=check-name&categoryName=${encodeURIComponent(name)}`)
+                    .then(res => res.json())
+                    .then(data => {
+                        checkingNameInProgress = false;
+                        lastCheckedExists = !!data.exists;
+                        // Nếu người dùng đổi input thì thôi
+                        if (nameInput.value.trim() !== name)
+                            return;
+                        if (data.exists) {
+                            nameError.textContent = "Category name already exists";
+                            nameInput.classList.add("border-red-500");
+                            nameInput.classList.remove("ring-1", "ring-green-500");
+                        } else {
+                            nameError.textContent = "";
+                            nameInput.classList.remove("border-red-500");
+                            nameInput.classList.add("ring-1", "ring-green-500");
+                        }
+                    })
+                    .catch(() => {
+                        checkingNameInProgress = false;
+                        nameError.textContent = "";
+                    });
+            // Trong lúc chờ kết quả thì cho false
+            return false;
+        } else {
+            // Khi submit, dùng lại kết quả đã check
+            if (lastCheckedExists && name === lastCheckedName) {
+                nameError.textContent = "Category name already exists";
+                nameInput.classList.add("border-red-500");
+                nameInput.classList.remove("ring-1", "ring-green-500");
+                return false;
+            }
+            if (checkingNameInProgress) {
+                nameError.textContent = "Checking...";
+                return false;
+            }
+            nameError.textContent = "";
+            nameInput.classList.remove("border-red-500");
+            nameInput.classList.add("ring-1", "ring-green-500");
+            return true;
+    }
+    }
+
 ///// ======Valid create FUNCTIONS======///////
     // valid date
     function validateAttributeDateFields(counter) {
@@ -1263,35 +1359,7 @@ function loadCreateCategoryEvent() {
     }
 //////
 
-    // Validate category name
-    function validateCategoryName() {
-        const name = nameInput.value.trim();
-        if (name === "") {
-            nameError.textContent = "Category name is required";
-            nameInput.classList.add("border-red-500");
-            nameInput.classList.remove("ring-1", "ring-green-500");
-            return false;
-        }
-
-        if (name.length < 2) {
-            nameError.textContent = "Category name must be at least 2 characters";
-            nameInput.classList.add("border-red-500");
-            nameInput.classList.remove("ring-1", "ring-green-500");
-            return false;
-        }
-
-        if (name.length > 100) {
-            nameError.textContent = "Category name must be less than 100 characters";
-            nameInput.classList.add("border-red-500");
-            nameInput.classList.remove("ring-1", "ring-green-500");
-            return false;
-        }
-
-        nameError.textContent = "";
-        nameInput.classList.remove("border-red-500");
-        nameInput.classList.add("ring-1", "ring-green-500");
-        return true;
-    }
+  
     // Validate category image
     function validateCategoryImage() {
         if (!imageInput.files || !imageInput.files[0]) {
@@ -1503,25 +1571,20 @@ function loadCreateCategoryEvent() {
         }
         unitError.textContent = "";
         // Optional: If empty, just return true (no style)
-        if (value === "") {
-            unitInput.classList.add("border-red-500");
-            unitError.textContent = "No empty";
-            return false;
+        if (value != "") {
+            // Validate: only letters, numbers, %, /, °, ., -, no space, max 10 chars
+            const validPattern = /^[A-Za-z0-9%\/°\.\-]+$/;
+            if (!validPattern.test(value)) {
+                unitInput.classList.add("border-red-500");
+                unitError.textContent = "Unit only allows letters, numbers, %, /, °, ., - (no spaces).";
+                return false;
+            }
+            if (value.length > 10) {
+                unitInput.classList.add("border-red-500");
+                unitError.textContent = "Unit must be at most 10 characters.";
+                return false;
+            }
         }
-
-        // Validate: only letters, numbers, %, /, °, ., -, no space, max 10 chars
-        const validPattern = /^[A-Za-z0-9%\/°\.\-]+$/;
-        if (!validPattern.test(value)) {
-            unitInput.classList.add("border-red-500");
-            unitError.textContent = "Unit only allows letters, numbers, %, /, °, ., - (no spaces).";
-            return false;
-        }
-        if (value.length > 10) {
-            unitInput.classList.add("border-red-500");
-            unitError.textContent = "Unit must be at most 10 characters.";
-            return false;
-        }
-
         // If valid, green border
         unitInput.classList.add("ring-1", "ring-green-500");
         return true;
@@ -1600,7 +1663,7 @@ function loadCreateCategoryEvent() {
     function validateForm() {
         let isValid = true;
         // Validate category name
-        if (!validateCategoryName()) {
+        if (!validateCategoryName(false)) {
             isValid = false;
         }
 
@@ -1681,13 +1744,14 @@ function loadCreateCategoryEvent() {
         errorDiv.classList.add("hidden");
     }
 
-    // Add real-time validation events
-    nameInput.addEventListener("blur", validateCategoryName);
-    nameInput.addEventListener("input", function () {
-        if (nameInput.classList.contains("border-red-500")) {
-            validateCategoryName();
-        }
+    nameInput.addEventListener("blur", function () {
+        validateCategoryName(true);
     });
+    nameInput.addEventListener("input", function () {
+        validateCategoryName(true);
+    });
+
+
 //////////////
     ///// Submit form///////    
     btnCreate.onclick = function (e) {
