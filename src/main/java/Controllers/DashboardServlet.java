@@ -18,7 +18,7 @@ import java.util.List;
 import java.util.Map;
 
 @WebServlet("/dashboard")
-public class DashboardViewServlet extends HttpServlet {
+public class DashboardServlet extends HttpServlet {
 
     private final DashboardDAO dashboardDAO = new DashboardDAO();
 

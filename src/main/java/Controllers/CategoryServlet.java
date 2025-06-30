@@ -43,7 +43,7 @@ import org.cloudinary.json.JSONObject;
  * Servlet implementation class CategoryViewServlet
  */
 @WebServlet(name = "CategoryViewServlet", urlPatterns = {"/category/view"})
-public class CategoryViewServlet extends HttpServlet {
+public class CategoryServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -60,7 +60,7 @@ public class CategoryViewServlet extends HttpServlet {
                 request.setAttribute("categories", categories);
                 request.setAttribute("page", page);
                 request.setAttribute("limit", limit);
-                request.getRequestDispatcher("/WEB-INF/employees/teamplates/category/categoryTeamplate.jsp").forward(request, response); // Forward to JSP
+                request.getRequestDispatcher("/WEB-INF/employees/templates/category/categoryTeamplate.jsp").forward(request, response); // Forward to JSP
                 break;
             case "pagination":
                 int p = Converter.parseOption(request.getParameter("page"), 1);
@@ -68,11 +68,11 @@ public class CategoryViewServlet extends HttpServlet {
                 request.setAttribute("total", t);
                 request.setAttribute("limit", limit);
                 request.setAttribute("page", p);
-                request.getRequestDispatcher("/WEB-INF/employees/teamplates/products/paginationTeamplate.jsp").forward(request, response);
+                request.getRequestDispatcher("/WEB-INF/employees/common/paginationTeamplate.jsp").forward(request, response);
                 break;
             case "create":
 
-                request.getRequestDispatcher("/WEB-INF/employees/teamplates/category/createCategoryTeamplate.jsp").forward(request, response);
+                request.getRequestDispatcher("/WEB-INF/employees/templates/category/createCategoryTeamplate.jsp").forward(request, response);
                 break;
             case "detail":
                 int categoryIds = Integer.parseInt(request.getParameter("categoryId"));
@@ -84,7 +84,7 @@ public class CategoryViewServlet extends HttpServlet {
                 request.setAttribute("category", categorys);
                 request.setAttribute("attributes", attributes);
 
-                request.getRequestDispatcher("/WEB-INF/employees/teamplates/category/detailCategoryTeamplate.jsp")
+                request.getRequestDispatcher("/WEB-INF/employees/templates/category/detailCategoryTeamplate.jsp")
                         .forward(request, response);
                 break;
 
@@ -92,7 +92,7 @@ public class CategoryViewServlet extends HttpServlet {
                 int categoryId = Integer.parseInt(request.getParameter("categoryId"));
                 Category category = categoryDao.getCategoryById(categoryId);
                 request.setAttribute("category", category);
-                request.getRequestDispatcher("/WEB-INF/employees/teamplates/category/editCategoryTeamplate.jsp").forward(request, response);
+                request.getRequestDispatcher("/WEB-INF/employees/templates/category/editCategoryTeamplate.jsp").forward(request, response);
                 break;
             case "total":
                 int totalCategoryCount = categoryDao.countCategory();
@@ -194,7 +194,7 @@ public class CategoryViewServlet extends HttpServlet {
                     try {
                         dao.insertAttributes(newCategoryId, attrs);
                     } catch (SQLException ex) {
-                        Logger.getLogger(CategoryViewServlet.class.getName()).log(Level.SEVERE, null, ex);
+                        Logger.getLogger(CategoryServlet.class.getName()).log(Level.SEVERE, null, ex);
                     }
                 }
 

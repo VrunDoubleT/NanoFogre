@@ -23,7 +23,7 @@ import java.util.List;
  * @author Duong Tran Ngoc Chau - CE181040
  */
 @WebServlet(name = "CustomerViewServlet", urlPatterns = {"/customer/view"})
-public class CustomerViewServlet extends HttpServlet {
+public class CustomerServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -38,7 +38,7 @@ public class CustomerViewServlet extends HttpServlet {
                 request.setAttribute("clist", cus);
                 request.setAttribute("page", page);
                 request.setAttribute("limit", limit);
-                request.getRequestDispatcher("/WEB-INF/employees/teamplates/customer/customerTemplate.jsp").forward(request, response);
+                request.getRequestDispatcher("/WEB-INF/employees/templates/customer/customerTemplate.jsp").forward(request, response);
                 break;
             case "detail":
                 int did = Integer.parseInt(request.getParameter("id"));
@@ -52,7 +52,7 @@ public class CustomerViewServlet extends HttpServlet {
                 request.setAttribute("address", address);
                 request.setAttribute("orders", orders);
                 
-                request.getRequestDispatcher("/WEB-INF/employees/teamplates/customer/customerDetailsTemplate.jsp").forward(request, response);
+                request.getRequestDispatcher("/WEB-INF/employees/templates/customer/customerDetailsTemplate.jsp").forward(request, response);
                 break;
             case "pagination":
                 int p = Converter.parseOption(request.getParameter("page"), 1);
@@ -60,7 +60,7 @@ public class CustomerViewServlet extends HttpServlet {
                 request.setAttribute("total", t);
                 request.setAttribute("limit", limit);
                 request.setAttribute("page", p);
-                request.getRequestDispatcher("/WEB-INF/employees/teamplates/products/paginationTeamplate.jsp").forward(request, response);
+                request.getRequestDispatcher("/WEB-INF/employees/common/paginationTeamplate.jsp").forward(request, response);
                 break;
             default:
                 break;

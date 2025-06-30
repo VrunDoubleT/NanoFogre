@@ -1,0 +1,24 @@
+<%-- 
+    Document   : employeeHeader
+    Created on : Jun 30, 2025, 10:26:38 AM
+    Author     : Tran Thanh Van - CE181019
+--%>
+
+<header class="h-[74px] bg-white shadow-sm border-b">
+    <div class="h-full flex items-center justify-between px-6 py-4">
+        <div class="h-full">
+            <img class="h-full object-cover" src="https://res.cloudinary.com/dk4fqvp3v/image/upload/v1749393807/nLogo_iik9oj.png" alt="alt"/>
+        </div>
+
+        <c:if test="${not empty sessionScope.employee}">
+            <div class="flex items-center space-x-3">
+                <img src="${sessionScope.employee.avatar}" alt="Avatar" class="w-10 h-10 rounded-full">
+                <div class="hidden md:block">
+                    <p class="text-sm font-medium text-gray-900">${sessionScope.employee.name}</p>
+                    <p class="text-xs text-gray-500">${sessionScope.employee.role.name}</p>
+                </div>
+            </div>
+        </c:if>
+    </div>
+</header>
+

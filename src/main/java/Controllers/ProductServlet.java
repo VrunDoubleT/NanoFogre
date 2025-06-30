@@ -47,7 +47,7 @@ import java.util.List;
  */
 @MultipartConfig
 @WebServlet(name = "ProductViewServlet", urlPatterns = {"/product/view"})
-public class ProductViewServlet extends HttpServlet {
+public class ProductServlet extends HttpServlet {
 
     /**
      * Handles the HTTP <code>GET</code> method.
@@ -75,7 +75,7 @@ public class ProductViewServlet extends HttpServlet {
                 List<Product> products = pDao.products(categoryId, page, limit);
                 request.setAttribute("products", products);
                 request.setAttribute("categories", categories);
-                request.getRequestDispatcher("/WEB-INF/employees/teamplates/products/productTeamplate.jsp").forward(request, response);
+                request.getRequestDispatcher("/WEB-INF/employees/templates/products/productTeamplate.jsp").forward(request, response);
                 break;
             case "item":
                 String productId = request.getParameter("productId");
@@ -83,7 +83,7 @@ public class ProductViewServlet extends HttpServlet {
                 List<ProductAttribute> productAttributes = pDao.getAttributesByProductId(Integer.parseInt(productId));
                 request.setAttribute("product", product);
                 request.setAttribute("productAttributes", productAttributes);
-                request.getRequestDispatcher("/WEB-INF/employees/teamplates/products/productDetailTeamplate.jsp").forward(request, response);
+                request.getRequestDispatcher("/WEB-INF/employees/templates/products/productDetailTeamplate.jsp").forward(request, response);
                 break;
             case "pagination":
                 int p = Converter.parseOption(request.getParameter("page"), 1);
@@ -91,7 +91,7 @@ public class ProductViewServlet extends HttpServlet {
                 request.setAttribute("total", t);
                 request.setAttribute("limit", limit);
                 request.setAttribute("page", p);
-                request.getRequestDispatcher("/WEB-INF/employees/teamplates/products/paginationTeamplate.jsp").forward(request, response);
+                request.getRequestDispatcher("/WEB-INF/employees/common/paginationTeamplate.jsp").forward(request, response);
                 break;
             case "create":
                 List<Category> cs = categoryDao.getCategories();
@@ -100,7 +100,7 @@ public class ProductViewServlet extends HttpServlet {
                 request.setAttribute("brands", brs);
                 request.setAttribute("type", "create");
                 request.setAttribute("product", null);
-                request.getRequestDispatcher("/WEB-INF/employees/teamplates/products/createProductTeamplate.jsp").forward(request, response);
+                request.getRequestDispatcher("/WEB-INF/employees/templates/products/createProductTeamplate.jsp").forward(request, response);
                 break;
             case "edit":
                 int productIdToEdit = Integer.parseInt(request.getParameter("productId"));
@@ -115,7 +115,7 @@ public class ProductViewServlet extends HttpServlet {
                 request.setAttribute("product", productToEdit);
                 request.setAttribute("productImages", productImages);
                 request.setAttribute("productAttributes", paEdit);
-                request.getRequestDispatcher("/WEB-INF/employees/teamplates/products/editProductTeamplate.jsp").forward(request, response);
+                request.getRequestDispatcher("/WEB-INF/employees/templates/products/editProductTeamplate.jsp").forward(request, response);
                 break;
             case "stat":
                 ProductStat productStat = pDao.getProductStat();
@@ -124,7 +124,7 @@ public class ProductViewServlet extends HttpServlet {
             case "productAttribute":
                 List<ProductAttribute> pa = pDao.getAttributesByProductIdAndCategoryId(Converter.parseOption(request.getParameter("productId"), 0), Converter.parseOption(request.getParameter("categoryId"), 0));
                 request.setAttribute("productAttributes", pa);
-                request.getRequestDispatcher("/WEB-INF/employees/teamplates/products/productAttributeTeamplate.jsp").forward(request, response);
+                request.getRequestDispatcher("/WEB-INF/employees/templates/products/productAttributeTeamplate.jsp").forward(request, response);
                 break;
             case "productAttributeData":
                 List<ProductAttribute> productAttributesData = pDao.getAttributesByCategoryId(Converter.parseOption(request.getParameter("categoryId"), 0));
@@ -133,7 +133,7 @@ public class ProductViewServlet extends HttpServlet {
             case "reviewStats":
                 ReviewStats reviewStats = rDao.getReviewStatsByProductId(Converter.parseOption(request.getParameter("productId"), 0));
                 request.setAttribute("reviewStats", reviewStats);
-                request.getRequestDispatcher("/WEB-INF/employees/teamplates/products/reviewStatsTeamplate.jsp").forward(request, response);
+                request.getRequestDispatcher("/WEB-INF/employees/templates/products/reviewStatsTeamplate.jsp").forward(request, response);
                 System.out.println(reviewStats);
                 break;
             case "review":
@@ -141,7 +141,7 @@ public class ProductViewServlet extends HttpServlet {
                 int pageReview = Converter.parseOption(request.getParameter("page"), 1);
                 List<Review> reviews = rDao.getReviewsByProductId(Converter.parseOption(request.getParameter("productId"), 0), Converter.parseOption(request.getParameter("star"), 0), pageReview, limitReview);
                 request.setAttribute("reviews", reviews);
-                request.getRequestDispatcher("/WEB-INF/employees/teamplates/products/reviewTeamplate.jsp").forward(request, response);
+                request.getRequestDispatcher("/WEB-INF/employees/templates/products/reviewTeamplate.jsp").forward(request, response);
                 break;
             default:
                 break;
@@ -240,7 +240,7 @@ public class ProductViewServlet extends HttpServlet {
                 if(isSuccessReply){
                     Review newReview = rDao.getReviewById(reviewId);
                     request.setAttribute("review", newReview);
-                    request.getRequestDispatcher("/WEB-INF/employees/teamplates/products/reviewItemTeamplate.jsp").forward(request, response);
+                    request.getRequestDispatcher("/WEB-INF/employees/templates/products/reviewItemTeamplate.jsp").forward(request, response);
                 }
                 break;
             default:

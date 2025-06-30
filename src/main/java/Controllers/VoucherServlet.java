@@ -31,7 +31,7 @@ import java.util.Map;
  * @author Duong Tran Ngoc Chau - CE181040
  */
 @WebServlet(name = "VoucherViewServlet", urlPatterns = {"/voucher/view"})
-public class VoucherViewServlet extends HttpServlet {
+public class VoucherServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -46,13 +46,13 @@ public class VoucherViewServlet extends HttpServlet {
                 request.setAttribute("vlist", vouchers);
                 request.setAttribute("page", page);
                 request.setAttribute("limit", limit);
-                request.getRequestDispatcher("/WEB-INF/employees/teamplates/vouchers/voucherTemplate.jsp").forward(request, response);
+                request.getRequestDispatcher("/WEB-INF/employees/templates/vouchers/voucherTemplate.jsp").forward(request, response);
                 break;
             case "detail":
                 int did = Integer.parseInt(request.getParameter("id"));
                 Voucher item = vDao.getVoucherById(did);
                 request.setAttribute("voucher", item);
-                request.getRequestDispatcher("/WEB-INF/employees/teamplates/vouchers/voucherDetailsTemplate.jsp").forward(request, response);
+                request.getRequestDispatcher("/WEB-INF/employees/templates/vouchers/voucherDetailsTemplate.jsp").forward(request, response);
                 break;
             case "pagination":
                 int p = Converter.parseOption(request.getParameter("page"), 1);
@@ -60,10 +60,10 @@ public class VoucherViewServlet extends HttpServlet {
                 request.setAttribute("total", t);
                 request.setAttribute("limit", limit);
                 request.setAttribute("page", p);
-                request.getRequestDispatcher("/WEB-INF/employees/teamplates/products/paginationTeamplate.jsp").forward(request, response);
+                request.getRequestDispatcher("/WEB-INF/employees/common/paginationTeamplate.jsp").forward(request, response);
                 break;
             case "create":
-                request.getRequestDispatcher("/WEB-INF/employees/teamplates/vouchers/createVoucherTemplate.jsp").forward(request, response);
+                request.getRequestDispatcher("/WEB-INF/employees/templates/vouchers/createVoucherTemplate.jsp").forward(request, response);
                 break;
             case "checkVoucherCode":
                 String codes = request.getParameter("voucherCode");
@@ -84,7 +84,7 @@ public class VoucherViewServlet extends HttpServlet {
                 int id = Integer.parseInt(request.getParameter("id"));
                 Voucher voucherToUpdate = vDao.getVoucherById(id);
                 request.setAttribute("voucher", voucherToUpdate);
-                request.getRequestDispatcher("/WEB-INF/employees/teamplates/vouchers/updateVoucherTemplate.jsp").forward(request, response);
+                request.getRequestDispatcher("/WEB-INF/employees/templates/vouchers/updateVoucherTemplate.jsp").forward(request, response);
             } catch (Exception e) {
                 response.setStatus(500);
             }

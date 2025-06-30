@@ -19,7 +19,7 @@ import jakarta.servlet.http.HttpServletResponse;
  * @author iphon
  */
 @WebServlet(name = "OrderViewServlet", urlPatterns = {"/order/view"})
-public class OrderViewServlet extends HttpServlet {
+public class OrderServlet extends HttpServlet {
 
     private static final int DEFAULT_LIMIT = 5; // Default limit for pagination
 
@@ -38,7 +38,7 @@ public class OrderViewServlet extends HttpServlet {
                 request.setAttribute("orders", order);
                 request.setAttribute("page", page);
                 request.setAttribute("limit", limit);
-                request.getRequestDispatcher("/WEB-INF/employees/teamplates/order/orderTeamplate.jsp").forward(request, response);
+                request.getRequestDispatcher("/WEB-INF/employees/templates/order/orderTeamplate.jsp").forward(request, response);
                 break;
             case "pagination":
                 int p = Converter.parseOption(request.getParameter("page"), 1);
@@ -46,7 +46,7 @@ public class OrderViewServlet extends HttpServlet {
                 request.setAttribute("total", t);
                 request.setAttribute("limit", limit);
                 request.setAttribute("page", p);
-                request.getRequestDispatcher("/WEB-INF/employees/teamplates/products/paginationTeamplate.jsp").forward(request, response);
+                request.getRequestDispatcher("/WEB-INF/employees/common/paginationTeamplate.jsp").forward(request, response);
                 break;
 
             case "total":
@@ -67,7 +67,7 @@ public class OrderViewServlet extends HttpServlet {
                 request.setAttribute("orderDetails", details);
 
                 request.getRequestDispatcher(
-                        "/WEB-INF/employees/teamplates/order/orderDetailTeamplate.jsp"
+                        "/WEB-INF/employees/templates/order/orderDetailTeamplate.jsp"
                 ).forward(request, response);
                 break;
 

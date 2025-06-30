@@ -1,6 +1,6 @@
 <%-- 
-    Document   : adminLayout
-    Created on : Jun 6, 2025, 4:27:53 PM
+    Document   : staffLayout
+    Created on : Jun 30, 2025, 10:25:11 AM
     Author     : Tran Thanh Van - CE181019
 --%>
 
@@ -34,7 +34,7 @@
             </div>
         </div>
         <div style="display: flex;">
-            <%@ include file="adminSidebar.jsp" %>
+            <%@ include file="staffSidebar.jsp" %>
             <div id="main-content" class="bg-gray-100 w-full h-[calc(100vh-74px)] px-8 py-6 overflow-y-auto">
                 <!-- Dynamic content will be loaded here -->
             </div>
@@ -73,7 +73,7 @@
             }
 
             function loadContent(path, push, params = []) {
-                const rootUrl = '/admin/view?viewPage=' + path;
+                const rootUrl = '/staff/view?viewPage=' + path;
                 let paramUrl = '';
                 if (params.length > 0) {
                     params.forEach(objParam => {
@@ -85,11 +85,12 @@
                     // Render layout for brand page first to avoid duplication
                     renderBrandPageLayout();
                 }
-
+                console.log(rootUrl + paramUrl);
                 fetch(rootUrl + paramUrl)
                         .then(res => res.text())
                         .then(html => {
-                            if (path === "brand") {
+                            console.log(html);
+                            if (path === "g") {
                                 document.getElementById('loadingBrand').innerHTML = '';
                                 document.getElementById('brandContainer').innerHTML = html;
                             } else {
@@ -97,7 +98,7 @@
                             }
 
                             if (push) {
-                                history.pushState({page: path}, '', '/admin/dashboard?view=' + path);
+                                history.pushState({page: path}, '', '/staff/dashboard?view=' + path);
                             }
 
                             // LOAD CONTENT FOR EACH PAGE COMPONENT
@@ -110,13 +111,6 @@
                                         page = parseOptionNumber(params[1]?.value, 1);
                                     }
                                     loadProductContentAndEvent(cId, page);
-                                    break;
-                                case 'staff':
-                                    let staffPage = 1;
-                                    if (params.length > 0) {
-                                        staffPage = parseOptionNumber(params[0].value, 1);
-                                    }
-                                    loadStaffContentAndEvent(staffPage);
                                     break;
                                 case 'brand':
                                     let brandPage = 1;
@@ -206,11 +200,6 @@
                         const categoryId = params.get('categoryId') || '0';
                         const page = params.get('page') || '1';
                         loadContent(viewPage, false, [{name: 'categoryId', value: categoryId}, {name: 'page', value: page}]);
-                        break;
-                    case "staff":
-                        const staffPage = params.get('page') || '1';
-                        loadContent(viewPage, false, [{name: 'page', value: staffPage}
-                        ]);
                         break;
                     case "brand":
                         const brandPage = params.get('page') || '1';

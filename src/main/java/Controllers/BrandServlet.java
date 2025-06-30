@@ -21,7 +21,7 @@ import static Utils.CloudinaryConfig.uploadSingleImage;
         maxFileSize = 1024 * 1024 * 10,
         maxRequestSize = 1024 * 1024 * 15
 )
-public class BrandViewServlet extends HttpServlet {
+public class BrandServlet extends HttpServlet {
 
     private final BrandDAO brandDao = new BrandDAO();
 

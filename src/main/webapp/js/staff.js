@@ -9,8 +9,8 @@ const loadStaffContentAndEvent = (page) => {
     `;
     let paramUrl = '';
     Promise.all([
-        fetch("/staff/view?type=list&page=" + page + paramUrl).then(res => res.text()),
-        fetch("/staff/view?type=pagination&page=" + page + paramUrl).then(res => res.text())
+        fetch("/staff/action?type=list&page=" + page + paramUrl).then(res => res.text()),
+        fetch("/staff/action?type=pagination&page=" + page + paramUrl).then(res => res.text())
     ]).then(([staffHTML, paginationHTML]) => {
         document.getElementById('tabelContainer').innerHTML = staffHTML;
         document.getElementById('pagination').innerHTML = paginationHTML;
@@ -35,7 +35,7 @@ const loadStaffContentAndEvent = (page) => {
     document.getElementById("create-staff-button").onclick = () => {
         const modal = document.getElementById("modal");
         openModal(modal);
-        updateModalContent(`/staff/view?type=create`, loadCreateStaffEvent);
+        updateModalContent(`/staff/action?type=create`, loadCreateStaffEvent);
     };
 };
 
@@ -81,7 +81,7 @@ function loadCreateStaffEvent() {
         }
 
         try {
-            const res = await fetch(`/staff/view?type=checkEmail&email=${encodeURIComponent(email)}`);
+            const res = await fetch(`/staff/action?type=checkEmail&email=${encodeURIComponent(email)}`);
             const exists = await res.text();
             if (exists === "true") {
                 emailError.textContent = "Email already exists";
@@ -126,7 +126,7 @@ function loadCreateStaffEvent() {
         }
 
         showLoading();
-        fetch("/staff/view", {
+        fetch("/staff", {
             method: "POST",
             headers: {"Content-Type": "application/x-www-form-urlencoded"},
             body: formData
@@ -189,7 +189,7 @@ document.addEventListener("click", function (e) {
             cancelButtonText: 'Cancel'
         }).then((result) => {
             if (result.isConfirmed) {
-                fetch(`/staff/view`, {
+                fetch(`/staff`, {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/x-www-form-urlencoded"
@@ -243,7 +243,7 @@ document.addEventListener("click", async function (e) {
     if (updateBtn) {
         const id = updateBtn.dataset.id;
         try {
-            const response = await fetch(`/staff/view?type=update&id=${id}`);
+            const response = await fetch(`/staff/action?type=update&id=${id}`);
             const html = await response.text();
             const modal = document.getElementById("modal");
             const modalContent = document.getElementById("modalContent");
@@ -288,7 +288,7 @@ document.addEventListener("click", async function (e) {
                 }
 
                 try {
-                    const res = await fetch(`/staff/view?type=checkEmailExceptOwn&email=${encodeURIComponent(email)}&id=${id}`);
+                    const res = await fetch(`/staff/action?type=checkEmailExceptOwn&email=${encodeURIComponent(email)}&id=${id}`);
                     const exists = await res.text();
                     if (exists === "true") {
                         emailError.textContent = "Email already exists";
@@ -333,7 +333,7 @@ document.addEventListener("click", async function (e) {
                     const status = formData.get("status");
                     const isBlock = status === "Block";
                     try {
-                        const res = await fetch("/staff/view?type=update", {
+                        const res = await fetch("/staff/action?type=update", {
                             method: "POST",
                             headers: {
                                 "Content-Type": "application/json"
@@ -395,7 +395,7 @@ document.addEventListener("click", async function (e) {
         const id = detailBtn.dataset.id;
 
         try {
-            const response = await fetch(`/staff/view?type=detail&id=${id}`);
+            const response = await fetch(`/staff/action?type=detail&id=${id}`);
             const html = await response.text();
 
             modalContent.innerHTML = html;

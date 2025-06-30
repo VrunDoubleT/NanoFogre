@@ -25,7 +25,7 @@ public class StaffDAO extends DB.DBContext {
         int row = (page - 1) * limit;
         List<Employee> list = new ArrayList<>();
         String query = "SELECT * FROM Employees "
-                + "WHERE roleId = 3 "
+                + "WHERE roleId = 2 "
                 + "AND _destroy = 0 "
                 + "ORDER BY employeeId DESC "
                 + "OFFSET " + row + " ROWS FETCH NEXT " + limit + " ROWS ONLY;";
@@ -51,7 +51,7 @@ public class StaffDAO extends DB.DBContext {
     }
 
     public int countStaff() {
-        String query = "SELECT COUNT(*) as total FROM Employees WHERE roleId = 3 AND _destroy = 0";
+        String query = "SELECT COUNT(*) as total FROM Employees WHERE roleId = 2 AND _destroy = 0";
         try ( ResultSet rs = execSelectQuery(query)) {
             if (rs.next()) {
                 return rs.getInt(1);
