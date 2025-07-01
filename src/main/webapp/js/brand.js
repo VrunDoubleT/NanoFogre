@@ -232,7 +232,6 @@ function showFileName(input) {
         label = input.closest('div').querySelector('.file-name');
     if (label)
         label.textContent = fileName;
-    // Preview ảnh
     if (input.id === 'newBrandImage') {
         previewImage(input, 'createBrandImagePreview');
     } else if (input.id === 'editBrandImage') {
@@ -281,8 +280,8 @@ function handleCreateBrand() {
         return;
 
     submitBtn.disabled = true;
-//    showLoading();
     loadingIcon.classList.remove('hidden');
+
     const formData = new FormData();
     formData.append('action', 'create');
     formData.append('name', name);
@@ -294,15 +293,17 @@ function handleCreateBrand() {
     })
             .then(response => response.json())
             .then(data => {
-                hiddenLoading();
                 if (data.success) {
                     showToast(data.message, 'success');
                     closeCreateModal();
+                    hiddenLoading();
                     loadBrandContentAndEvent(1);
                 } else {
+
                     showToast(data.message, 'error');
                 }
             })
+
             .catch(() => showToast('Server connection error', 'error'))
             .finally(() => {
                 submitBtn.disabled = false;
@@ -348,7 +349,6 @@ function handleUpdateBrand() {
     })
             .then(async response => {
                 const data = await response.json().catch(() => ({}));
-                hiddenLoading();
                 if (!response.ok) {
                     throw new Error(data.message || 'An error occurred.');
                 }
@@ -357,6 +357,7 @@ function handleUpdateBrand() {
             .then(data => {
                 showToast(data.message, 'success');
                 closeEditModal();
+                hiddenLoading();
                 let currentPage = parseInt(getQueryParam('page')) || 1;
                 loadBrandContentAndEvent(currentPage);
             })

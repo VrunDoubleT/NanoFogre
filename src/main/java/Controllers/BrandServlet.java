@@ -28,22 +28,21 @@ public class BrandServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        if ("getBrand".equals(request.getParameter("action"))) {
+        String action = request.getParameter("action");
+
+        if ("getBrand".equals(action)) {
             try {
                 String idParam = request.getParameter("id");
-                System.out.println("Received ID parameter: " + idParam);
                 int id = Integer.parseInt(idParam);
-                System.out.println("Parsed ID: " + id);
                 Brand brand = brandDao.getBrandById(id);
-                System.out.println("Found brand: " + (brand != null ? brand.getName() : "null"));
                 response.setContentType("application/json");
                 response.setCharacterEncoding("UTF-8");
                 if (brand != null) {
                     String jsonResponse = String.format(
-                            "{\"success\":true,\"brand\":{\"id\":%d,\"name\":\"%s\",\"image\":\"%s\"}}",
-                            brand.getId(),
-                            brand.getName().replace("\"", "\\\""), // Escape quotes
-                            brand.getUrl() != null ? brand.getUrl().replace("\"", "\\\"") : ""
+                        "{\"success\":true,\"brand\":{\"id\":%d,\"name\":\"%s\",\"image\":\"%s\"}}",
+                        brand.getId(),
+                        brand.getName().replace("\"", "\\\""),
+                        brand.getUrl() != null ? brand.getUrl().replace("\"", "\\\"") : ""
                     );
                     response.getWriter().write(jsonResponse);
                 } else {
@@ -53,25 +52,14 @@ public class BrandServlet extends HttpServlet {
                 response.setContentType("application/json");
                 response.getWriter().write("{\"success\":false,\"message\":\"Invalid ID format\"}");
             } catch (Exception e) {
-                e.printStackTrace(); 
+                e.printStackTrace();
                 response.setContentType("application/json");
                 response.getWriter().write("{\"success\":false,\"message\":\"Server error: " + e.getMessage() + "\"}");
             }
             return;
         }
-        int page = Converter.parseOption(request.getParameter("page"), 1);
-        int limit = 5;
-        List<Brand> brands = brandDao.getBrandsPaginated(page, limit);
-        int totalBrands = brandDao.getTotalBrandsForPagination();
-        int totalPages = (int) Math.ceil((double) totalBrands / limit);
-        // Set attribute
-        request.setAttribute("brands", brands);
-        request.setAttribute("total", totalBrands);
-        request.setAttribute("limit", limit);
-        request.setAttribute("totalPages", totalPages);
-        request.setAttribute("page", page);
-        String viewPath = (String) request.getAttribute("viewPath");
-        request.getRequestDispatcher(viewPath).forward(request, response);
+        response.setContentType("application/json");
+        response.getWriter().write("{\"success\":false,\"message\":\"Invalid action\"}");
     }
 
     @Override
