@@ -3,7 +3,8 @@
     Created on : Jun 22, 2025, 4:12:05 PM
     Author     : Duong Tran Ngoc Chau - CE181040
 --%>
-
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>
 <%@page import="Models.Voucher"%>
 <%@page import="java.util.List"%>
 <%
@@ -16,7 +17,7 @@
         for (Voucher v : voucher) {
 %>
 <tr>
-    <td class="px-9 py-3 whitespace-nowrap">
+    <td class="px-9 py-3 whitespace-nowrap text-center">
         <span class="font-bold text-[20px] text-gray-500"><%= index++%></span>
     </td>
 
@@ -26,7 +27,7 @@
         </span>
     </td>
 
-    <td class="px-10 py-3 whitespace-nowrap">
+    <td class="px-10 py-3 whitespace-nowrap text-center">
         <%
             double value = v.getValue();
             String formatted = "";
@@ -40,7 +41,7 @@
         <span class="text-sm font-medium text-gray-900"><%= formatted%></span>
     </td>
 
-    <td class="px-8 py-3 whitespace-nowrap">
+    <td class="px-8 py-3 whitespace-nowrap text-center">
         <%
             String status = v.getStatus();
             String colorClass = "bg-gray-100 text-gray-800";
@@ -57,7 +58,7 @@
         </span>
     </td>
 
-    <td class="px-9 py-3 whitespace-nowrap">
+    <td class="px-9 py-3 whitespace-nowrap text-center">
         <% if (v.isIsActive()) { %>
         <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-200 text-green-800">Active</span>
         <% } else { %>
@@ -75,18 +76,20 @@
                       d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
                 </svg>
             </button>
-            <button data-id="<%= v.getId()%>" class="update-voucher-button bg-yellow-100 text-yellow-700 hover:bg-yellow-200 px-3 py-1.5 rounded-lg transition-colors">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                      d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
-                </svg>
-            </button>
-            <button data-id="<%= v.getId()%>" class="delete-voucher-button bg-red-100 text-red-700 hover:bg-red-200 px-3 py-1.5 rounded-lg transition-colors">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                      d="M6 18L18 6M6 6l12 12"></path>
-                </svg>
-            </button>
+            <c:if test="${sessionScope.employee.role.id == 1}">
+                <button data-id="<%= v.getId()%>" class="update-voucher-button bg-yellow-100 text-yellow-700 hover:bg-yellow-200 px-3 py-1.5 rounded-lg transition-colors">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                    </svg>
+                </button>
+                <button data-id="<%= v.getId()%>" class="delete-voucher-button bg-red-100 text-red-700 hover:bg-red-200 px-3 py-1.5 rounded-lg transition-colors">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </c:if>
         </div>
     </td>
 </tr>

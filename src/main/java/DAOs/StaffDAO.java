@@ -64,7 +64,7 @@ public class StaffDAO extends DB.DBContext {
 
     public boolean createStaff(Employee staff) {
         String query = "INSERT INTO Employees (employeeEmail, employeePassword, employeeName, employeeAvatar, roleId, isBlock, createdAt, _destroy) "
-                + "VALUES (?, ?, ?, ?, 3, ?, GETDATE(), ?)";
+                + "VALUES (?, ?, ?, ?, 2, ?, GETDATE(), ?)";
         Object[] params = {
             staff.getEmail(),
             staff.getPassword(),

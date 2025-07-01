@@ -16,7 +16,7 @@
         for (Employee st : staff) {
 %>
 <tr>
-    <td class="px-9 py-3 whitespace-nowrap">
+    <td class="px-9 py-3 whitespace-nowrap text-center">
         <span class="font-bold text-[20px] text-gray-500"><%= index++%></span>
     </td>
 
@@ -36,9 +36,9 @@
         </div>
     </td>
 
-    <td class="px-9 py-3 whitespace-nowrap">
+    <td class="px-9 py-3 whitespace-nowrap text-center">
         <% if (st.isIsBlock()) { %>
-        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-200 text-red-800">Block</span>
+        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">Blocked</span>
         <% } else { %>
         <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">Active</span>
         <% }%>
