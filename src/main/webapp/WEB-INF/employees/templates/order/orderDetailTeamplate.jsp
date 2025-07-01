@@ -17,7 +17,7 @@
 %>
 
 <div class="bg-gray-100 w-[820px] mx-auto h-[90vh] flex flex-col bg-white shadow-2xl overflow-hidden">
-    <div class="bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-700 px-8 py-6 relative overflow-hidden">
+    <div class="bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-700 px-8 py-2 h-[87px] relative overflow-hidden">
 
         <div class="relative flex justify-between items-center">
             <div class="flex items-center gap-4">
@@ -67,10 +67,11 @@
                 <!-- Customer Name Card -->
                 <div class="bg-white border border-gray-200 rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow duration-200">
                     <div class="flex items-center gap-4">
-                        <div class="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold text-lg">
-                            <%= order.getCustomer() != null && order.getCustomer().getName() != null
-                                    ? order.getCustomer().getName().substring(0, 1).toUpperCase() : "?"%>
-                        </div>
+                        <img src="${order.customer.avatar}"
+                             alt="Avatar"
+                             class="w-12 h-12 object-cover rounded-[50%] border overflow-hidden"/>
+
+
                         <div>
                             <p class="text-sm text-gray-500 mb-1">Customer Name</p>
                             <p class="font-semibold text-3xl text-gray-800">
@@ -302,8 +303,20 @@
                             <tr class="hover:bg-gray-50 transition-colors duration-150">
                                 <td class="px-6 py-4">
                                     <div class="flex items-center gap-3">
-                                        <div class="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center text-white font-bold text-sm">
-                                            <%= d.getProduct().getTitle().substring(0, 1).toUpperCase()%>
+                                        <!-- Image -->
+                                        <div class="flex-shrink-0 h-16 w-16">
+                                            <%
+                                                if (d.getProduct().getUrls().size() > 0) {
+                                            %>
+                                            <img class="h-16 w-16 rounded-lg object-cover border border-gray-200"
+                                                 src="<%= d.getProduct().getUrls().get(0)%>">
+                                            <%
+                                            } else {
+                                            %>
+                                            <span class="h-16 w-16 flex justify-center items-center rounded-lg text-[10px] text-medium border border-gray-200">No image</span>
+                                            <%
+                                                }
+                                            %>
                                         </div>
                                         <div>
                                             <p class="font-medium text-gray-900"><%= d.getProduct().getTitle()%></p>
@@ -313,7 +326,7 @@
 
 
                                 <td class="px-6 py-4">
-                                    <span class="text-sm font-semibold text-gray-800"><%= String.format("%.2f", d.getPrice())%>VND</span>
+                                    <span class="text-sm font-semibold text-green-500"><%= String.format("%.2f", d.getPrice())%>VND</span>
                                 </td>
                                 <td class="px-6 py-4 text-center">
                                     <span class="inline-flex items-center justify-center w-8 h-8 bg-blue-100 text-blue-800 rounded-full text-sm font-semibold">
@@ -321,7 +334,7 @@
                                     </span>
                                 </td>
                                 <td class="px-6 py-4 text-right">
-                                    <span class="text-sm font-bold text-gray-900"><%= String.format("%.2f", lineTotal)%>VND</span>
+                                    <span class="text-sm font-bold text-green-500"><%= String.format("%.2f", lineTotal)%>VND</span>
                                 </td>
                             </tr>
                             <% }%>
@@ -337,7 +350,7 @@
                 <div class="w-80 space-y-4">
                     <div class="flex justify-between items-center py-2 border-b border-gray-100">
                         <span class="text-gray-600">Subtotal:</span>
-                        <span class="font-semibold text-gray-800"><%= String.format("%.2f", order.getTotalAmount())%>VND</span>
+                        <span class="font-semibold text-green-500"><%= String.format("%.2f", order.getTotalAmount())%>VND</span>
                     </div>
                     <div class="flex justify-between items-center py-2 border-b border-gray-100">
                         <div class="flex items-center gap-2">
@@ -346,7 +359,7 @@
                             </svg>
                             <span class="text-gray-600">Shipping Fee:</span>
                         </div>
-                        <span class="font-semibold text-gray-800"><%= String.format("%.2f", order.getShippingFee())%>VND</span>
+                        <span class="font-semibold text-green-500"><%= String.format("%.2f", order.getShippingFee())%>VND</span>
                     </div>
                     <div class="flex justify-between items-center py-3 border-t-2 border-gray-200">
                         <span class="text-lg font-semibold text-gray-800">Total Amount:</span>

@@ -91,7 +91,7 @@ public class OrderServlet extends HttpServlet {
                 message = ok ? "Status updated" : "Update failed";
                 break;
         }
-        // Trả về JSON
+       
         JsonObject result = new JsonObject();
         result.addProperty("isSuccess", ok);
         result.addProperty("message", message);

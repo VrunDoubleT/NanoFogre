@@ -30,21 +30,31 @@ public class OrderDAO extends DBContext {
         Order o = null;
         String sql
                 = "SELECT "
-                + "  o.[orderId], o.[employeeId], o.[customerId], o.[totalAmount], o.[shippingFee], "
-                + "  o.[paymentMethodId], o.[paymentStatusId], o.[statusId], o.[voucherId], o.[addressId], "
-                + "  o.[createdAt], o.[updatedAt], "
-                + "  c.[customerName]        AS customerName, "
-                + "  pm.[paymentMethodName]  AS paymentMethodName, "
-                + "  ps.[paymentStatusName]  AS paymentStatusName, "
-                + "  os.[statusName]         AS orderStatusName, "
-                + "  v.[voucherCode]         AS voucherCode, "
-                + "  a.[addressDetails]      AS shippingAddress, "
-                + "   c.[customerPhone]       AS customerPhone "
-                + "FROM [DBNanoForge].[dbo].[Orders] o "
-                + "LEFT JOIN [DBNanoForge].[dbo].[Customers]      c  ON o.[customerId]      = c.[customerId] "
+                + "  o.[orderId], "
+                + "  o.[employeeId], "
+                + "  o.[customerId], "
+                + "  o.[totalAmount], "
+                + "  o.[shippingFee], "
+                + "  o.[paymentMethodId], "
+                + "  o.[paymentStatusId], "
+                + "  o.[statusId], "
+                + "  o.[voucherId], "
+                + "  o.[addressId], "
+                + "  o.[createdAt], "
+                + "  o.[updatedAt], "
+                + "  c.[customerName]       AS customerName, "
+                + "  c.[customerAvatar]     AS customerAvatar, "
+                + "  c.[customerPhone]      AS customerPhone, "
+                + "  pm.[paymentMethodName] AS paymentMethodName, "
+                + "  ps.[paymentStatusName] AS paymentStatusName, "
+                + "  os.[statusName]        AS orderStatusName, "
+                + "  v.[voucherCode]        AS voucherCode, "
+                + "  a.[addressDetails]     AS shippingAddress "
+                + "FROM [DBNanoForge].[dbo].[Orders]        o "
+                + "JOIN [DBNanoForgeV2].[dbo].[Customers]   c  ON o.[customerId]      = c.[customerId] "
                 + "LEFT JOIN [DBNanoForge].[dbo].[PaymentMethods] pm ON o.[paymentMethodId] = pm.[paymentMethodId] "
                 + "LEFT JOIN [DBNanoForge].[dbo].[PaymentStatus]  ps ON o.[paymentStatusId] = ps.[paymentStatusId] "
-                + "LEFT JOIN [DBNanoForge].[dbo].[OrderStatus]    os ON o.[statusId]          = os.[statusId] "
+                + "LEFT JOIN [DBNanoForge].[dbo].[OrderStatus]    os ON o.[statusId]        = os.[statusId] "
                 + "LEFT JOIN [DBNanoForge].[dbo].[Vouchers]       v  ON o.[voucherId]       = v.[voucherId] "
                 + "LEFT JOIN [DBNanoForge].[dbo].[Address]        a  ON o.[addressId]       = a.[addressId] "
                 + "WHERE o.[orderId] = ?";
@@ -68,7 +78,11 @@ public class OrderDAO extends DBContext {
                 cust.setId(rs.getInt("customerId"));
                 cust.setName(rs.getString("customerName"));
                 cust.setPhone(rs.getString("customerPhone"));
+                // Lấy avatar
+                String avatar = rs.getString("customerAvatar");
+                cust.setAvatar(avatar);
                 o.setCustomer(cust);
+                System.out.println(rs.getString("customerAvatar"));
 
                 // payment method
                 PaymentMethod pm = new PaymentMethod();
@@ -116,7 +130,8 @@ public class OrderDAO extends DBContext {
                 + "       od.detailPrice    AS detailPrice, "
                 + "       od.detailQuantity AS detailQuantity, "
                 + "       p.productId, "
-                + "       p.productTitle    AS productTitle "
+                + "       p.productTitle    AS productTitle, "
+                + "(SELECT TOP 1 url FROM ProductImages WHERE productId = p.productId) AS imageUrl "
                 + "  FROM OrderDetails od "
                 + "  JOIN Products p ON od.productId = p.productId "
                 + " WHERE od.orderId = ?";
@@ -129,6 +144,13 @@ public class OrderDAO extends DBContext {
                 Product prod = new Product();
                 prod.setProductId(rs.getInt("productId"));
                 prod.setTitle(rs.getString("productTitle"));
+
+                List<String> urls = new ArrayList<>();
+                String imageUrl = rs.getString("imageUrl");
+                if (imageUrl != null && !imageUrl.isEmpty()) {
+                    urls.add(imageUrl);
+                }
+                prod.setUrls(urls);
                 d.setProduct(prod);
 
                 d.setPrice(rs.getDouble("detailPrice"));
