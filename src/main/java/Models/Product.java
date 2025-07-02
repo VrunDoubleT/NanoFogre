@@ -21,7 +21,7 @@ public class Product {
     private Brand brand;
     private int totalReviews;
     private double averageStar;
-    private int solt;
+    private int sold;
     private List<String> urls;
     private List<ProductAttribute> attributes;
 
@@ -60,12 +60,12 @@ public class Product {
         this.averageStar = averageStar;
     }
 
-    public int getSolt() {
-        return solt;
+    public int getSold() {
+        return sold;
     }
 
-    public void setSolt(int solt) {
-        this.solt = solt;
+    public void setSold(int sold) {
+        this.sold = sold;
     }
 
     
@@ -176,6 +176,6 @@ public class Product {
 
     @Override
     public String toString() {
-        return "Product{" + "productId=" + productId + ", title=" + title + ", slug=" + slug + ", description=" + description + ", material=" + material + ", price=" + price + ", quantity=" + quantity + ", isActive=" + isActive + ", destroy=" + destroy + ", category=" + category + ", brand=" + brand + ", totalReviews=" + totalReviews + ", averageStar=" + averageStar + ", solt=" + solt + ", urls=" + urls + ", attributes=" + attributes + '}';
+        return "Product{" + "productId=" + productId + ", title=" + title + ", slug=" + slug + ", description=" + description + ", material=" + material + ", price=" + price + ", quantity=" + quantity + ", isActive=" + isActive + ", destroy=" + destroy + ", category=" + category + ", brand=" + brand + ", totalReviews=" + totalReviews + ", averageStar=" + averageStar + ", solt=" + sold + ", urls=" + urls + ", attributes=" + attributes + '}';
     }
 }

@@ -57,7 +57,7 @@ public class ProductDAO extends DB.DBContext {
         if (categoryId > 0) {
             query += " AND p.categoryId = " + categoryId + "\n";
         }
-        query += "ORDER BY p.productId desc\n"
+        query += "ORDER BY p.productId \n"
                 + "OFFSET " + row + " ROWS FETCH NEXT " + limit + " ROWS ONLY;";
         try ( ResultSet rs = execSelectQuery(query)) {
             while (rs.next()) {
@@ -95,6 +95,24 @@ public class ProductDAO extends DB.DBContext {
                     urls.add(urlsResult.getString("url"));
                 }
                 product.setUrls(urls);
+                String reviewStatsQuery = "select COUNT(r.reviewId) as totalReivew, AVG(CAST(r.star AS FLOAT)) as averageStar\n"
+                        + "from Reviews r\n"
+                        + "where r.productId = ?\n"
+                        + "group by r.productId";
+                ResultSet reviewStatsResult = execSelectQuery(reviewStatsQuery, params);
+                if (reviewStatsResult.next()) {
+                    product.setTotalReviews(reviewStatsResult.getInt("totalReivew"));
+                    product.setAverageStar(reviewStatsResult.getDouble("averageStar"));
+                }
+                ResultSet soltResult = execSelectQuery("select SUM(od.detailQuantity) as solt\n"
+                        + "from OrderDetails od\n"
+                        + "where od.productId = ?\n"
+                        + "group by od.productId", params);
+                if (soltResult.next()) {
+                    product.setSold(soltResult.getInt("solt"));
+                }
+                List<ProductAttribute> pas = getAttributesByProductId(productId);
+                product.setAttributes(pas);
                 pros.add(product);
             }
         } catch (SQLException e) {
@@ -179,8 +197,8 @@ public class ProductDAO extends DB.DBContext {
                         + "from OrderDetails od\n"
                         + "where od.productId = ?\n"
                         + "group by od.productId", params);
-                if(soltResult.next()){
-                    product.setSolt(soltResult.getInt("solt"));
+                if (soltResult.next()) {
+                    product.setSold(soltResult.getInt("solt"));
                 }
                 List<ProductAttribute> pas = getAttributesByProductId(productId);
                 product.setAttributes(pas);
