@@ -1,6 +1,7 @@
 <%@ page import="Models.Category" %>
 <%@ page import="java.util.List" %>
-
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+    
 <%
     List<Category> categories = (List<Category>) request.getAttribute("categories");
     Integer currentPage = (Integer) request.getAttribute("page");

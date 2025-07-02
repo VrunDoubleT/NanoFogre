@@ -51,7 +51,7 @@
         margin-bottom: 24px;
         box-shadow: 0 2px 8px 0 rgba(60, 72, 120, 0.08);
     }
-    .custom-input, .custom-select {
+    .custom-select {
         border-radius: 10px !important;
         font-size: 16px !important;
         background: #f7fafc;
@@ -62,7 +62,7 @@
         padding-right: 14px !important;
         color: #24292f !important;
     }
-    .custom-input:focus, .custom-select:focus {
+    .custom-select:focus {
         border-color: #7158e2 !important;
         background: #fff;
         box-shadow: 0 2px 12px 0 rgba(70, 123, 245, 0.08);
@@ -244,7 +244,7 @@
                 type="text"
                 id="categoryName"
                 value="<%= category.getName()%>"
-                class="custom-input w-full"
+                class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-400 transition w-full"
                 required
                 />
             <span id="categoryNameError" class="text-red-500 text-sm"></span>
@@ -326,7 +326,8 @@
                             Attribute Name <span class="text-red-500">*</span>
                         </label>
                         <input type="text" name="attributeName"
-                               class="custom-input w-full"
+                               class="w-full h-[44px] px-[15px] bg-[#f7fafc] text-[#24292f] text-base rounded-[11px] border-[1.3px] border-[#e5e7eb] shadow-[0_1px_4px_rgba(60,72,120,0.04)] outline-none transition focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+
                                value="<%= attr.getName()%>" required/>
                     </div>
                     <!-- Status -->
@@ -359,7 +360,6 @@
                     <div class="min-w-[200px] flex flex-col">
                         <label class="custom-label">Data Type <span class="text-red-500">*</span></label>
                         <select name="attributeDatatype" class="custom-select w-full" required>
-                            <option value="">Select data type</option>
                             <option value="text"  <%= dataType.equals("text") ? "selected" : ""%>>Text</option>
                             <option value="int"   <%= dataType.equals("int") ? "selected" : ""%>>Integer</option>
                             <option value="float" <%= dataType.equals("float") ? "selected" : ""%>>Float</option>
@@ -375,7 +375,7 @@
                             </label>
                             <input type="<%= "float".equals(dataType) ? "number\" step=\"0.1" : "number"%>"
                                    name="attributeMin"
-                                   class="min-input custom-input w-full"
+                                   class="min-input w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-400 transition w-full"
                                    style="<%= minVal.isEmpty() ? "display:none;" : ""%>"
                                    placeholder="Min Value"
                                    value="<%= minVal%>">
@@ -387,7 +387,7 @@
                             </label>
                             <input type="<%= "float".equals(dataType) ? "number\" step=\"0.1" : "number"%>"
                                    name="attributeMax"
-                                   class="custom-input max-input w-full"
+                                   class=" w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-400 transition max-input w-full"
                                    style="<%= maxVal.isEmpty() ? "display:none;" : ""%>"
                                    placeholder="Max Value"
                                    value="<%= maxVal%>">
@@ -399,7 +399,7 @@
                                 Min date:
                             </label>
                             <input type="date" name="attributeMin"
-                                   class="custom-input min-input w-ful"
+                                   class="  w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-400 transition min-input w-ful"
                                    style="<%= minVal.isEmpty() ? "display:none;" : ""%>"
                                    value="<%= minVal%>">
                         </div>
@@ -410,7 +410,7 @@
                                 Max date:
                             </label>
                             <input type="date" name="attributeMax"
-                                   class="custom-input max-input w-full"
+                                   class=" w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-400 transition max-input w-full"
                                    style="<%= maxVal.isEmpty() ? "display:none;" : ""%>"
                                    value="<%= maxVal%>">
                         </div>
@@ -422,7 +422,7 @@
                 <div class="mt-2 flex items-center gap-4">
                     <label class="text-sm text-gray-700 font-medium ">Unit:</label>
                     <input type="text" name="attributeUnit"
-                           class="custom-input custom-unit-input"
+                           class=" w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-400 transition custom-unit-input"
                            value="<%= attr.getUnit() != null ? attr.getUnit() : ""%>"
                            placeholder="eg: cm, g, % ..." />
 
@@ -491,7 +491,7 @@
                                 Attribute Name <span class="text-red-500">*</span>
                             </label>
                             <input type="text" name="attributeName"
-                                   class="custom-input w-full" placeholder="Enter new attribute name" required>
+                                   class=" w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-400 transition" w-full" placeholder="Enter new attribute name" required>
                         </div>
                         <div class="flex items-center space-x-2 ml-4">
                             <input type="checkbox" name="attributeRequired" class="custom-checkbox" checked>
@@ -504,8 +504,7 @@
                         <div class="min-w-[200px] flex flex-col">
                             <label class="custom-label">Data Type <span class="text-red-500">*</span></label>
                             <select name="attributeDatatype" class="w-[200px] px-3 py-2 border rounded-lg" required>
-                                <option value="">Select data type</option>
-                                <option value="text">Text</option>
+                                <option value="text" selected>Text</option>
                                 <option value="int">Integer</option>
                                 <option value="float">Float</option>
                                 <option value="date">Date</option>
@@ -518,7 +517,7 @@
                     <div class="mt-2">
                         <label class="block text-sm font-semibold text-gray-700 mb-1">Unit (optional):</label>
                         <input type="text" name="attributeUnit"
-                               class="custom-input custom-unit-input" placeholder="eg: cm, g, % ...">
+                               class=" w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-400 transition custom-unit-input" placeholder="eg: cm, g, % ...">
                     </div>
                 </div>
             </div>
@@ -529,11 +528,11 @@
             <div class="flex gap-4 w-full">
                 <div class="flex flex-col flex-1">
                     <label class="flex items-center gap-2 mb-1 custom-minmax-label"><input type="checkbox" class="show-min-input">Min:</label>
-                    <input type="number" name="attributeMin" class="min-input custom-input w-full" style="display:none;" placeholder="Min Value">
+                    <input type="number" name="attributeMin" class="min-input w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-400 transition w-full" style="display:none;" placeholder="Min Value">
                 </div>
                 <div class="flex flex-col flex-1">
                     <label class="flex items-center gap-2 mb-1 custom-minmax-label"><input type="checkbox" class="show-max-input">Max:</label>
-                    <input type="number" name="attributeMax" class="max-input custom-input w-full" style="display:none;" placeholder="Max Value">
+                    <input type="number" name="attributeMax" class="max-input w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-400 transition w-full" style="display:none;" placeholder="Max Value">
                 </div>
             </div>
         </div>
@@ -541,11 +540,11 @@
             <div class="flex gap-4 w-full">
                 <div class="flex flex-col flex-1">
                     <label class="flex items-center gap-2 mb-1 custom-minmax-label"><input type="checkbox"  class="show-min-input">Min:</label>
-                    <input type="number" name="attributeMin" class="min-input custom-input w-full" step="0.1" style="display:none;" placeholder="Min Value">
+                    <input type="number" name="attributeMin" class="min-input w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-400 transition w-full" step="0.1" style="display:none;" placeholder="Min Value">
                 </div>
                 <div class="flex flex-col flex-1">
                     <label class="flex items-center gap-2 mb-1 custom-minmax-label"><input type="checkbox" class="show-max-input">Max:</label>
-                    <input type="number" name="attributeMax" class="max-input custom-input w-full" step="0.1" style="display:none;" placeholder="Max Value">
+                    <input type="number" name="attributeMax" class="max-input w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-400 transition w-full" step="0.1" style="display:none;" placeholder="Max Value">
                 </div>
             </div>
         </div>
@@ -559,7 +558,7 @@
                         <label class="flex items-center gap-2 mb-1 custom-minmax-label">Min date:</label>
                     </div>
                     <input type="date" name="attributeMin"
-                           class="min-input custom-input w-full"
+                           class="min-input w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-400 transition w-full"
                            placeholder="Min date" style="display:none;" />
                 </div>
                 <!-- Max date -->
@@ -569,7 +568,7 @@
                         <label class="flex items-center gap-2 mb-1 custom-minmax-label">Max date:</label>
                     </div>
                     <input type="date" name="attributeMax"
-                           class="max-input custom-input w-full"
+                           class="max-input w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-400 transition w-full"
                            placeholder="Max date" style="display:none;" />
                 </div>
             </div>

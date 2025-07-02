@@ -61,12 +61,14 @@ const loadCategoryContentAndEvent = (page) => {
             });
         });
         // ADD EVENT FOR CREATE CATEGORY
-        document.getElementById("create-category-button").onclick = () => {
-            const modal = document.getElementById("modal");
-            openModal(document.getElementById('modal'));
-            updateModalContent(`/category/view?type=create`, loadCreateCategoryEvent);
+        const createBtn = document.getElementById("create-category-button");
+        if (createBtn) {
+            createBtn.onclick = () => {
+                openModal(document.getElementById('modal'));
+                updateModalContent(`/category/view?type=create`, loadCreateCategoryEvent);
+            };
         }
-
+        
         /////hIDE cATEGFORY
         function confirmHideCategory(categoryId) {
             Swal.fire({
@@ -133,7 +135,7 @@ const loadCategoryContentAndEvent = (page) => {
                 }
             });
         }
-// DISABLE/HIDE
+        // DISABLE/HIDE
         document.querySelectorAll(".openDisableCategory").forEach(element => {
             element.addEventListener("click", (e) => {
                 const buttonItem = e.target.closest('[data-category-id]');
@@ -141,7 +143,7 @@ const loadCategoryContentAndEvent = (page) => {
                 confirmHideCategory(categoryId);
             });
         });
-// ENABLE
+        // ENABLE
         document.querySelectorAll(".openEnableCategory").forEach(element => {
             element.addEventListener("click", (e) => {
                 const buttonItem = e.target.closest('[data-category-id]');
@@ -855,20 +857,21 @@ function loadCreateCategoryEvent() {
     let attributeCounter = 0;
     // Image preview handler
     imageInput.onchange = function () {
+
         preview.innerHTML = "";
         if (imageInput.files && imageInput.files[0]) {
             const file = imageInput.files[0];
             // Validate file size (max 5MB)
             if (file.size > 5 * 1024 * 1024) {
                 imageError.textContent = "File size must be less than 5MB";
-                imageInput.classList.add("border-red-500");
+                imageInput.classList.add("border", "border-red-500");
                 return;
             }
             // Validate file type
             const allowedTypes = ['image/png', 'image/jpg', 'image/jpeg', 'image/gif'];
             if (!allowedTypes.includes(file.type)) {
                 imageError.textContent = "Only PNG, JPG, JPEG, GIF files are allowed";
-                imageInput.classList.add("border-red-500");
+                imageInput.classList.add("border", "border-red-500");
                 return;
             }
 
@@ -1127,19 +1130,19 @@ function loadCreateCategoryEvent() {
         // Basic validate
         if (name === "") {
             nameError.textContent = "Category name is required";
-            nameInput.classList.add("border-red-500");
+            nameInput.classList.add("border", "border-red-500");
             nameInput.classList.remove("ring-1", "ring-green-500");
             return false;
         }
         if (name.length < 2) {
             nameError.textContent = "Category name must be at least 2 characters";
-            nameInput.classList.add("border-red-500");
+            nameInput.classList.add("border", "border-red-500");
             nameInput.classList.remove("ring-1", "ring-green-500");
             return false;
         }
         if (name.length > 100) {
             nameError.textContent = "Category name must be less than 100 characters";
-            nameInput.classList.add("border-red-500");
+            nameInput.classList.add("border", "border-red-500");
             nameInput.classList.remove("ring-1", "ring-green-500");
             return false;
         }
@@ -1150,7 +1153,7 @@ function loadCreateCategoryEvent() {
                 // dùng lại kết quả cũ
                 if (lastCheckedExists) {
                     nameError.textContent = "Category name already exists";
-                    nameInput.classList.add("border-red-500");
+                    nameInput.classList.add("border", "border-red-500");
                     nameInput.classList.remove("ring-1", "ring-green-500");
                     return false;
                 } else {
@@ -1178,7 +1181,7 @@ function loadCreateCategoryEvent() {
                             return;
                         if (data.exists) {
                             nameError.textContent = "Category name already exists";
-                            nameInput.classList.add("border-red-500");
+                            nameInput.classList.add("border", "border-red-500");
                             nameInput.classList.remove("ring-1", "ring-green-500");
                         } else {
                             nameError.textContent = "";
@@ -1196,7 +1199,7 @@ function loadCreateCategoryEvent() {
             // Khi submit, dùng lại kết quả đã check
             if (lastCheckedExists && name === lastCheckedName) {
                 nameError.textContent = "Category name already exists";
-                nameInput.classList.add("border-red-500");
+                nameInput.classList.add("border", "border-red-500");
                 nameInput.classList.remove("ring-1", "ring-green-500");
                 return false;
             }
@@ -1247,7 +1250,7 @@ function loadCreateCategoryEvent() {
 
             if (msg) {
                 isValid = false;
-                input.classList.add("border-red-500");
+                input.classList.add("border", "border-red-500");
                 const err = document.createElement("div");
                 err.className = "text-red-500 text-xs mt-1 date-error-msg";
                 err.textContent = msg;
@@ -1268,7 +1271,7 @@ function loadCreateCategoryEvent() {
             if (dMin.getTime() >= dMax.getTime()) {
                 isValid = false;
                 [minInput, maxInput].forEach(input => {
-                    input.classList.add("border-red-500");
+                    input.classList.add("border", "border-red-500");
                 });
                 //error Min
                 const errMin = document.createElement("div");
@@ -1312,7 +1315,7 @@ function loadCreateCategoryEvent() {
                     const number = Number(val);
                     if (isNaN(number)) {
                         isValid = false;
-                        input.classList.add("border-red-500");
+                        input.classList.add("border", "border-red-500");
                         const err = document.createElement("div");
                         err.className = "text-red-500 text-xs mt-1 number-error-msg";
                         err.textContent = "Value must be a valid number.";
@@ -1320,7 +1323,7 @@ function loadCreateCategoryEvent() {
                     } else if (number < 0) {
                         // Check negative
                         isValid = false;
-                        input.classList.add("border-red-500");
+                        input.classList.add("border", "border-red-500");
                         const err = document.createElement("div");
                         err.className = "text-red-500 text-xs mt-1 number-error-msg";
                         err.textContent = "Value cannot be negative.";
@@ -1328,7 +1331,7 @@ function loadCreateCategoryEvent() {
                     } else if (type === "int" && !Number.isInteger(number)) {
                         // Check Positive
                         isValid = false;
-                        input.classList.add("border-red-500");
+                        input.classList.add("border", "border-red-500");
                         const err = document.createElement("div");
                         err.className = "text-red-500 text-xs mt-1 number-error-msg";
                         err.textContent = "Only integer numbers allowed.";
@@ -1346,7 +1349,7 @@ function loadCreateCategoryEvent() {
                     isValid = false;
                     [minInput, maxInput].forEach(input => {
                         input.classList.remove("ring-green-500");
-                        input.classList.add("border-red-500");
+                        input.classList.add("border", "border-red-500");
                     });
                     const err = document.createElement("div");
                     err.className = "text-red-500 text-xs mt-1 number-error-msg";
@@ -1359,12 +1362,12 @@ function loadCreateCategoryEvent() {
     }
 //////
 
-  
+
     // Validate category image
     function validateCategoryImage() {
         if (!imageInput.files || !imageInput.files[0]) {
             imageError.textContent = "Category image is required";
-            imageInput.classList.add("border-red-500");
+            imageInput.classList.add("border", "border-red-500");
             imageInput.classList.remove("ring-1", "ring-green-500");
             return false;
         }
@@ -1373,7 +1376,7 @@ function loadCreateCategoryEvent() {
         // Validate file size (max 5MB)
         if (file.size > 5 * 1024 * 1024) {
             imageError.textContent = "File size must be less than 5MB";
-            imageInput.classList.add("border-red-500");
+            imageInput.classList.add("border", "border-red-500");
             imageInput.classList.remove("ring-1", "ring-green-500");
             return false;
         }
@@ -1382,7 +1385,7 @@ function loadCreateCategoryEvent() {
         const allowedTypes = ['image/png', 'image/jpg', 'image/jpeg', 'image/gif'];
         if (!allowedTypes.includes(file.type)) {
             imageError.textContent = "Only PNG, JPG, JPEG, GIF files are allowed";
-            imageInput.classList.add("border-red-500");
+            imageInput.classList.add("border", "border-red-500");
             imageInput.classList.remove("ring-1", "ring-green-500");
             return false;
         }
@@ -1401,21 +1404,21 @@ function loadCreateCategoryEvent() {
         const name = nameInput.value.trim();
         if (name === "") {
             nameError.textContent = "Attribute name is required";
-            nameInput.classList.add("border-red-500");
+            nameInput.classList.add("border", "border-red-500");
             nameInput.classList.remove("ring-1", "ring-green-500");
             return false;
         }
 
         if (name.length < 2) {
             nameError.textContent = "Attribute name must be at least 2 characters";
-            nameInput.classList.add("border-red-500");
+            nameInput.classList.add("border", "border-red-500");
             nameInput.classList.remove("ring-1", "ring-green-500");
             return false;
         }
 
         if (name.length > 50) {
             nameError.textContent = "Attribute name must be less than 50 characters";
-            nameInput.classList.add("border-red-500");
+            nameInput.classList.add("border", "border-red-500");
             nameInput.classList.remove("ring-1", "ring-green-500");
             return false;
         }
@@ -1427,7 +1430,7 @@ function loadCreateCategoryEvent() {
         const duplicateCount = allAttributeNames.filter(attrName => attrName === name.toLowerCase()).length;
         if (duplicateCount > 1) {
             nameError.textContent = "Attribute name already exists";
-            nameInput.classList.add("border-red-500");
+            nameInput.classList.add("border", "border-red-500");
             nameInput.classList.remove("ring-1", "ring-green-500");
             return false;
         }
@@ -1446,7 +1449,7 @@ function loadCreateCategoryEvent() {
             return true;
         if (datatypeSelect.value === "") {
             datatypeError.textContent = "Data type is required";
-            datatypeSelect.classList.add("border-red-500");
+            datatypeSelect.classList.add("border", "border-red-500");
             datatypeSelect.classList.remove("ring-1", "ring-green-500");
             return false;
         }
@@ -1575,12 +1578,12 @@ function loadCreateCategoryEvent() {
             // Validate: only letters, numbers, %, /, °, ., -, no space, max 10 chars
             const validPattern = /^[A-Za-z0-9%\/°\.\-]+$/;
             if (!validPattern.test(value)) {
-                unitInput.classList.add("border-red-500");
+                unitInput.classList.add("border", "border-red-500");
                 unitError.textContent = "Unit only allows letters, numbers, %, /, °, ., - (no spaces).";
                 return false;
             }
             if (value.length > 10) {
-                unitInput.classList.add("border-red-500");
+                unitInput.classList.add("border", "border-red-500");
                 unitError.textContent = "Unit must be at most 10 characters.";
                 return false;
             }
@@ -1610,7 +1613,7 @@ function loadCreateCategoryEvent() {
         textValueError.textContent = "";
         // If the field is empty, show error
         if (value === "") {
-            textValueInput.classList.add("border-red-500");
+            textValueInput.classList.add("border", "border-red-500");
             textValueError.textContent = "Text value cannot be empty.";
             return false;
         }

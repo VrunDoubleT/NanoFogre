@@ -103,24 +103,7 @@
         margin-bottom: 7px;
         display: block;
     }
-    .input-main {
-        border-radius: 11px;
-        font-size: 16px;
-        background: #f7fafc;
-        border: 1.3px solid #e5e7eb;
-        box-shadow: 0 1px 4px 0 rgba(60,72,120,0.04);
-        height: 44px;
-        padding: 0 15px;
-        color: #24292f;
-        width: 100%;
-        outline: none;
-        transition: border .16s, box-shadow .18s;
-    }
-    .input-main:focus {
-        border-color: #7158e2;
-        background: #fff;
-        box-shadow: 0 2px 12px 0 rgba(70, 123, 245, 0.08);
-    }
+
     .input-error {
         color: #e11d48;
         font-size: 13px;
@@ -250,11 +233,12 @@
         <!-- Form Section -->
         <div class="p-8">
             <!-- Category Name -->
-        <div class="input-block">
-            <label for="categoryName" class="input-label">Category Name</label>
-            <input type="text" id="categoryName" name="categoryName" class="input-main" required />
-            <span id="categoryNameError" class="input-error"></span>
-        </div>
+            <div class="input-block">
+                <label for="categoryName" class="input-label">Category Name</label>
+                <input type="text" id="categoryName" name="categoryName" class="w-full h-[44px] px-[15px] bg-[#f7fafc] text-[#24292f] text-base rounded-[11px] border-[1.3px] border-[#e5e7eb] shadow-[0_1px_4px_rgba(60,72,120,0.04)] outline-none transition focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                       required />
+                <span id="categoryNameError" class="input-error"></span>
+            </div>
 
             <!-- Upload input -->
             <div class="input-block">
@@ -316,11 +300,12 @@
                                 Attribute Name <span class="text-red-500">*</span>
                             </label>
                             <input type="text" name="attributeName"
-                                   class="input-main w-full"
+                                   class="w-full h-[44px] px-[15px] bg-[#f7fafc] text-[#24292f] text-base rounded-[11px] border-[1.3px] border-[#e5e7eb] shadow-[0_1px_4px_rgba(60,72,120,0.04)] outline-none transition focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+
                                    placeholder="Enter attribute name" required />
                             <p class="text-red-500 text-sm mt-1 error-message attribute-name-error"></p>
                         </div>
-                        
+
                         <div class="flex items-center space-x-2 ml-4">
                             <input type="checkbox" name="attributeRequired"
                                    class="custom-checkbox"
@@ -342,9 +327,9 @@
 
                         <div class="min-w-[200px] flex flex-col">
                             <label class="input-label">Data Type <span class="text-red-500">*</span></label>
-                            <select name="attributeDatatype" class="input-main w-[150px" required>
-                                <option value="">Select data type</option>
-                                <option value="text">Text</option>
+                            <select name="attributeDatatype" class="w-full h-[44px] px-[15px] bg-[#f7fafc] text-[#24292f] text-base rounded-[11px] border-[1.3px] border-[#e5e7eb] shadow-[0_1px_4px_rgba(60,72,120,0.04)] outline-none transition focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                    required>
+                                <option value="text" selected="">Text</option>
                                 <option value="int">Integer</option>
                                 <option value="float">Float</option>
                                 <option value="date">Date</option>
@@ -358,7 +343,7 @@
                     <div class="mt-2">
                         <label class="input-label">Unit (optional):</label>
                         <input type="text" name="attributeUnit"
-                               class="input-main custom-unit-input"
+                               class="w-full h-[44px] px-[15px] bg-[#f7fafc] text-[#24292f] text-base rounded-[11px] border-[1.3px] border-[#e5e7eb] shadow-[0_1px_4px_rgba(60,72,120,0.04)] outline-none transition focus:ring-2 focus:ring-blue-500 focus:border-transparent custom-unit-input"
                                placeholder="eg: cm, g, % ..." />
                     </div>
                 </div>

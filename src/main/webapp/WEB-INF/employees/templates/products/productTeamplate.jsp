@@ -100,7 +100,7 @@
                             </svg>
                         </button>
 
-                        <c:if test="${sessionScope.employee.role.id == 1}">
+                           <c:if test="${sessionScope.employee.role.id eq 1}">
                             <button data-product-id="${product.productId}" class="openEditProdctModal bg-yellow-100 text-yellow-700 hover:bg-yellow-200 px-3 py-1.5 rounded-lg transition-colors">
                                 <!-- Pencil SVG -->
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

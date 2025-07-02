@@ -24,6 +24,7 @@ public class CurrencyFormatter {
     public static String formatVietNamCurrency(double price) {
         Locale vietnam = new Locale("vi", "VN");
         NumberFormat formatter = NumberFormat.getInstance(vietnam);
+        System.out.println(price);
         return formatter.format(price);
     }
 }
