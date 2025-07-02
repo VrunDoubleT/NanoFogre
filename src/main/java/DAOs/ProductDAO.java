@@ -132,7 +132,7 @@ public class ProductDAO extends DB.DBContext {
                 + "where p.productId = ?";
         Object[] obj = {id};
         try ( ResultSet rs = execSelectQuery(query, obj)) {
-            while (rs.next()) {
+            if (rs.next()) {
                 int productId = rs.getInt("productId");
                 product.setProductId(productId);
                 product.setTitle(rs.getString("productTitle"));
@@ -166,6 +166,24 @@ public class ProductDAO extends DB.DBContext {
                     urls.add(urlsResult.getString("url"));
                 }
                 product.setUrls(urls);
+                String reviewStatsQuery = "select COUNT(r.reviewId) as totalReivew, AVG(CAST(r.star AS FLOAT)) as averageStar\n"
+                        + "from Reviews r\n"
+                        + "where r.productId = ?\n"
+                        + "group by r.productId";
+                ResultSet reviewStatsResult = execSelectQuery(reviewStatsQuery, params);
+                if (reviewStatsResult.next()) {
+                    product.setTotalReviews(reviewStatsResult.getInt("totalReivew"));
+                    product.setAverageStar(reviewStatsResult.getDouble("averageStar"));
+                }
+                ResultSet soltResult = execSelectQuery("select SUM(od.detailQuantity) as solt\n"
+                        + "from OrderDetails od\n"
+                        + "where od.productId = ?\n"
+                        + "group by od.productId", params);
+                if(soltResult.next()){
+                    product.setSolt(soltResult.getInt("solt"));
+                }
+                List<ProductAttribute> pas = getAttributesByProductId(productId);
+                product.setAttributes(pas);
             }
         } catch (SQLException e) {
             e.printStackTrace();
