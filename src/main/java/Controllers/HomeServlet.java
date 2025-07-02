@@ -15,7 +15,7 @@ import java.util.List;
  *
  * @author Tran Thanh Van - CE181019
  */
-@WebServlet(name = "HomeServlet", urlPatterns = {"/"})
+@WebServlet(name = "HomeServlet", urlPatterns = {""})
 public class HomeServlet extends HttpServlet {
 
     /**
@@ -63,8 +63,7 @@ public class HomeServlet extends HttpServlet {
         request.setAttribute("topRatedProducts", topRated);
         request.setAttribute("topSellingProducts", topSelling);
         request.setAttribute("newestProducts", newest);
-        System.out.println(newest);
-        request.getRequestDispatcher("WEB-INF/customers/pages/homePage.jsp").forward(request, response);
+        request.getRequestDispatcher("/WEB-INF/customers/pages/homePage.jsp").forward(request, response);
     }
 
     /**
