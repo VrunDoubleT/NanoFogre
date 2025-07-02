@@ -206,4 +206,29 @@ public class ReviewDAO extends DBContext {
             return false;
         }
     }
+
+    public int countReviewByProductIdAndStar(int productId, int star) {
+        int count = 0;
+        String sql;
+        Object[] params;
+
+        if (star > 0) {
+            sql = "SELECT COUNT(*) FROM Reviews WHERE productId = ? AND star = ?";
+            params = new Object[]{productId, star};
+        } else {
+            sql = "SELECT COUNT(*) FROM Reviews WHERE productId = ?";
+            params = new Object[]{productId};
+        }
+
+        try ( ResultSet rs = execSelectQuery(sql, params)) {
+            if (rs.next()) {
+                count = rs.getInt(1);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return count;
+    }
+
 }

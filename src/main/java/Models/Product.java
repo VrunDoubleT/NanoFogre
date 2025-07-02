@@ -19,6 +19,9 @@ public class Product {
     private boolean destroy;
     private Category category;
     private Brand brand;
+    private int totalReviews;
+    private double averageStar;
+    private int solt;
     private List<String> urls;
     private List<ProductAttribute> attributes;
 
@@ -39,6 +42,30 @@ public class Product {
         this.brand = brand;
         this.urls = urls;
         this.attributes = attributes;
+    }
+
+    public int getTotalReviews() {
+        return totalReviews;
+    }
+
+    public void setTotalReviews(int totalReviews) {
+        this.totalReviews = totalReviews;
+    }
+
+    public double getAverageStar() {
+        return averageStar;
+    }
+
+    public void setAverageStar(double averageStar) {
+        this.averageStar = averageStar;
+    }
+
+    public int getSolt() {
+        return solt;
+    }
+
+    public void setSolt(int solt) {
+        this.solt = solt;
     }
 
     
@@ -147,9 +174,8 @@ public class Product {
         this.attributes = attributes;
     }
 
-
     @Override
     public String toString() {
-        return "Product{" + "productId=" + productId + ", title=" + title + ", slug=" + slug + ", description=" + description + ", material=" + material + ", price=" + price + ", quantity=" + quantity + ", isActive=" + isActive + ", destroy=" + destroy + ", category=" + category + ", brand=" + brand + ", urls=" + urls + ", attributes=" + attributes + '}';
+        return "Product{" + "productId=" + productId + ", title=" + title + ", slug=" + slug + ", description=" + description + ", material=" + material + ", price=" + price + ", quantity=" + quantity + ", isActive=" + isActive + ", destroy=" + destroy + ", category=" + category + ", brand=" + brand + ", totalReviews=" + totalReviews + ", averageStar=" + averageStar + ", solt=" + solt + ", urls=" + urls + ", attributes=" + attributes + '}';
     }
 }

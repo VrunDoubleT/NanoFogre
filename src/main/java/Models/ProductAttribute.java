@@ -128,4 +128,11 @@ public class ProductAttribute {
         }
         this.category.setId(categoryId);
     }
+
+    @Override
+    public String toString() {
+        return "ProductAttribute{" + "id=" + id + ", name=" + name + ", unit=" + unit + ", minValue=" + minValue + ", maxValue=" + maxValue + ", dataType=" + dataType + ", value=" + value + ", isRequired=" + isRequired + ", isActive=" + isActive + ", category=" + category + '}';
+    }
+    
+    
 }
