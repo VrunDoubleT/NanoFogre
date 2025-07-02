@@ -31,27 +31,16 @@
             }
         </style>
     </head>
-    <body class="bg-gray-50">
+    <body>
         <jsp:include page="../common/header.jsp" />
 
         <div class="w-full flex justify-center mt-[92px]">
             <div class="container max-w-[1200px] w-full px-4 sm:px-6 lg:px-8 py-6">
-
-                <!-- Breadcrumb -->
-                <nav class="flex items-center space-x-2 text-sm text-gray-500 mb-6">
-                    <a href="#" class="hover:text-gray-700">Home</a>
-                    <i data-lucide="chevron-right" class="w-4 h-4"></i>
-                    <a href="#" class="hover:text-gray-700">Models</a>
-                    <i data-lucide="chevron-right" class="w-4 h-4"></i>
-                    <span class="text-gray-900">${product.title}</span>
-                </nav>
-
                 <!-- Main Product Section -->
-                <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-0">
-
+                <div class="">
+                    <div class="grid grid-cols-1 lg:grid-cols-10 gap-10">
                         <!-- Product Images -->
-                        <div class="p-8 bg-gray-50">
+                        <div class="lg:col-span-4">
                             <!-- Main Image -->
                             <div class="aspect-square bg-white rounded-lg overflow-hidden mb-4 shadow-sm">
                                 <img id="mainImage" 
@@ -61,7 +50,7 @@
                             </div>
 
                             <!-- Thumbnail Images -->
-                            <div class="flex gap-3 justify-center">
+                            <div class="flex gap-3 flex-wrap justify-center">
                                 <c:forEach var="imageUrl" items="${product.urls}" varStatus="status">
                                     <div class="w-20 h-20 bg-white rounded-lg overflow-hidden border border-gray-200 cursor-pointer hover:border-blue-400 transition-colors"
                                          onclick="changeMainImage('${imageUrl}')">
@@ -74,9 +63,7 @@
                         </div>
 
                         <!-- Product Information -->
-                        <div class="p-8 space-y-3">
-
-
+                        <div class="space-y-3 lg:col-span-6">
                             <!-- Product Title -->
                             <h1 class="text-2xl lg:text-3xl font-bold text-gray-900 leading-tight">
                                 ${product.title}
@@ -151,8 +138,8 @@
                                                 onclick="decreaseQuantity()">
                                             <i data-lucide="minus" class="w-4 h-4 text-gray-600"></i>
                                         </button>
-                                        <input type="number" id="quantity" value="1" min="1" max="${product.quantity}" 
-                                               class="w-16 text-center border-0 focus:ring-0 focus:outline-none py-2 font-medium">
+                                        <input disabled type="number" id="quantity" value="1" min="1" max="${product.quantity}" 
+                                               class="w-16 bg-transparent text-center border-0 focus:ring-0 focus:outline-none py-2 font-medium appearance-none [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none">
                                         <button type="button" 
                                                 class="px-3 py-2 hover:bg-gray-50 transition-colors border-l border-gray-300" 
                                                 onclick="increaseQuantity()">
@@ -171,10 +158,6 @@
                                         <i data-lucide="shopping-cart" class="w-5 h-5"></i>
                                         Add to Cart
                                     </button>
-                                    <button type="button" 
-                                            class="px-4 py-3 border border-gray-300 rounded-md hover:border-red-400 hover:text-red-500 transition-colors flex items-center justify-center group">
-                                        <i data-lucide="heart" class="w-5 h-5 group-hover:text-red-500"></i>
-                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -182,107 +165,107 @@
                 </div>
 
                 <!-- Product Details Tabs -->
-                <div class="bg-white rounded-lg shadow-sm border border-gray-200 mt-8">
+                <div class="bg-white mt-8">
                     <h2 class="px-4 py-4 text-2xl font-semibold text-gray-800 border-b pb-2 border-gray-200">
-                        📝 Product Description
+                        About this Item
                     </h2>
                     <div class="p-4">
                         <div class="prose max-w-none">
                             <p class="text-gray-600 leading-relaxed">
-                                ${product.description} This high-quality figure features incredible attention to detail 
-                                and comes with various accessories to create the perfect display. Made from premium PVC 
-                                materials, this collectible is perfect for fans and collectors alike.
+                                ${product.description}
                             </p>
                         </div>
                     </div>
                 </div>
 
                 <!-- Reviews Section -->
-                <div class="bg-white rounded-lg shadow-sm border border-gray-200 mt-8">
-                    <div class="p-8">
-                        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 flex items-center gap-4 mb-5">
-                            <div class="px-8 flex items-center border-r">
-                                <div class="flex items-center gap-4">
-                                    <div class="text-center">
-                                        <div class="text-3xl font-bold text-gray-900">${reviewStats.averageStars}</div>
-                                        <div class="flex items-center justify-center gap-1 mb-1">
-                                            <i data-lucide="star" class="w-4 h-4 star-filled"></i>
-                                            <i data-lucide="star" class="w-4 h-4 star-filled"></i>
-                                            <i data-lucide="star" class="w-4 h-4 star-filled"></i>
-                                            <i data-lucide="star" class="w-4 h-4 star-filled"></i>
-                                            <i data-lucide="star" class="w-4 h-4 star-empty"></i>
-                                        </div>
-                                        <div class="text-sm text-gray-600">Based on ${reviewStats.totalReviews} reviews</div>
+                <div class="rounded-lg mt-8">
+                    <h2 class="px-4 mb-5 py-4 text-2xl font-semibold text-gray-800 border-b pb-2 border-gray-200">
+                        Reviews
+                    </h2>
+                    <div class="bg-white rounded-3xl shadow-sm border border-gray-200 p-8 flex items-center flex-col lg:flex-row gap-6 mb-6">
+                        <div class="px-8 flex items-center border-b py-3 lg:border-r lg:border-b-0 lg:py-0">
+                            <div class="flex items-center gap-4">
+                                <div class="text-center">
+                                    <div class="text-3xl font-bold text-gray-900">${reviewStats.averageStars}</div>
+                                    <div class="flex items-center justify-center gap-1 mb-1">
+                                        <c:forEach begin="1" end="5" var="i">
+                                            <i data-lucide="star" class="w-4 h-4 ${i <= reviewStats.averageStars ? 'star-filled' : 'star-empty'}" 
+                                               style="fill: ${i <= product.averageStar ? '#fbbf24' : '#e5e7eb'}"></i>
+                                        </c:forEach>
                                     </div>
+                                    <div class="text-sm text-gray-500 mt-2">Based on ${reviewStats.totalReviews} reviews</div>
                                 </div>
                             </div>
-                            <div class="flex-1 px-8 flex flex-wrap gap-3">
-                                <!-- All button -->
-                                <button star="0" onclick="handleFilterReview(event, 0)" class="active filterReview px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-gray-100 border-gray-400 hover:bg-gray-100 hover:border-gray-400 transition">
-                                    All (${reviewStats.totalReviews})
-                                </button>
+                        </div>
+                        <div class="flex-1 px-8 flex flex-wrap gap-3">
+                            <!-- All button -->
+                            <button star="0" onclick="handleFilterReview(event, 0)" class="active filterReview px-4 py-2 border text-gray-700 border-gray-400 bg-gray-300 hover:bg-gray-300 hover:border-gray-400 rounded-lg text-sm font-medium ">
+                                All (${reviewStats.totalReviews})
+                            </button>
 
-                                <!-- 5 stars -->
-                                <button star="5" onclick="handleFilterReview(event, 5)" class="px-4 filterReview py-2 border border-yellow-300 rounded-lg text-sm font-medium text-yellow-600 hover:bg-yellow-50 hover:border-yellow-400 transition flex items-center gap-2">
-                                    <div class="flex items-center gap-1">
-                                        <span>5</span>
-                                        <i data-lucide="star" class="w-4 h-4 text-yellow-400 fill-current"></i>
-                                    </div>
-                                    <span>(${reviewStats.fiveStar})</span>
-                                </button>
+                            <!-- 5 stars -->
+                            <button star="5" onclick="handleFilterReview(event, 5)" class="px-4 filterReview py-2 border border-yellow-300 rounded-lg text-sm font-medium text-yellow-600 bg-yellow-50 hover:bg-yellow-200 hover:border-yellow-400 transition flex items-center gap-2">
+                                <div class="flex items-center gap-1">
+                                    <span>5</span>
+                                    <i data-lucide="star" class="w-4 h-4 text-yellow-400 fill-current"></i>
+                                </div>
+                                <span>(${reviewStats.fiveStar})</span>
+                            </button>
 
-                                <!-- 4 stars -->
-                                <button star="4" onclick="handleFilterReview(event, 4)" class="px-4 filterReview py-2 border border-yellow-300 rounded-lg text-sm font-medium text-yellow-600 hover:bg-yellow-50 hover:border-yellow-400 transition flex items-center gap-2">
-                                    <div class="flex items-center gap-1">
-                                        <span>4</span>
-                                        <i data-lucide="star" class="w-4 h-4 text-yellow-400 fill-current"></i>
-                                    </div>
-                                    <span>(${reviewStats.fourStar})</span>
-                                </button>
+                            <!-- 4 stars -->
+                            <button star="4" onclick="handleFilterReview(event, 4)" class="px-4 filterReview py-2 border border-yellow-300 rounded-lg text-sm font-medium text-yellow-600 bg-yellow-50 hover:bg-yellow-200 hover:border-yellow-400 transition flex items-center gap-2">
+                                <div class="flex items-center gap-1">
+                                    <span>4</span>
+                                    <i data-lucide="star" class="w-4 h-4 text-yellow-400 fill-current"></i>
+                                </div>
+                                <span>(${reviewStats.fourStar})</span>
+                            </button>
 
-                                <!-- 3 stars -->
-                                <button star="3" onclick="handleFilterReview(event, 3)" class="px-4 filterReview py-2 border border-yellow-300 rounded-lg text-sm font-medium text-yellow-600 hover:bg-yellow-50 hover:border-yellow-400 transition flex items-center gap-2">
-                                    <div class="flex items-center gap-1">
-                                        <span>3</span>
-                                        <i data-lucide="star" class="w-4 h-4 text-yellow-400 fill-current"></i>
-                                    </div>
-                                    <span>(${reviewStats.threeStar})</span>
-                                </button>
+                            <!-- 3 stars -->
+                            <button star="3" onclick="handleFilterReview(event, 3)" class="px-4 filterReview py-2 border border-yellow-300 rounded-lg text-sm font-medium text-yellow-600 bg-yellow-50 hover:bg-yellow-200 hover:border-yellow-400 transition flex items-center gap-2">
+                                <div class="flex items-center gap-1">
+                                    <span>3</span>
+                                    <i data-lucide="star" class="w-4 h-4 text-yellow-400 fill-current"></i>
+                                </div>
+                                <span>(${reviewStats.threeStar})</span>
+                            </button>
 
-                                <!-- 2 stars -->
-                                <button star="2" onclick="handleFilterReview(event, 2)" class="px-4 filterReview py-2 border border-yellow-300 rounded-lg text-sm font-medium text-yellow-600 hover:bg-yellow-50 hover:border-yellow-400 transition flex items-center gap-2">
-                                    <div class="flex items-center gap-1">
-                                        <span>2</span>
-                                        <i data-lucide="star" class="w-4 h-4 text-yellow-400 fill-current"></i>
-                                    </div>
-                                    <span>(${reviewStats.twoStar})</span>
-                                </button>
+                            <!-- 2 stars -->
+                            <button star="2" onclick="handleFilterReview(event, 2)" class="px-4 filterReview py-2 border border-yellow-300 rounded-lg text-sm font-medium text-yellow-600 bg-yellow-50 hover:bg-yellow-200 hover:border-yellow-400 transition flex items-center gap-2">
+                                <div class="flex items-center gap-1">
+                                    <span>2</span>
+                                    <i data-lucide="star" class="w-4 h-4 text-yellow-400 fill-current"></i>
+                                </div>
+                                <span>(${reviewStats.twoStar})</span>
+                            </button>
 
-                                <!-- 1 star -->
-                                <button star="1" onclick="handleFilterReview(event, 1)" class="px-4 py-2 filterReview border border-yellow-300 rounded-lg text-sm font-medium text-yellow-600 hover:bg-yellow-50 hover:border-yellow-400 transition flex items-center gap-2">
-                                    <div class="flex items-center gap-1">
-                                        <span>1</span>
-                                        <i data-lucide="star" class="w-4 h-4 text-yellow-400 fill-current"></i>
-                                    </div>
-                                    <span>(${reviewStats.oneStar})</span>
-                                </button>
-                            </div>
-
+                            <!-- 1 star -->
+                            <button star="1" onclick="handleFilterReview(event, 1)" class="px-4 py-2 filterReview border border-yellow-300 rounded-lg text-sm font-medium text-yellow-600 bg-yellow-50 hover:bg-yellow-200 hover:border-yellow-400 transition flex items-center gap-2">
+                                <div class="flex items-center gap-1">
+                                    <span>1</span>
+                                    <i data-lucide="star" class="w-4 h-4 text-yellow-400 fill-current"></i>
+                                </div>
+                                <span>(${reviewStats.oneStar})</span>
+                            </button>
                         </div>
 
-                        <!-- Reviews List -->
-                        <div id="reviewList" class="space-y-6">
+                    </div>
 
-                        </div>
+                    <!-- Reviews List -->
+                    <div id="reviewList">
 
-                        <!-- View All Reviews -->
-                        <div id="pagination" class="text-center mt-6">
-                        </div>
+                    </div>
+
+                    <!-- View All Reviews -->
+                    <div id="pagination" class="text-center mt-6">
                     </div>
                 </div>
 
             </div>
         </div>
+
+        <jsp:include page="../common/footer.jsp" />
 
         <script>
             // Initialize Lucide icons
@@ -342,7 +325,7 @@
             }
 
             function loadPagination(productId, star, page) {
-                return fetch('/review?type=pagination&productId=' + productId+ "&star=" + star + "&page=" + page)
+                return fetch('/review?type=pagination&productId=' + productId + "&star=" + star + "&page=" + page)
                         .then(response => {
                             if (!response.ok)
                                 throw new Error('Network response was not ok');
@@ -355,7 +338,7 @@
                                 elm.addEventListener("click", function () {
                                     const page = parseInt(elm.getAttribute("page")) || 1;
                                     loadReview(productId, star, page);
-                                    loadPagination(productId,star, page);
+                                    loadPagination(productId, star, page);
                                 });
                             })
                         })
@@ -364,7 +347,7 @@
                         });
             }
 
-            function loadReviewAndPagination(productId, star, page){
+            function loadReviewAndPagination(productId, star, page) {
                 Promise.all([
                     loadReview(productId, star, page),
                     loadPagination(productId, star, page)
@@ -381,16 +364,15 @@
                 const productId = getUrlParam("pId") || 0
                 loadReviewAndPagination(productId, 0, 1)
             });
-
             function handleFilterReview(event, star) {
                 const element = event.currentTarget;
                 document.querySelectorAll(".filterReview").forEach((elm) => {
-                    elm.classList.remove("bg-gray-100", "border-gray-400", "bg-yellow-50", "border-yellow-400", "active")
+                    elm.classList.remove("bg-gray-300", "border-gray-400", "bg-yellow-200", "border-yellow-400", "active")
                 })
                 if (star === 0) {
-                    element.classList.add("bg-gray-100", "border-gray-400", "active");
+                    element.classList.add("bg-gray-300", "border-gray-400", "active");
                 } else {
-                    element.classList.add("bg-yellow-50", "border-yellow-400", "active");
+                    element.classList.add("bg-yellow-200", "border-yellow-400", "active");
                 }
                 const productId = getUrlParam("pId") || 0
                 loadReviewAndPagination(productId, star, 1)

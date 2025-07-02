@@ -6,6 +6,7 @@ import DAOs.ReviewDAO;
 import Models.Product;
 import Models.Review;
 import Models.ReviewStats;
+import Utils.Converter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import jakarta.servlet.ServletException;
@@ -59,11 +60,10 @@ public class ProductDetailServlet extends HttpServlet {
     throws ServletException, IOException {
         ProductDAO pDao = new ProductDAO();
         ReviewDAO rDao = new ReviewDAO();
-        Product product = pDao.getProductById(51);
-        List<Review> reviews = rDao.getReviewsByProductId(51, 0, 1, 20);
-        ReviewStats reviewStats = rDao.getReviewStatsByProductId(51);
+        int productId = Converter.parseOption(request.getParameter("pId"), 0);
+        Product product = pDao.getProductById(productId);
+        ReviewStats reviewStats = rDao.getReviewStatsByProductId(productId);
         request.setAttribute("product", product);
-        request.setAttribute("reviews", reviews);
         request.setAttribute("reviewStats", reviewStats);
         request.getRequestDispatcher("/WEB-INF/customers/pages/productDetailPage.jsp").forward(request, response);
     } 

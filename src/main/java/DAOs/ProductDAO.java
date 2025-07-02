@@ -166,7 +166,7 @@ public class ProductDAO extends DB.DBContext {
                     urls.add(urlsResult.getString("url"));
                 }
                 product.setUrls(urls);
-                String reviewStatsQuery = "select COUNT(r.reviewId) as totalReivew, AVG(r.star) as averageStar\n"
+                String reviewStatsQuery = "select COUNT(r.reviewId) as totalReivew, AVG(CAST(r.star AS FLOAT)) as averageStar\n"
                         + "from Reviews r\n"
                         + "where r.productId = ?\n"
                         + "group by r.productId";
