@@ -3,7 +3,8 @@
     Created on : Jun 26, 2025, 3:41:21 PM
     Author     : Duong Tran Ngoc Chau - CE181040
 --%>
-
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 <%@page import="Models.Customer"%>
 <%@page import="java.util.List"%>
 <%
@@ -16,10 +17,12 @@
         for (Customer cs : cus) {
 %>
 <tr>
-    <td class="px-9 py-3 whitespace-nowrap">
+    <!-- Order number -->
+    <td class="px-9 py-3 whitespace-nowrap text-center">
         <span class="font-bold text-[20px] text-gray-500"><%= index++%></span>
     </td>
 
+    <!-- Profile -->
     <td class="px-10 py-3 whitespace-nowrap">
         <div class="flex items-center">
             <div class="flex-shrink-0 h-16 w-16">
@@ -36,17 +39,32 @@
         </div>
     </td>
 
-    <td class="px-4 py-4 whitespace-nowrap text-sm text-center relative">
-        <label class="inline-flex items-center cursor-pointer relative">
-            <input type="checkbox"
-                   class="sr-only peer toggle-block"
-                   data-id="<%= cs.getId()%>"
-                   <%= cs.isIsBlock() ? "" : "checked"%> />
-            <div class="w-11 h-6 bg-gray-500 rounded-full peer peer-checked:bg-green-500 transition-colors duration-200 ease-in-out"></div>
-            <div class="absolute left-0.5 top-0.5 bg-white border border-gray-300 h-5 w-5 rounded-full transition-all duration-200 ease-in-out peer-checked:translate-x-full peer-checked:border-white"></div>
-        </label>
-    </td>
+    <!-- Status of admin -->
+    <c:if test="${sessionScope.employee.role.id == 1}">
+        <td class="px-4 py-4 whitespace-nowrap text-sm text-center relative">
+            <label class="inline-flex items-center cursor-pointer relative">
+                <input type="checkbox"
+                       class="sr-only peer toggle-block"
+                       data-id="<%= cs.getId()%>"
+                       <%= cs.isIsBlock() ? "" : "checked"%> />
+                <div class="w-11 h-6 bg-gray-500 rounded-full peer peer-checked:bg-green-500 transition-colors duration-200 ease-in-out"></div>
+                <div class="absolute left-0.5 top-0.5 bg-white border border-gray-300 h-5 w-5 rounded-full transition-all duration-200 ease-in-out peer-checked:translate-x-full peer-checked:border-white"></div>
+            </label>
+        </td>
+    </c:if>
 
+    <!-- Status of staff -->
+    <c:if test="${sessionScope.employee.role.id == 2}">
+        <td class="px-10 py-3 whitespace-nowrap text-center">
+            <% if (!cs.isIsBlock()) { %>
+            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-200 text-green-800">Active</span>
+            <% } else { %>
+            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">Blocked</span>
+            <% }%>
+        </td>
+    </c:if>
+
+    <!-- Action button -->
     <td class="px-10 py-3 whitespace-nowrap text-sm font-medium">
         <div class="flex justify-center space-x-2">
             <button type="button" data-id="<%= cs.getId()%>" class="detail-customer-button bg-blue-100 text-blue-700 hover:bg-blue-200 px-3 py-1.5 rounded-lg transition-colors">

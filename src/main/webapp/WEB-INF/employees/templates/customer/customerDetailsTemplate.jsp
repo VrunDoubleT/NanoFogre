@@ -3,7 +3,8 @@
     Created on : Jun 26, 2025, 5:35:18 PM
     Author     : Duong Tran Ngoc Chau - CE181040
 --%>
-
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 <%@page import="Models.OrderDetails"%>
 <%@page import="Models.Order"%>
 <%@page import="java.util.List"%>
@@ -194,11 +195,23 @@
                             <!-- Details -->
                             <div class="flex-1">
                                 <div class="flex justify-between items-center">
-                                    <span class="font-medium text-gray-800"><%= item.getProduct().getTitle()%></span>
-                                    <span class="font-medium text-gray-900"><%= String.format("%,.0f", item.getPrice())%> VND</span>
+                                    <div class="text-sm font-medium text-gray-900">
+                                        <%
+                                            String title = item.getProduct().getTitle();
+                                            if (title != null && title.length() > 30) {
+                                                out.print(title.substring(0, 27) + "...");
+                                            } else {
+                                                out.print(title);
+                                            }
+                                        %>
+                                    </div>
+                                    <span class="font-medium text-gray-900">
+                                        <%= String.format("%,.0f", item.getPrice())%> VND
+                                    </span>
                                 </div>
                                 <span class="text-gray-500 text-sm">Amount: <%= item.getQuantity()%></span>
                             </div>
+
                         </div>
                         <% }%>
                     </div>

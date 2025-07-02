@@ -18,24 +18,25 @@
                 </div>
             </div>
 
-
-            <div class="flex items-center space-x-3">
-                <button id="create-voucher-button" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-lg shadow-lg hover:shadow-xl transform transition-all duration-200 flex items-center space-x-2">
-                    <i data-lucide="diamond-plus" class="w-5 h-5"></i>
-                    <span>Add New Voucher</span>
-                </button>
-            </div>
+            <c:if test="${sessionScope.employee.role.id == 1}">
+                <div class="flex items-center space-x-3">
+                    <button id="create-voucher-button" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-lg shadow-lg hover:shadow-xl transform transition-all duration-200 flex items-center space-x-2">
+                        <i data-lucide="diamond-plus" class="w-5 h-5"></i>
+                        <span>Add New Voucher</span>
+                    </button>
+                </div>
+            </c:if>
         </div>
 
         <div class="w-full">
             <table class="w-full max-w-full divide-y divide-gray-200">
                 <thead class="bg-gray-50">
                     <tr>
-                        <th class="px-10 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">#</th>
+                        <th class="px-10 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider text-center">#</th>
                         <th class="px-10 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Code</th>
-                        <th class="px-11 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Value</th>
-                        <th class="px-11 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                        <th class="px-10 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Active</th>
+                        <th class="px-10 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider text-center">Value</th>
+                        <th class="px-10 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider text-center">Status</th>
+                        <th class="px-10 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider text-center">Active</th>
                         <th class="px-10 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider text-center">Actions</th>
                     </tr>
                 </thead>
