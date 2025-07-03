@@ -1,4 +1,3 @@
-
 package Controllers;
 
 import DAOs.ProductDAO;
@@ -11,42 +10,35 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
  *
  * @author Tran Thanh Van - CE181019
  */
-@WebServlet(name="ProductByCategoryServlet", urlPatterns={"/productsbycategory"})
+@WebServlet(name = "ProductByCategoryServlet", urlPatterns = {"/productsbycategory"})
 public class ProductByCategoryServlet extends HttpServlet {
-   
-    /** 
-     * Processes requests for both HTTP <code>GET</code> and <code>POST</code> methods.
-     * @param request servlet request
-     * @param response servlet response
-     * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException if an I/O error occurs
-     */
-    protected void processRequest(HttpServletRequest request, HttpServletResponse response)
-    throws ServletException, IOException {
-        response.setContentType("text/html;charset=UTF-8");
-        try (PrintWriter out = response.getWriter()) {
-            /* TODO output your page here. You may use following sample code. */
-            out.println("<!DOCTYPE html>");
-            out.println("<html>");
-            out.println("<head>");
-            out.println("<title>Servlet ProductByCategoryServlet</title>");  
-            out.println("</head>");
-            out.println("<body>");
-            out.println("<h1>Servlet ProductByCategoryServlet at " + request.getContextPath () + "</h1>");
-            out.println("</body>");
-            out.println("</html>");
+
+    public List<Integer> getBrandIdList(HttpServletRequest request) {
+        String[] brandIdStr = request.getParameterValues("brandId");
+        List<Integer> brandIdList = new ArrayList<>();
+
+        if (brandIdStr != null) {
+            for (String id : brandIdStr) {
+                int value = Converter.parseOption(id, -1);
+                if (value != -1) {
+                    brandIdList.add(value);
+                }
+            }
         }
-    } 
+        return brandIdList;
+    }
 
     // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
-    /** 
+    /**
      * Handles the HTTP <code>GET</code> method.
+     *
      * @param request servlet request
      * @param response servlet response
      * @throws ServletException if a servlet-specific error occurs
@@ -54,43 +46,32 @@ public class ProductByCategoryServlet extends HttpServlet {
      */
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
-    throws ServletException, IOException {
+            throws ServletException, IOException {
+        int limit = 10;
         String type = request.getParameter("type");
         ProductDAO pDao = new ProductDAO();
         switch (type) {
             case "list":
                 int categoryId = Converter.parseOption(request.getParameter("categoryId"), 0);
+                String sort = !request.getParameter("sort").trim().isEmpty() ? request.getParameter("sort") : "title";
+                List<Integer> brandIdList = getBrandIdList(request);
                 int page = Converter.parseOption(request.getParameter("page"), 1);
-                List<Product> products = pDao.products(categoryId, page, 10);
+                List<Product> products = pDao.getProductByCategory(categoryId, brandIdList, sort, page, limit);
                 request.setAttribute("products", products);
-                System.out.println(products.get(0));
                 request.getRequestDispatcher("/WEB-INF/customers/component/products/products.jsp").forward(request, response);
+                break;
+            case "pagination":
+                int cId = Converter.parseOption(request.getParameter("categoryId"), 0);
+                int pageToPagination = Converter.parseOption(request.getParameter("page"), 1);
+                List<Integer> brandIdListPagination = getBrandIdList(request);
+                int total = pDao.countProductByCategory(cId, brandIdListPagination);
+                request.setAttribute("total", total);
+                request.setAttribute("limit", limit);
+                request.setAttribute("page", pageToPagination);
+                request.getRequestDispatcher("/WEB-INF/customers/common/paginationTeamplate.jsp").forward(request, response);
                 break;
             default:
                 throw new AssertionError();
         }
-    } 
-
-    /** 
-     * Handles the HTTP <code>POST</code> method.
-     * @param request servlet request
-     * @param response servlet response
-     * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException if an I/O error occurs
-     */
-    @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response)
-    throws ServletException, IOException {
-        processRequest(request, response);
     }
-
-    /** 
-     * Returns a short description of the servlet.
-     * @return a String containing servlet description
-     */
-    @Override
-    public String getServletInfo() {
-        return "Short description";
-    }// </editor-fold>
-
 }

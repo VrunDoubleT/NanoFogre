@@ -126,24 +126,5 @@
             <span class="sr-only">Last page</span>
         </div>
     </nav>
-
-    <!-- Mobile Pagination (Hidden on desktop) -->
-    <div class="flex items-center justify-between w-full max-w-xs sm:hidden">
-        <div page="<%= Math.max(1, currentPage - 1)%>" 
-             class="pagination relative inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
-             <%= currentPage == 1 ? "style='pointer-events: none; opacity: 0.5;'" : ""%>>
-            Previous
-        </div>
-
-        <span class="text-sm text-gray-700 font-medium">
-            Page <%= currentPage%> of <%= totalPages%>
-        </span>
-
-        <div page="<%= Math.min(totalPages, currentPage + 1)%>" 
-             class="pagination relative inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
-             <%= currentPage == totalPages ? "style='pointer-events: none; opacity: 0.5;'" : ""%>>
-            Next
-        </div>
-    </div>
 </div>
 <% }%>
