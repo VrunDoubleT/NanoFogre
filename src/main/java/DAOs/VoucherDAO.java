@@ -18,6 +18,34 @@ import java.util.List;
  */
 public class VoucherDAO extends DB.DBContext {
 
+    public Voucher findByCode(String code) {
+        Voucher voucher = null;
+        String sql = "SELECT TOP 1 [voucherId], [voucherCode], [type], [value], [minValue], [maxValue], [voucherDescription], [validFrom], [validTo], [isActive], [_destroy] "
+                + "FROM [Vouchers] WHERE [voucherCode] = ? AND [_destroy] = 0";
+        Object[] params = {code};
+        try ( ResultSet rs = execSelectQuery(sql, params)) {
+            if (rs.next()) {
+                voucher = new Voucher();
+                voucher.setId(rs.getInt("voucherId"));
+                voucher.setCode(rs.getString("voucherCode"));
+                voucher.setType(rs.getString("type"));
+                voucher.setValue(rs.getDouble("value"));
+                voucher.setMinValue(rs.getDouble("minValue"));
+                voucher.setMaxValue(rs.getDouble("maxValue"));
+                voucher.setDescription(rs.getString("voucherDescription"));
+                Timestamp validFrom = rs.getTimestamp("validFrom");
+                Timestamp validTo = rs.getTimestamp("validTo");
+                voucher.setValidFrom(validFrom != null ? validFrom.toLocalDateTime() : null);
+                voucher.setValidTo(validTo != null ? validTo.toLocalDateTime() : null);
+                voucher.setIsActive(rs.getInt("isActive") == 1);
+                voucher.setDestroy(rs.getInt("_destroy") == 1);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return voucher;
+    }
+
     public List<Voucher> getAllVouchers(int page, int limit) {
         int row = (page - 1) * limit;
         List<Voucher> list = new ArrayList<>();
@@ -73,8 +101,7 @@ public class VoucherDAO extends DB.DBContext {
             Timestamp.valueOf(voucher.getValidFrom()),
             Timestamp.valueOf(voucher.getValidTo()),
             voucher.isIsActive(),
-            voucher.isDestroy(),
-        };
+            voucher.isDestroy(),};
         try {
             int generatedId = execQueryReturnId(query, params);
             return generatedId > 0;
@@ -105,7 +132,7 @@ public class VoucherDAO extends DB.DBContext {
             minValue,
             maxValue,
             description,
-            Timestamp.valueOf(validFrom), 
+            Timestamp.valueOf(validFrom),
             Timestamp.valueOf(validTo),
             isActive ? 1 : 0,
             id
@@ -167,6 +194,41 @@ public class VoucherDAO extends DB.DBContext {
             e.printStackTrace();
         }
         return null;
+    }
+
+    /**
+     * Lấy danh sách voucher còn hiệu lực cho user (chung cho tất cả user)
+     */
+    public List<Voucher> getAvailableVouchersForUser(int userId) {
+        List<Voucher> list = new ArrayList<>();
+        String sql = "SELECT * FROM Vouchers " // Thêm dấu cách sau FROM Vouchers
+                + "WHERE isActive = 1 AND _destroy = 0 "
+                + "AND validFrom <= ? AND validTo >= ? "
+                + "ORDER BY validTo ASC";
+        Object[] params = {
+            java.sql.Timestamp.valueOf(LocalDateTime.now()),
+            java.sql.Timestamp.valueOf(LocalDateTime.now())
+        };
+        try ( ResultSet rs = execSelectQuery(sql, params)) {
+            while (rs.next()) {
+                Voucher v = new Voucher();
+                v.setId(rs.getInt("voucherId"));
+                v.setCode(rs.getString("voucherCode"));
+                v.setDescription(rs.getString("voucherDescription")); // Đúng tên cột
+                v.setType(rs.getString("type"));
+                v.setValue(rs.getDouble("value"));
+                v.setMaxValue(rs.getDouble("maxValue"));
+                v.setMinValue(rs.getDouble("minValue"));
+                v.setValidFrom(rs.getTimestamp("validFrom").toLocalDateTime());
+                v.setValidTo(rs.getTimestamp("validTo").toLocalDateTime());
+                v.setIsActive(rs.getBoolean("isActive"));
+                v.setDestroy(rs.getBoolean("_destroy")); // hoặc isDestroy tùy DB
+                list.add(v);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return list;
     }
 
 }
