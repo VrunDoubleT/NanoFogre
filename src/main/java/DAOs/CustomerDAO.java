@@ -210,5 +210,62 @@ public class CustomerDAO extends DB.DBContext {
 
         return details;
     }
+// Đăng nhập khách hàng
+public Customer login(String email, String hashedPassword) {
+    String sql = "SELECT * FROM Customers WHERE customerEmail=? AND customerPassword=? AND isBlock=0 AND _destroy=0";
+    Object[] params = { email, hashedPassword };
+    try (ResultSet rs = this.execSelectQuery(sql, params)) {
+        if (rs.next()) {
+            Customer c = new Customer();
+            c.setId(rs.getInt("customerId"));
+            c.setEmail(rs.getString("customerEmail"));
+            c.setPassword(rs.getString("customerPassword"));
+            c.setName(rs.getString("customerName"));
+            c.setAvatar(rs.getString("customerAvatar"));
+            c.setPhone(rs.getString("customerPhone"));
+            java.sql.Timestamp ts = rs.getTimestamp("createdAt");
+            if (ts != null) c.setCreatedAt(ts.toLocalDateTime());
+            c.setIsBlock(rs.getInt("isBlock") == 1);
+            return c;
+        }
+    } catch (SQLException e) {
+        e.printStackTrace();
+    }
+    return null;
+}
+
+// Kiểm tra email đã tồn tại chưa
+public boolean checkEmailExists(String email) {
+    String sql = "SELECT 1 FROM Customers WHERE customerEmail=? AND _destroy=0";
+    Object[] params = { email };
+    try (ResultSet rs = this.execSelectQuery(sql, params)) {
+        return rs.next();
+    } catch (SQLException e) {
+        e.printStackTrace();
+    }
+    return false;
+}
+
+// Đăng ký khách hàng mới
+public boolean register(Customer c) {
+    String sql = "INSERT INTO Customers (customerEmail, customerPassword, customerName, isVerify, isBlock, _destroy, createdAt) VALUES (?, ?, ?, ?, ?, ?, GETDATE())";
+    Object[] params = {
+        c.getEmail(),
+        c.getPassword(),
+        c.getName(),
+        0, // isVerify
+        c.isIsBlock() ? 1 : 0, // isBlock
+        0 // _destroy
+    };
+    try {
+        int result = this.execQuery(sql, params);
+        return result > 0;
+    } catch (SQLException e) {
+        e.printStackTrace();
+    }
+    return false;
+}
 
 }
+
+

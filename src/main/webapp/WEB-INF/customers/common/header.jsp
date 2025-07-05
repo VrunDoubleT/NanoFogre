@@ -34,15 +34,10 @@
 
     <!-- Login / Register -->
     <div class="flex items-center space-x-4">
-      <a href="/login" class="text-sm text-blue-100 hover:text-white transition font-medium">Login</a>
-      <a href="/register" class="px-4 py-2 bg-gradient-to-r from-yellow-400 to-orange-500 text-white rounded-full text-sm font-semibold shadow hover:scale-105 transition">
+      <a href="${pageContext.request.contextPath}/AuthServlet?action=login" class="text-sm text-blue-100 hover:text-white transition font-medium">Login</a>
+      <a href="${pageContext.request.contextPath}/AuthServlet?action=register" class="px-4 py-2 bg-gradient-to-r from-yellow-400 to-orange-500 text-white rounded-full text-sm font-semibold shadow hover:scale-105 transition">
         Register
       </a>
     </div>
   </div>
 </header>
-
-
-
-
-
