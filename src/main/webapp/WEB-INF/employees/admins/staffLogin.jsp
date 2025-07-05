@@ -495,7 +495,7 @@
                 <h1>Login</h1>
             </div>
 
-            <form id="loginForm" method="post" action="${pageContext.request.contextPath}/admin/auth/login">
+            <form id="loginForm" method="post" action="${pageContext.request.contextPath}/staff/auth/login">
                 <% String error = (String) request.getAttribute("error");
                     if (error != null) {%>
                 <div style="

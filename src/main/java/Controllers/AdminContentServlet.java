@@ -1,4 +1,3 @@
-
 package Controllers;
 
 import DAOs.ProductDAO;
@@ -15,12 +14,15 @@ import jakarta.servlet.http.HttpSession;
 
 /**
  * THIS IS A LAYOUT OF ADMIN
+ *
  * @author Tran Thanh Van - CE181019
  */
-@WebServlet(name="AdminContentServlet", urlPatterns={"/admin/dashboard"})
+@WebServlet(name = "AdminContentServlet", urlPatterns = {"/admin/dashboard"})
 public class AdminContentServlet extends HttpServlet {
-    /** 
+
+    /**
      * Handles the HTTP <code>GET</code> method.
+     *
      * @param request servlet request
      * @param response servlet response
      * @throws ServletException if a servlet-specific error occurs
@@ -28,13 +30,15 @@ public class AdminContentServlet extends HttpServlet {
      */
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
-    throws ServletException, IOException {
-        Employee employee = new Employee();
-        employee.setRole(new Role(1, "Admin"));
-        employee.setName("Vrun");
-        employee.setAvatar("https://res.cloudinary.com/dk4fqvp3v/image/upload/v1749917338/82724695f4647bb11463f3ff2207f462.jpg.jpg");
-        HttpSession session = request.getSession();
-        session.setAttribute("employee", employee);
+            throws ServletException, IOException {
+        HttpSession session = request.getSession(false);
+        Employee emp = (session != null) ? (Employee) session.getAttribute("employee") : null;
+
+        if (emp == null || emp.getRole() == null || emp.getRole().getId() != 1) {
+            response.sendRedirect(request.getContextPath() + "/admin/auth/login");
+            return;
+        }
+        // show dashboard
         request.getRequestDispatcher("/WEB-INF/employees/admins/adminLayout.jsp").forward(request, response);
-    } 
+    }
 }
