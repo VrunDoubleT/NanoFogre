@@ -9,6 +9,7 @@ import Models.Category;
 import Models.Product;
 import Models.ProductStat;
 import Models.Brand;
+import Models.Employee;
 import Models.Order;
 import java.io.IOException;
 import java.util.List;
@@ -17,6 +18,7 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 
 @WebServlet(name = "AdminViewServerlet", urlPatterns = {"/admin/view"})
 public class AdminViewServerlet extends HttpServlet {
@@ -24,6 +26,14 @@ public class AdminViewServerlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        HttpSession session = request.getSession(false);
+        Employee emp = (session != null) ? (Employee) session.getAttribute("employee") : null;
+
+        if (emp == null || emp.getRole() == null || emp.getRole().getId() != 1) {
+            response.sendRedirect(request.getContextPath() + "/admin/auth/login");
+            return;
+        }
+
         ProductDAO pDao = new ProductDAO();
         CategoryDAO categoryDao = new CategoryDAO();
         OrderDAO orderDao = new OrderDAO();

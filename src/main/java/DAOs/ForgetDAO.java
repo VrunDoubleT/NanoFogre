@@ -11,8 +11,12 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 
+/**
+ *
+ * @author iphon
+ */
 public class ForgetDAO extends DB.DBContext {
-    // ========= EMPLOYEE =========
+
     public boolean checkVerifyCode(int userId, String code) {
         String sql = "SELECT COUNT(*) AS count FROM VerifyCodes WHERE userId = ? AND code = ? AND isVerified = 0 AND expiredAt > ?";
         try ( ResultSet rs = this.execSelectQuery(sql, new Object[]{userId, code, Timestamp.valueOf(LocalDateTime.now())})) {
@@ -94,7 +98,7 @@ public class ForgetDAO extends DB.DBContext {
     // ========= CUSTOMER =========
     public boolean checkVerifyCodeCustomer(int userId, String code) {
         String sql = "SELECT COUNT(*) AS count FROM VerifyCodes WHERE userType = 0 AND userId = ? AND code = ? AND isVerified = 0 AND expiredAt > ?";
-        try (ResultSet rs = this.execSelectQuery(sql, new Object[]{userId, code, Timestamp.valueOf(LocalDateTime.now())})) {
+        try ( ResultSet rs = this.execSelectQuery(sql, new Object[]{userId, code, Timestamp.valueOf(LocalDateTime.now())})) {
             if (rs.next()) {
                 return rs.getInt("count") > 0;
             }
@@ -139,7 +143,7 @@ public class ForgetDAO extends DB.DBContext {
 
     public Customer findCustomerByEmail(String email) {
         String sql = "SELECT * FROM Customers WHERE customerEmail = ? AND isBlock=0 AND _destroy=0";
-        try (ResultSet rs = this.execSelectQuery(sql, new Object[]{email})) {
+        try ( ResultSet rs = this.execSelectQuery(sql, new Object[]{email})) {
             if (rs.next()) {
                 Customer c = new Customer();
                 c.setId(rs.getInt("customerId"));
@@ -174,4 +178,3 @@ public class ForgetDAO extends DB.DBContext {
         return false;
     }
 }
-

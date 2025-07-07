@@ -30,12 +30,18 @@ public class StaffContentServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+           HttpSession session = request.getSession(false);
+        Employee emp = (session != null) ? (Employee) session.getAttribute("employee") : null;
+
+        if (emp == null || emp.getRole() == null || emp.getRole().getId() != 2) {
+            response.sendRedirect(request.getContextPath() + "/staff/auth/login");
+            return;
+        }
         Employee employee = new Employee();
         employee.setRole(new Role(2, "Staff"));
         employee.setName("Vrun");
         employee.setAvatar("https://res.cloudinary.com/dk4fqvp3v/image/upload/v1749917338/82724695f4647bb11463f3ff2207f462.jpg.jpg");
-        HttpSession session = request.getSession();
-        session.setAttribute("employee", employee);
+      
         request.getRequestDispatcher("/WEB-INF/employees/staff/staffLayout.jsp").forward(request, response);
     }
 }
