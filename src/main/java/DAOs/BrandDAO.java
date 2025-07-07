@@ -11,11 +11,10 @@ import java.sql.Connection;
 
 public class BrandDAO extends DBContext {
 
-    // READ 
     public List<Brand> getAllBrands() {
         List<Brand> brands = new ArrayList<>();
         String query = "SELECT brandId, brandName, image FROM Brands";
-        try ( ResultSet rs = execSelectQuery(query)) {
+        try (ResultSet rs = execSelectQuery(query)) {
             while (rs.next()) {
                 brands.add(mapResultSetToBrand(rs));
             }
@@ -25,15 +24,14 @@ public class BrandDAO extends DBContext {
         return brands;
     }
 
-    // READ 
-    public List<Brand> getBrandsPaginated(int page, int pageSize) {
+    public List<Brand> getBrands(int page, int limit) {
         List<Brand> brands = new ArrayList<>();
         String query = "SELECT brandId, brandName, image FROM Brands ORDER BY brandId DESC OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
-        try ( Connection conn = this.getConnection();  PreparedStatement stmt = conn.prepareStatement(query)) {
-            int offset = (page - 1) * pageSize;
+        try (Connection conn = this.getConnection(); PreparedStatement stmt = conn.prepareStatement(query)) {
+            int offset = (page - 1) * limit;
             stmt.setInt(1, offset);
-            stmt.setInt(2, pageSize);
-            try ( ResultSet rs = stmt.executeQuery()) {
+            stmt.setInt(2, limit);
+            try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {
                     brands.add(mapResultSetToBrand(rs));
                 }
@@ -44,10 +42,21 @@ public class BrandDAO extends DBContext {
         return brands;
     }
 
-    // CREATE 
-    public boolean createBrand(String name, String imageUrl) {
+    public int getTotalBrands() {
+        String query = "SELECT COUNT(*) AS total FROM Brands";
+        try (ResultSet rs = execSelectQuery(query)) {
+            if (rs.next()) {
+                return rs.getInt("total");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return 0;
+    }
+
+    public boolean createBrand(String brandName, String imageUrl) {
         String query = "INSERT INTO Brands (brandName, image) VALUES (?, ?)";
-        Object[] params = {name, imageUrl};
+        Object[] params = {brandName, imageUrl};
         try {
             return execQuery(query, params) > 0;
         } catch (SQLException e) {
@@ -56,10 +65,9 @@ public class BrandDAO extends DBContext {
         }
     }
 
-    // UPDATE 
-    public boolean updateBrand(int id, String newName, String newImageUrl) {
+    public boolean updateBrand(int brandId, String brandName, String imageUrl) {
         String query = "UPDATE Brands SET brandName = ?, image = ? WHERE brandId = ?";
-        Object[] params = {newName, newImageUrl, id};
+        Object[] params = {brandName, imageUrl, brandId};
         try {
             return execQuery(query, params) > 0;
         } catch (SQLException e) {
@@ -68,10 +76,11 @@ public class BrandDAO extends DBContext {
         }
     }
 
-    public boolean isBrandInUse(int brandId) {
-        String query = "SELECT COUNT(*) AS total FROM Products WHERE brandId = ?";
-        Object[] params = {brandId};
-        try ( ResultSet rs = execSelectQuery(query, params)) {
+    // Kiểm tra tên brand đã tồn tại (dùng cho tạo mới)
+    public boolean isBrandNameExists(String brandName) {
+        String query = "SELECT COUNT(*) AS total FROM Brands WHERE brandName = ?";
+        Object[] params = {brandName};
+        try (ResultSet rs = execSelectQuery(query, params)) {
             return rs.next() && rs.getInt("total") > 0;
         } catch (SQLException e) {
             e.printStackTrace();
@@ -79,20 +88,45 @@ public class BrandDAO extends DBContext {
         }
     }
 
-    public boolean deleteBrand(int id) {
+    public boolean isBrandNameExistsExceptId(String brandName, int brandId) {
+        String query = "SELECT COUNT(*) AS total FROM Brands WHERE brandName = ? AND brandId <> ?";
+        Object[] params = {brandName, brandId};
+        try (ResultSet rs = execSelectQuery(query, params)) {
+            return rs.next() && rs.getInt("total") > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public Brand getBrandById(int brandId) {
+        String query = "SELECT brandId, brandName, image FROM Brands WHERE brandId = ?";
+        Object[] params = {brandId};
+        try (ResultSet rs = execSelectQuery(query, params)) {
+            if (rs.next()) {
+                return mapResultSetToBrand(rs);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public boolean deleteBrand(int brandId) {
         Connection conn = null;
         try {
             conn = this.getConnection();
             conn.setAutoCommit(false);
+
             String updateProductsSql = "UPDATE Products SET brandId = NULL WHERE brandId = ?";
-            try ( PreparedStatement updateStmt = conn.prepareStatement(updateProductsSql)) {
-                updateStmt.setInt(1, id);
+            try (PreparedStatement updateStmt = conn.prepareStatement(updateProductsSql)) {
+                updateStmt.setInt(1, brandId);
                 updateStmt.executeUpdate();
             }
 
             String deleteBrandSql = "DELETE FROM Brands WHERE brandId = ?";
-            try ( PreparedStatement deleteStmt = conn.prepareStatement(deleteBrandSql)) {
-                deleteStmt.setInt(1, id);
+            try (PreparedStatement deleteStmt = conn.prepareStatement(deleteBrandSql)) {
+                deleteStmt.setInt(1, brandId);
                 int rowsAffected = deleteStmt.executeUpdate();
 
                 if (rowsAffected > 0) {
@@ -111,7 +145,7 @@ public class BrandDAO extends DBContext {
                     ex.printStackTrace();
                 }
             }
-            handleException("Error deleting brand", e);
+            e.printStackTrace();
             return false;
         } finally {
             if (conn != null) {
@@ -125,58 +159,11 @@ public class BrandDAO extends DBContext {
         }
     }
 
-    public boolean isBrandNameExists(String name) {
-        String query = "SELECT COUNT(*) AS total FROM Brands WHERE brandName = ?";
-        Object[] params = {name};
-        try ( ResultSet rs = execSelectQuery(query, params)) {
-            return rs.next() && rs.getInt("total") > 0;
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return false;
-        }
-    }
-
-    public boolean isBrandNameExistsExceptId(String name, int id) {
-        String query = "SELECT COUNT(*) AS total FROM Brands WHERE brandName = ? AND brandId <> ?";
-        Object[] params = {name, id};
-        try ( ResultSet rs = execSelectQuery(query, params)) {
-            return rs.next() && rs.getInt("total") > 0;
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return false;
-        }
-    }
-
-    public int getTotalBrandsForPagination() {
-        String query = "SELECT COUNT(*) AS total FROM Brands";
-        try ( ResultSet rs = execSelectQuery(query)) {
-            if (rs.next()) {
-                return rs.getInt("total");
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return 0;
-    }
-
-    public Brand getBrandById(int id) {
-        String query = "SELECT brandId, brandName, image FROM Brands WHERE brandId = ?";
-        Object[] params = {id};
-        try ( ResultSet rs = execSelectQuery(query, params)) {
-            if (rs.next()) {
-                return mapResultSetToBrand(rs);
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
-
     private Brand mapResultSetToBrand(ResultSet rs) throws SQLException {
         return new Brand(
-                rs.getInt("brandId"),
-                rs.getString("brandName"),
-                rs.getString("image")
+            rs.getInt("brandId"),
+            rs.getString("brandName"),
+            rs.getString("image")
         );
     }
 

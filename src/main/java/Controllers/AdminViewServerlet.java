@@ -11,6 +11,7 @@ import Models.ProductStat;
 import Models.Brand;
 import Models.Employee;
 import Models.Order;
+import Utils.Converter;
 import java.io.IOException;
 import java.util.List;
 import jakarta.servlet.ServletException;
@@ -70,10 +71,18 @@ public class AdminViewServerlet extends HttpServlet {
                 request.setAttribute("brands", brands);
                 break;
             case "brand":
+                int brandPage = Converter.parseOption(request.getParameter("page"), 1);
+                int brandLimit = 5;
+                List<Brand> brandList = brandDao.getBrands(brandPage, brandLimit);
+                int totalBrands = brandDao.getTotalBrands();
+                int totalBrandPages = (int) Math.ceil((double) totalBrands / brandLimit);
+                request.setAttribute("brands", brandList);
+                request.setAttribute("total", totalBrands);
+                request.setAttribute("limit", brandLimit);
+                request.setAttribute("totalPages", totalBrandPages);
+                request.setAttribute("page", brandPage);
                 viewPath = "/WEB-INF/employees/components/brandComponent.jsp";
-                request.setAttribute("viewPath", viewPath);
-              //  request.getRequestDispatcher("/brand").forward(request, response);
-                return;
+                break;
             case "voucher":
                 viewPath = "/WEB-INF/employees/components/voucherComponent.jsp";
                 break;
@@ -85,9 +94,9 @@ public class AdminViewServerlet extends HttpServlet {
                 request.setAttribute("orders", order);
                 break;
             case "dashboard":
-                // Forward request DashboardServlet
-                request.getRequestDispatcher("/dashboard").forward(request, response);
-                return;
+                request.getRequestDispatcher("/dashboard").include(request, response);
+                viewPath = "/WEB-INF/employees/components/adminDashboardComponent.jsp";
+                break;
             default:
                 viewPath = "/WEB-INF/employees/components/adminDashboardComponent.jsp";
         }

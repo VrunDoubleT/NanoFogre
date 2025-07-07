@@ -1,5 +1,7 @@
+
 function openCreateModal() {
     const overlay = document.getElementById('createBrandModal');
+    if (!overlay) return;
     const modal = overlay.querySelector('.shadow-2xl');
     overlay.classList.remove('hidden');
     setTimeout(() => {
@@ -7,29 +9,38 @@ function openCreateModal() {
         modal.classList.add('scale-100', 'opacity-100', 'translate-y-0');
     }, 10);
     document.body.classList.add('overflow-hidden');
-    document.getElementById('newBrandName').value = '';
-    document.getElementById('newBrandImage').value = '';
-    document.getElementById('createBrandImagePreview').innerHTML = '';
-    document.getElementById('createBrandNameError').textContent = '';
-    document.getElementById('createBrandImageError').textContent = '';
-    document.getElementById('newBrandName').classList.remove('border-red-500');
-
-    const fileNameLabel = document.querySelector('#createBrandModal .file-name');
-    if (fileNameLabel)
-        fileNameLabel.textContent = 'No file chosen';
+    // Reset form
     const nameInput = document.getElementById('newBrandName');
+    if (nameInput) nameInput.value = '';
+    const imageInput = document.getElementById('newBrandImage');
+    if (imageInput) imageInput.value = '';
+    const preview = document.getElementById('createBrandImagePreview');
+    if (preview) preview.innerHTML = '';
     const nameError = document.getElementById('createBrandNameError');
+    if (nameError) nameError.textContent = '';
+    const imageError = document.getElementById('createBrandImageError');
+    if (imageError) imageError.textContent = '';
+    if (nameInput) nameInput.classList.remove('border-red-500');
+    // Reset label file name
+    const fileNameLabel = document.querySelector('#createBrandModal .file-name');
+    if (fileNameLabel) fileNameLabel.textContent = 'No file chosen';
+
     if (nameInput && nameError) {
-        nameInput.onfocus = nameInput.oninput = function () {
+        nameInput.onfocus = function () {
             nameError.textContent = '';
             this.classList.remove('border-red-500');
         };
+        nameInput.onblur = function () {
+            if (!this.value.trim()) {
+                nameError.textContent = 'Please enter brand name';
+                this.classList.add('border-red-500');
+            }
+        };
     }
-    const imageInput = document.getElementById('newBrandImage');
-    const imageError = document.getElementById('createBrandImageError');
+
     if (imageInput && imageError) {
         imageInput.onchange = function () {
-            showFileName(this);
+            if (typeof showFileName === 'function') showFileName(this);
             imageError.textContent = '';
         };
         imageInput.onclick = function () {
@@ -42,26 +53,40 @@ function openCreateModal() {
             };
         }
     }
+
+    if (!overlay.dataset.outsideClickAttached) {
+        overlay.addEventListener('mousedown', function (e) {
+            if (e.target === overlay) {
+                closeCreateModal();
+            }
+        });
+        overlay.dataset.outsideClickAttached = "true";
+    }
 }
+
 
 function closeCreateModal() {
     const overlay = document.getElementById('createBrandModal');
+    if (!overlay)
+        return;
     const modal = overlay.querySelector('.shadow-2xl');
     modal.classList.remove('scale-100', 'opacity-100', 'translate-y-0');
     modal.classList.add('scale-95', 'opacity-0', 'translate-y-8');
     setTimeout(() => {
         overlay.classList.add('hidden');
         document.body.classList.remove('overflow-hidden');
-        document.getElementById('createBrandImagePreview').innerHTML = '';
+        const preview = document.getElementById('createBrandImagePreview');
+        if (preview)
+            preview.innerHTML = '';
         const fileNameLabel = document.querySelector('#createBrandModal .file-name');
-        if (fileNameLabel) {
+        if (fileNameLabel)
             fileNameLabel.textContent = 'No file chosen';
-        }
     }, 300);
 }
 
 function openEditModal(id, name, imageUrl) {
     const overlay = document.getElementById('editBrandModal');
+    if (!overlay) return;
     const modal = overlay.querySelector('.shadow-2xl');
     overlay.classList.remove('hidden');
     setTimeout(() => {
@@ -69,59 +94,63 @@ function openEditModal(id, name, imageUrl) {
         modal.classList.add('scale-100', 'opacity-100', 'translate-y-0');
     }, 10);
     document.body.classList.add('overflow-hidden');
-    document.getElementById('editBrandId').value = id;
-    document.getElementById('editBrandName').value = name;
-    document.getElementById('editBrandImage').value = '';
-    document.getElementById('editBrandImagePreview').innerHTML = '';
-    document.getElementById('editBrandNameError').textContent = '';
-    document.getElementById('editBrandImageError').textContent = '';
-    document.getElementById('editBrandName').classList.remove('border-red-500');
-
-    const currentImageWrapper = document.getElementById('editBrandCurrentImageWrapper');
-    if (imageUrl && imageUrl.trim() !== '') {
-        currentImageWrapper.innerHTML = `<img src="${imageUrl}" alt="Current Image" class="max-h-20 rounded shadow border">`;
-    } else {
-        currentImageWrapper.innerHTML = '<p class="text-gray-500 text-sm">No current image</p>';
-    }
-
+    // Set value
+    const idInput = document.getElementById('editBrandId');
     const nameInput = document.getElementById('editBrandName');
-    const nameError = document.getElementById('editBrandNameError');
-    if (nameInput && nameError) {
-        nameInput.onclick = null;
-        nameInput.oninput = null;
-        nameInput.onclick = function () {
-            nameError.textContent = '';
-            this.classList.remove('border-red-500');
-        };
-        nameInput.oninput = function () {
-            nameError.textContent = '';
-            this.classList.remove('border-red-500');
-        };
-    }
-
     const imageInput = document.getElementById('editBrandImage');
+    if (idInput) idInput.value = id || '';
+    if (nameInput) nameInput.value = (name !== undefined && name !== null) ? name : '';
+    if (imageInput) imageInput.value = '';
+    const nameError = document.getElementById('editBrandNameError');
     const imageError = document.getElementById('editBrandImageError');
-    if (imageInput && imageError) {
-        imageInput.onchange = function () {
-            showFileName(this);
-            imageError.textContent = '';
-        };
-        imageInput.onclick = function () {
-            imageError.textContent = '';
-        };
-        const uploadLabel = document.querySelector('label[for="editBrandImage"]');
-        if (uploadLabel) {
-            uploadLabel.onclick = function () {
-                imageError.textContent = '';
-            };
+    if (nameInput) nameInput.classList.remove('border-red-500');
+    if (nameError) nameError.textContent = '';
+    if (imageError) imageError.textContent = '';
+    // Clear preview
+    const preview = document.getElementById('editBrandImagePreview');
+    if (preview) preview.innerHTML = '';
+    const fileNameLabel = document.querySelector('#editBrandModal .file-name');
+    if (fileNameLabel) fileNameLabel.textContent = 'No file chosen';
+    const currentImageWrapper = document.getElementById('editBrandCurrentImageWrapper');
+    if (currentImageWrapper) {
+        if (imageUrl && imageUrl.trim() !== '') {
+            currentImageWrapper.innerHTML = `<img src="${imageUrl}" alt="Current Image" class="max-h-20 rounded shadow border">`;
+        } else {
+            currentImageWrapper.innerHTML = '<p class="text-gray-500 text-sm">No current image</p>';
         }
     }
+
+    if (nameInput && nameError) {
+        nameInput.onfocus = function () {
+            nameError.textContent = '';
+            this.classList.remove('border-red-500');
+        };
+        nameInput.onblur = function () {
+            if (!this.value.trim()) {
+                nameError.textContent = 'Please enter brand name';
+                this.classList.add('border-red-500');
+            }
+        };
+    }
+
+    if (!overlay.dataset.outsideClickAttached) {
+        overlay.addEventListener('mousedown', function (e) {
+            if (e.target === overlay) {
+                closeEditModal();
+            }
+        });
+        overlay.dataset.outsideClickAttached = "true";
+    }
 }
+    
+
 
 
 
 function closeEditModal() {
     const overlay = document.getElementById('editBrandModal');
+    if (!overlay)
+        return;
     const modal = overlay.querySelector('.shadow-2xl');
     modal.classList.remove('scale-100', 'opacity-100', 'translate-y-0');
     modal.classList.add('scale-95', 'opacity-0', 'translate-y-8');
@@ -130,29 +159,178 @@ function closeEditModal() {
         document.body.classList.remove('overflow-hidden');
     }, 300);
 }
+['createBrandModal', 'editBrandModal'].forEach(function (modalId) {
+    const modal = document.getElementById(modalId);
+    if (modal) {
+        modal.addEventListener('mousedown', function (e) {
+            if (e.target === modal) {
+                if (modalId === 'createBrandModal')
+                    closeCreateModal();
+                if (modalId === 'editBrandModal')
+                    closeEditModal();
+            }
+        });
+    }
+});
 
-function editBrand(id) {
-    fetch(`/brand?action=getBrand&id=${id}`)
-            .then(res => {
-                if (!res.ok)
-                    throw new Error('HTTP error');
-                return res.json();
-            })
+// =========================== CRUD HANDLER ==========================
+
+function editBrand(id, name, url) {
+    openEditModal(id, name, url);
+}
+
+function handleCreateBrand() {
+    const nameInput = document.getElementById('newBrandName');
+    const imageInput = document.getElementById('newBrandImage');
+    const nameError = document.getElementById('createBrandNameError');
+    const imageError = document.getElementById('createBrandImageError');
+    const submitBtn = document.querySelector('#createBrandForm button[type="submit"]');
+    const loadingIcon = submitBtn ? submitBtn.querySelector('#loadingIconCreate') : null;
+
+    if (nameError)
+        nameError.textContent = '';
+    if (nameInput)
+        nameInput.classList.remove('border-red-500');
+    if (imageError)
+        imageError.textContent = '';
+
+    let hasError = false;
+    if (!nameInput || !nameInput.value.trim()) {
+        if (nameError)
+            nameError.textContent = 'Please enter brand name';
+        if (nameInput)
+            nameInput.classList.add('border-red-500');
+        hasError = true;
+    }
+    if (!imageInput || !imageInput.files.length) {
+        if (imageError)
+            imageError.textContent = 'Please upload brand image';
+        hasError = true;
+    }
+    if (hasError)
+        return;
+
+    if (submitBtn)
+        submitBtn.disabled = true;
+    if (loadingIcon)
+        loadingIcon.classList.remove('hidden');
+
+    const formData = new FormData();
+    formData.append('type', 'create');
+    formData.append('brandName', nameInput.value.trim());
+    formData.append('brandImage', imageInput.files[0]);
+
+    fetch('/brand/view', {
+        method: 'POST',
+        body: formData
+    })
+            .then(response => response.json())
             .then(data => {
-                if (data.success) {
-                    openEditModal(data.brand.id, data.brand.name, data.brand.image);
+                if (data.isSuccess || data.success) {
+                    showToast(data.message, 'success');
+                    closeCreateModal();
+                    loadBrandContentAndEvent(1);
                 } else {
-                    showToast(data.message || 'Brand not found!', 'error');
+                    showToast(data.message, 'error');
                 }
             })
-            .catch((error) => {
-                showToast('Data processing error: ' + error.message, 'error');
+            .catch(() => showToast('Server connection error', 'error'))
+            .finally(() => {
+                if (submitBtn)
+                    submitBtn.disabled = false;
+                if (loadingIcon)
+                    loadingIcon.classList.add('hidden');
             });
 }
 
-let brandIdToDelete = null;
+function handleUpdateBrand() {
+    const idInput = document.getElementById('editBrandId');
+    const nameInput = document.getElementById('editBrandName');
+    const imageInput = document.getElementById('editBrandImage');
+    const nameError = document.getElementById('editBrandNameError');
+    const imageError = document.getElementById('editBrandImageError');
+    const submitBtn = document.querySelector('#editBrandModal button[type="submit"]');
+    const loadingIcon = submitBtn ? submitBtn.querySelector('#loadingIconEdit') : null;
+
+    if (nameError) nameError.textContent = '';
+    if (nameInput) nameInput.classList.remove('border-red-500');
+    if (imageError) imageError.textContent = '';
+
+    // === VALIDATE ===
+    let hasError = false;
+    if (!nameInput || !nameInput.value.trim()) {
+        if (nameError) nameError.textContent = 'Please enter brand name';
+        if (nameInput) nameInput.classList.add('border-red-500');
+        if (nameInput) nameInput.focus();
+        hasError = true;
+    }
+    if (hasError) return;
+
+    if (submitBtn) submitBtn.disabled = true;
+    if (loadingIcon) loadingIcon.classList.remove('hidden');
+
+    const formData = new FormData();
+    formData.append('type', 'update');
+    formData.append('brandId', idInput ? idInput.value : '');
+    formData.append('brandName', nameInput.value.trim());
+    if (imageInput && imageInput.files.length > 0) {
+        formData.append('brandImage', imageInput.files[0]);
+    }
+
+    fetch('/brand/view', {
+        method: 'POST',
+        body: formData
+    })
+    .then(async response => {
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(data.message || 'An error occurred.');
+        return data;
+    })
+    .then(data => {
+        if (data.isSuccess || data.success) {
+            showToast(data.message, 'success');
+            closeEditModal();
+            let currentPage = parseInt(getQueryParam('page')) || 1;
+            loadBrandContentAndEvent(currentPage);
+        } else {
+            showToast(data.message, 'error');
+        }
+    })
+    .catch(error => {
+        showToast(error.message, 'error');
+    })
+    .finally(() => {
+        if (submitBtn) submitBtn.disabled = false;
+        if (loadingIcon) loadingIcon.classList.add('hidden');
+    });
+}
+
+
+function handleDeleteBrand(id) {
+    const formData = new FormData();
+    formData.append('type', 'delete');
+    formData.append('brandId', id);
+
+    fetch('/brand/view', {
+        method: 'POST',
+        body: formData
+    })
+            .then(response => response.json())
+            .then(data => {
+                if (data.isSuccess || data.success) {
+                    showToast(data.message, 'success');
+                    let currentPage = parseInt(getQueryParam('page')) || 1;
+                    loadBrandContentAndEvent(currentPage);
+                } else {
+                    showToast(data.message, 'error');
+                }
+            })
+            .catch(() => showToast('Server connection error'));
+}
 
 function deleteBrand(id) {
+    if (typeof Swal === 'undefined')
+        return alert('Xác nhận xoá bị lỗi! Vui lòng reload lại trang.');
     Swal.fire({
         title: 'Are you sure you want to delete this brand?',
         text: "This brand will be permanently deleted and cannot be restored. All products under this brand will be affected.",
@@ -164,67 +342,13 @@ function deleteBrand(id) {
         cancelButtonText: 'Cancel'
     }).then((result) => {
         if (result.isConfirmed) {
-            fetch(`/brand?action=delete&id=${id}`, {
-                method: 'POST'
-            })
-                    .then(response => response.json())
-                    .then(data => {
-                        console.log('Delete brand response:', data); // Debug
-                        Toastify({
-                            text: data.message,
-                            duration: 5000,
-                            gravity: "top",
-                            position: "right",
-                            style: {
-                                background: (data.success || data.isSuccess) ? "#2196F3" : "#f44336"
-                            },
-                            close: true
-                        }).showToast();
-                        if ((data.success || data.isSuccess) && typeof loadBrandContentAndEvent === "function") {
-                            let currentPage = parseInt(getQueryParam('page')) || 1;
-                            loadBrandContentAndEvent(currentPage);
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Delete brand error:', error);
-                        Toastify({
-                            text: "Delete failed! Server error.",
-                            duration: 5000,
-                            gravity: "top",
-                            position: "right",
-                            style: {background: "#f44336"},
-                            close: true
-                        }).showToast();
-                    });
+            handleDeleteBrand(id);
         }
     });
 }
 
-document.addEventListener('click', function (e) {
-    if (e.target && e.target.id === 'confirmDeleteBtn') {
-        if (brandIdToDelete !== null) {
-            handleDeleteBrand(brandIdToDelete);
-            closeConfirmDeleteModal();
-        }
-    }
-    if (e.target && e.target.id === 'cancelDeleteBtn') {
-        closeConfirmDeleteModal();
-    }
-    if (e.target && e.target.id === 'closeDeleteModalBtn') {
-        closeConfirmDeleteModal();
-    }
-    if (e.target && e.target.id === 'confirmDeleteModal') {
-        closeConfirmDeleteModal();
-    }
-    if (e.target && e.target.id === 'createBrandModal')
-        closeCreateModal();
-    if (e.target && e.target.id === 'editBrandModal')
-        closeEditModal();
-});
-document.addEventListener('keydown', function (e) {
-    if (e.key === 'Escape')
-        closeConfirmDeleteModal();
-});
+// ====================== IMAGE PREVIEW ==========================
+
 function showFileName(input) {
     const fileName = input.files && input.files.length > 0 ? input.files[0].name : 'No file chosen';
     let label = input.parentNode.querySelector('.file-name');
@@ -232,13 +356,13 @@ function showFileName(input) {
         label = input.closest('div').querySelector('.file-name');
     if (label)
         label.textContent = fileName;
-    // Preview ảnh
     if (input.id === 'newBrandImage') {
         previewImage(input, 'createBrandImagePreview');
     } else if (input.id === 'editBrandImage') {
         previewImage(input, 'editBrandImagePreview');
     }
 }
+
 function previewImage(input, previewId) {
     const preview = document.getElementById(previewId);
     if (!preview)
@@ -253,370 +377,124 @@ function previewImage(input, previewId) {
     }
 }
 
-
-function handleCreateBrand() {
-    const nameInput = document.getElementById('newBrandName');
-    const name = nameInput.value.trim();
-    const imageInput = document.getElementById('newBrandImage');
-    const nameError = document.getElementById('createBrandNameError');
-    const imageError = document.getElementById('createBrandImageError');
-    const submitBtn = document.querySelector('#createBrandForm button[type="submit"]');
-    const loadingIcon = submitBtn.querySelector('#loadingIconCreate');
-
-    nameError.textContent = '';
-    nameInput.classList.remove('border-red-500');
-    imageError.textContent = '';
-
-    let hasError = false;
-    if (!name) {
-        nameError.textContent = 'Please enter brand name';
-        nameInput.classList.add('border-red-500');
-        hasError = true;
-    }
-    if (!imageInput.files.length) {
-        imageError.textContent = 'Please upload brand image';
-        hasError = true;
-    }
-    if (hasError)
-        return;
-
-    submitBtn.disabled = true;
-//    showLoading();
-    loadingIcon.classList.remove('hidden');
-    const formData = new FormData();
-    formData.append('action', 'create');
-    formData.append('name', name);
-    formData.append('image', imageInput.files[0]);
-    showLoading();
-    fetch('/brand', {
-        method: 'POST',
-        body: formData
-    })
-            .then(response => response.json())
-            .then(data => {
-                hiddenLoading();
-                if (data.success) {
-                    showToast(data.message, 'success');
-                    closeCreateModal();
-                    loadBrandContentAndEvent(1);
-                } else {
-                    showToast(data.message, 'error');
-                }
-            })
-            .catch(() => showToast('Server connection error', 'error'))
-            .finally(() => {
-                submitBtn.disabled = false;
-                loadingIcon.classList.add('hidden');
-                hideLoading();
-            });
-}
-
-function handleUpdateBrand() {
-    const id = document.getElementById('editBrandId').value;
-    const nameInput = document.getElementById('editBrandName');
-    const name = nameInput.value.trim();
-    const imageInput = document.getElementById('editBrandImage');
-    const nameError = document.getElementById('editBrandNameError');
-    const imageError = document.getElementById('editBrandImageError');
-    const submitBtn = document.querySelector('#editBrandModal button[type="submit"]');
-    const loadingIcon = submitBtn.querySelector('#loadingIconEdit');
-
-    nameError.textContent = '';
-    nameInput.classList.remove('border-red-500');
-    if (imageError)
-        imageError.textContent = '';
-    if (!name) {
-        nameError.textContent = 'Please enter brand name';
-        nameInput.classList.add('border-red-500');
-        nameInput.focus();
-        return;
-    }
-    submitBtn.disabled = true;
-    loadingIcon.classList.remove('hidden');
-    const formData = new FormData();
-    formData.append('action', 'update');
-    formData.append('id', id);
-    formData.append('name', name);
-
-    if (imageInput.files.length > 0) {
-        formData.append('image', imageInput.files[0]);
-    }
-    showLoading();
-    fetch('/brand', {
-        method: 'POST',
-        body: formData
-    })
-            .then(async response => {
-                const data = await response.json().catch(() => ({}));
-                hiddenLoading();
-                if (!response.ok) {
-                    throw new Error(data.message || 'An error occurred.');
-                }
-                return data;
-            })
-            .then(data => {
-                showToast(data.message, 'success');
-                closeEditModal();
-                let currentPage = parseInt(getQueryParam('page')) || 1;
-                loadBrandContentAndEvent(currentPage);
-            })
-            .catch(error => {
-                showToast(error.message, 'error');
-            })
-            .finally(() => {
-                submitBtn.disabled = false;
-                loadingIcon.classList.add('hidden');
-            });
-}
-
-document.addEventListener('keydown', function (e) {
-    if (e.key === 'Escape')
-        closeConfirmDeleteModal();
-});
-
-
-
-function handleDeleteBrand(id) {
-    fetch('/brand', {
-        method: 'POST',
-        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-        body: `action=delete&id=${id}`
-    })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    showToast(data.message);
-                    let currentPage = parseInt(getQueryParam('page')) || 1;
-                    loadBrandContentAndEvent(currentPage);
-                } else {
-                    showToast(data.message);
-                }
-            })
-            .catch(() => showToast('Server connection error'));
-}
-
-function validateBrandData(name, image) {
-    const imageRegex = /^(https?:\/\/)?([\w\-]+\.)+[\w\-]+(\/\S+\.(jpg|jpeg|png|gif|webp|svg))$/i;
-
-    if (!name || !image) {
-        showToast('Please fill in all information');
-        return false;
-    }
-    if (!imageRegex.test(image)) {
-        showToast('Invalid image URL');
-        return false;
-    }
-    return true;
-}
-function showSuccessAlert(message) {
-    if (typeof Swal !== "undefined") {
-        Swal.fire({
-            icon: 'success',
-            title: 'Success',
-            text: message,
-            showConfirmButton: false,
-            timer: 2000
-        });
-    } else {
-        alert(message);
-    }
-}
-
-function showErrorAlert(message) {
-    if (typeof Swal !== "undefined") {
-        Swal.fire({
-            icon: 'error',
-            title: 'error',
-            text: message,
-            confirmButtonColor: '#3085d6'
-        });
-    } else {
-        alert(message);
-    }
-}
-let totalPages = 1;
-
-function getQueryParam(param) {
-    const urlParams = new URLSearchParams(window.location.search);
-    return urlParams.get(param);
-}
 function updateBrandUrl(page) {
     const url = new URL(window.location);
     url.searchParams.set('view', 'brand');
-    url.searchParams.delete('page');
-    if (page > 1 || (page === 1 && window.location.search.includes('page='))) {
+    url.searchParams.set('page', page);
+    window.history.pushState(null, '', url.toString());
+}
+
+function updateBrandUrl(page) {
+    const url = new URL(window.location);
+    url.searchParams.set('view', 'brand');
+    // Nếu page > 1 hoặc hiện tại đã có page trên URL, thì show page lên url
+    // page==1 nhưng url đang có page rồi => vẫn giữ page
+    if (page > 1 || url.searchParams.has('page')) {
         url.searchParams.set('page', page);
+    } else {
+        url.searchParams.delete('page');
     }
     window.history.pushState(null, '', url.toString());
 }
 
-function loadBrandContentAndEvent(page = 1, updateUrl = true) {
-    const currentView = getQueryParam('view');
-    if (currentView !== 'brand')
-        return;
-    if (updateUrl)
-        updateBrandUrl(page);
-    var brandContainer = document.getElementById('brandContainer');
-    if (brandContainer) {
-        brandContainer.innerHTML = '';
-    }
+function getBrandPageFromUrl() {
+    const params = new URLSearchParams(window.location.search);
+    return params.has('page') ? parseInt(params.get('page')) || 1 : 1;
+}
 
-    var loadingBrand = document.getElementById('loadingBrand');
+// Hàm load brand, truyền đúng page
+function loadBrandContentAndEvent(page = 1, updateUrl = true) {
+    const brandTableContainer = document.getElementById('brandTable');
+    const loadingBrand = document.getElementById('loadingBrand');
+    const paginationContainer = document.getElementById('pagination');
+    if (brandTableContainer) brandTableContainer.innerHTML = '';
+    if (paginationContainer) paginationContainer.innerHTML = '';
     if (loadingBrand) {
         loadingBrand.innerHTML = `
-        <div class="flex w-full justify-center items-center h-32">
-        <div class="w-10 h-10 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
-    </div>
-`;
+            <div class="flex w-full justify-center items-center h-32">
+                <div class="w-10 h-10 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+            </div>
+        `;
     }
+    Promise.all([
+        fetch(`/brand/view?type=list&page=${page}`).then(res => res.text()),
+        fetch(`/brand/view?type=pagination&page=${page}`).then(res => res.text())
+    ]).then(([brandHTML, paginationHTML]) => {
+        if (brandTableContainer) brandTableContainer.innerHTML = brandHTML;
+        if (paginationContainer) paginationContainer.innerHTML = paginationHTML;
+        if (loadingBrand) loadingBrand.innerHTML = '';
 
-    fetch(`/admin/view?viewPage=brand&page=${page}`)
-            .then(res => res.text())
-            .then(html => {
-                if (loadingBrand)
-                    loadingBrand.innerHTML = '';
-                if (brandContainer)
-                    brandContainer.innerHTML = html;
+        // --------- Chỉ updateUrl nếu là do user click, không update khi popstate hoặc load đầu tiên (reload page gốc) ---------
+        if (updateUrl) updateBrandUrl(page);
 
-                lucide.createIcons && lucide.createIcons();
-
-                const totalPagesInput = document.getElementById('totalPages');
-                if (totalPagesInput) {
-                    totalPages = parseInt(totalPagesInput.value);
+        // Gắn event cho các nút phân trang
+        document.querySelectorAll("div.pagination, [page]").forEach(element => {
+            element.addEventListener("click", function () {
+                const pageClick = parseInt(this.getAttribute("page"));
+                if (!isNaN(pageClick) && pageClick !== page) {
+                    loadBrandContentAndEvent(pageClick, true);
                 }
-
-                initPaginationAccessibility();
-            })
-            .catch(error => {
-                if (loadingBrand)
-                    loadingBrand.innerHTML = '';
-                if (brandContainer) {
-                    brandContainer.innerHTML = `
-                <div class="text-center text-red-600 py-8">⚠️ Error loading data</div>
-            `;
-                }
-                console.error('Error:', error);
             });
-}
-
-function loadBrandPage(page) {
-    if (page < 1 || page > totalPages)
-        return;
-    document.querySelectorAll('[page]').forEach(btn => {
-        btn.style.pointerEvents = 'none';
-        btn.style.opacity = '0.7';
-    });
-
-    loadBrandContentAndEvent(page);
-}
-
-function initPaginationAccessibility() {
-    document.querySelectorAll('[page]').forEach(btn => {
-        btn.setAttribute('role', 'button');
-        btn.setAttribute('tabindex', '0');
-        btn.style.pointerEvents = '';
-        btn.style.opacity = '';
-    });
-}
-
-window.addEventListener('popstate', function (event) {
-    const params = new URLSearchParams(window.location.search);
-    const view = params.get('view');
-    let page = 1;
-    if (params.has('page')) {
-        page = parseInt(params.get('page')) || 1;
-    }
-    if (view === 'brand') {
-        loadBrandContentAndEvent(page, false);
-    }
-});
-
-document.addEventListener('click', function (e) {
-    const paginationBtn = e.target.closest('.pagination, [page]');
-    if (!paginationBtn || !paginationBtn.hasAttribute('page'))
-        return;
-
-    const isDisabled = paginationBtn.classList.contains('pointer-events-none') ||
-            paginationBtn.getAttribute('aria-disabled') === 'true' ||
-            paginationBtn.style.pointerEvents === 'none';
-    if (isDisabled)
-        return;
-
-    const page = parseInt(paginationBtn.getAttribute('page'));
-    if (isNaN(page))
-        return;
-
-    const currentView = getQueryParam('view');
-    if (currentView === 'brand') {
-        loadBrandPage(page);
-    }
-});
-
-document.addEventListener('keydown', function (e) {
-    if ((e.key === 'Enter' || e.key === ' ') && document.activeElement && document.activeElement.hasAttribute('page')) {
-        const btn = document.activeElement;
-        const isDisabled = btn.classList.contains('pointer-events-none') ||
-                btn.getAttribute('aria-disabled') === 'true' ||
-                btn.style.pointerEvents === 'none';
-        if (isDisabled)
-            return;
-        const page = parseInt(btn.getAttribute('page'));
-        if (!isNaN(page)) {
-            e.preventDefault();
-
-            const currentView = getQueryParam('view');
-            if (currentView === 'brand') {
-                loadBrandPage(page);
-            }
-        }
-    }
-});
-
-document.addEventListener('DOMContentLoaded', function () {
-    initPaginationAccessibility();
-
-    const params = new URLSearchParams(window.location.search);
-    const view = params.get('view');
-    let page = 1;
-    if (params.has('page')) {
-        page = parseInt(params.get('page')) || 1;
-    }
-    if (view === 'brand') {
-        loadBrandContentAndEvent(page, false);
-    }
-    const setupImagePreview = (inputId, previewId) => {
-        const input = document.getElementById(inputId);
-        if (!input)
-            return;
-        input.addEventListener('change', function () {
-            previewImage(this, previewId);
         });
-    };
-    setupImagePreview('newBrandImage', 'createBrandImagePreview');
-    setupImagePreview('editBrandImage', 'editBrandImagePreview');
+
+        updateBrandTotalCount();
+        if (window.lucide && typeof lucide.createIcons === "function") {
+            lucide.createIcons();
+        }
+    }).catch((error) => {
+        if (loadingBrand) loadingBrand.innerHTML = '';
+        if (brandTableContainer) {
+            brandTableContainer.innerHTML = `
+            <div class="text-center text-red-600 py-8">⚠️ Error loading brand data</div>
+        `;
+        }
+        if (paginationContainer) paginationContainer.innerHTML = '';
+        console.error('Error loading brand data:', error);
+    });
+}
+
+// Đếm brand tổng (nếu có)
+function updateBrandTotalCount() {
+    fetch('/brand/view?type=total')
+        .then(res => res.json())
+        .then(data => {
+            document.getElementById('brandTotalCount').textContent = data.total;
+        });
+}
+
+// Popstate: back/forward trình duyệt
+window.addEventListener('popstate', function () {
+    const params = new URLSearchParams(window.location.search);
+    const view = params.get('view');
+    let page = getBrandPageFromUrl();
+    if (view === 'brand') {
+        loadBrandContentAndEvent(page, false); // không update url khi back/forward
+    }
 });
 
+// Initial load
+document.addEventListener('DOMContentLoaded', function () {
+    const params = new URLSearchParams(window.location.search);
+    const view = params.get('view');
+    let page = getBrandPageFromUrl();
+    if (view === 'brand') {
+        loadBrandContentAndEvent(page, false); // không update url khi load lần đầu
+    }
+});
+
+// Hỗ trợ Enter/Space cho pagination (accessibility)
 document.addEventListener('keydown', function (e) {
     if ((e.key === 'Enter' || e.key === ' ') && document.activeElement && document.activeElement.hasAttribute('page')) {
         const btn = document.activeElement;
-        const isDisabled = btn.classList.contains('pointer-events-none') ||
-                btn.getAttribute('aria-disabled') === 'true' ||
-                btn.style.pointerEvents === 'none';
-        if (isDisabled)
-            return;
         const page = parseInt(btn.getAttribute('page'));
         if (!isNaN(page)) {
             e.preventDefault();
-
-            const params = new URLSearchParams(window.location.search);
-            const currentView = params.get('view');
-
-            if (currentView === 'brand') {
-                loadBrandPage(page);
-            }
+            loadBrandContentAndEvent(page, true);
         }
     }
 });
+
+
 
 document.addEventListener('keydown', function (e) {
     if (e.key === "Escape") {
@@ -638,6 +516,7 @@ document.addEventListener('keydown', function (e) {
     }
 });
 
+// ===================== TOAST NOTIFY ======================
 function showToast(message, type = 'success') {
     // type: 'success', 'error', 'info', 'warning'
     const icons = {
@@ -661,10 +540,20 @@ function showToast(message, type = 'success') {
             <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24"><path stroke="currentColor" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
         </button>
     `;
-    document.getElementById('toast-container').appendChild(toast);
-    setTimeout(() => {
-        toast.classList.add('opacity-0', 'translate-x-10');
-        setTimeout(() => toast.remove(), 300);
-    }, 2500);
+    const toastContainer = document.getElementById('toast-container');
+    if (toastContainer) {
+        toastContainer.appendChild(toast);
+        setTimeout(() => {
+            toast.classList.add('opacity-0', 'translate-x-10');
+            setTimeout(() => toast.remove(), 300);
+        }, 2500);
+    } else {
+        // fallback
+        alert(message);
+}
 }
 
+function getQueryParam(param) {
+    const urlParams = new URLSearchParams(window.location.search);
+    return urlParams.get(param);
+}

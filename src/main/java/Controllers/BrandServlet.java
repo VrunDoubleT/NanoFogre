@@ -14,8 +14,10 @@ import jakarta.servlet.http.Part;
 import java.io.IOException;
 import java.util.List;
 import static Utils.CloudinaryConfig.uploadSingleImage;
+import java.util.HashMap;
+import java.util.Map;
 
-@WebServlet(name = "BrandViewServlet", urlPatterns = {"/brand"})
+@WebServlet(name = "BrandViewServlet", urlPatterns = {"/brand/view"})
 @MultipartConfig(
         fileSizeThreshold = 1024 * 1024 * 1,
         maxFileSize = 1024 * 1024 * 10,
@@ -28,145 +30,147 @@ public class BrandServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        if ("getBrand".equals(request.getParameter("action"))) {
-            try {
-                String idParam = request.getParameter("id");
-                System.out.println("Received ID parameter: " + idParam);
-                int id = Integer.parseInt(idParam);
-                System.out.println("Parsed ID: " + id);
-                Brand brand = brandDao.getBrandById(id);
-                System.out.println("Found brand: " + (brand != null ? brand.getName() : "null"));
+
+        String type = request.getParameter("type") != null ? request.getParameter("type") : "list";
+        int limit = 5;
+
+        switch (type) {
+            case "list":
+                int page = Converter.parseOption(request.getParameter("page"), 1);
+                List<Brand> brands = brandDao.getBrands(page, limit);
+                request.setAttribute("brands", brands);
+                request.setAttribute("page", page);
+                request.setAttribute("limit", limit);
+                request.getRequestDispatcher("/WEB-INF/employees/templates/brands/brandTeamplate.jsp").forward(request, response);
+                break;
+
+            case "pagination":
+                int p = Converter.parseOption(request.getParameter("page"), 1);
+                int t = brandDao.getTotalBrands();
+                request.setAttribute("total", t);
+                request.setAttribute("limit", limit);
+                request.setAttribute("page", p);
+                request.getRequestDispatcher("/WEB-INF/employees/common/paginationTeamplate.jsp").forward(request, response);
+                break;
+            case "edit":
+                int editBrandId = Integer.parseInt(request.getParameter("brandId"));
+                Brand editBrand = brandDao.getBrandById(editBrandId);
+                request.setAttribute("brand", editBrand);
+                request.getRequestDispatcher("/WEB-INF/employees/templates/brand/editBrandTemplate.jsp").forward(request, response);
+                break;
+            case "total":
+                int totalBrandCount = brandDao.getTotalBrands();
                 response.setContentType("application/json");
                 response.setCharacterEncoding("UTF-8");
-                if (brand != null) {
-                    String jsonResponse = String.format(
-                            "{\"success\":true,\"brand\":{\"id\":%d,\"name\":\"%s\",\"image\":\"%s\"}}",
-                            brand.getId(),
-                            brand.getName().replace("\"", "\\\""), // Escape quotes
-                            brand.getUrl() != null ? brand.getUrl().replace("\"", "\\\"") : ""
-                    );
-                    response.getWriter().write(jsonResponse);
-                } else {
-                    response.getWriter().write("{\"success\":false,\"message\":\"Brand not found\"}");
-                }
-            } catch (NumberFormatException e) {
+                response.getWriter().write("{\"total\":" + totalBrandCount + "}");
+                break;
+            case "check-name":
+                String brandName = request.getParameter("brandName");
+                boolean exists = brandDao.isBrandNameExists(brandName);
                 response.setContentType("application/json");
-                response.getWriter().write("{\"success\":false,\"message\":\"Invalid ID format\"}");
-            } catch (Exception e) {
-                e.printStackTrace(); 
-                response.setContentType("application/json");
-                response.getWriter().write("{\"success\":false,\"message\":\"Server error: " + e.getMessage() + "\"}");
-            }
-            return;
+                response.getWriter().write("{\"exists\":" + exists + "}");
+                break;
+            default:
+                // fallback (optional)
+                break;
         }
-        int page = Converter.parseOption(request.getParameter("page"), 1);
-        int limit = 5;
-        List<Brand> brands = brandDao.getBrandsPaginated(page, limit);
-        int totalBrands = brandDao.getTotalBrandsForPagination();
-        int totalPages = (int) Math.ceil((double) totalBrands / limit);
-        // Set attribute
-        request.setAttribute("brands", brands);
-        request.setAttribute("total", totalBrands);
-        request.setAttribute("limit", limit);
-        request.setAttribute("totalPages", totalPages);
-        request.setAttribute("page", page);
-        String viewPath = (String) request.getAttribute("viewPath");
-        request.getRequestDispatcher(viewPath).forward(request, response);
     }
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        request.setCharacterEncoding("UTF-8");
+        String type = request.getParameter("type") != null ? request.getParameter("type") : "create";
         response.setContentType("application/json");
-        String action = request.getParameter("action");
-        boolean success = false;
-        String message = "Invalid action";
-        try {
-            if (action == null) {
-                throw new RuntimeException("Missing action parameter");
-            }
-            switch (action.toLowerCase()) {
-                case "create":
-                    success = handleCreate(request);
-                    message = success ? "Brand created successfully" : "Error creating brand";
-                    break;
-                case "update":
-                    success = handleUpdate(request);
-                    message = success ? "Brand updated successfully" : "Error updating brand";
-                    break;
-                case "delete":
-                    success = handleDelete(request);
-                    message = success ? "Brand deleted successfully" : "Error deleting brand";
-                    break;
-                default:
-                    message = "Invalid action";
-            }
-        } catch (RuntimeException e) {
-            message = e.getMessage() != null ? e.getMessage() : "System error";
-            success = false;
-            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-        } catch (Exception e) {
-            message = e.getMessage() != null ? e.getMessage() : "System error";
-            success = false;
-            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-        }
+        response.setCharacterEncoding("UTF-8");
 
-        response.getWriter().write(String.format(
-                "{\"success\":%b,\"message\":\"%s\"}", success, message));
+        switch (type) {
+            case "create":
+                handleCreate(request, response);
+                break;
+            case "update":
+                handleUpdate(request, response);
+                break;
+            case "delete":
+                handleDelete(request, response);
+                break;
+            default:
+                responseJson(response, false, "Invalid action");
+        }
     }
 
-    private boolean handleCreate(HttpServletRequest request) throws IOException, ServletException {
-        String name = request.getParameter("name").trim();
-        Part imagePart = request.getPart("image");
-        if (name.isEmpty() || imagePart == null || imagePart.getSize() == 0) {
-            throw new RuntimeException("Missing brand name or image.");
-        }
-
-        String imageUrl = uploadSingleImage(imagePart);
-
-        if (imageUrl == null || imageUrl.isEmpty()) {
-            throw new RuntimeException("Error uploading brand image!");
+    private void handleCreate(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
+        String name = request.getParameter("brandName");
+        Part imagePart = request.getPart("brandImage");
+        if (name == null || name.trim().isEmpty() || imagePart == null || imagePart.getSize() == 0) {
+            responseJson(response, false, "Missing brand name or image.");
+            return;
         }
         if (brandDao.isBrandNameExists(name)) {
-            throw new RuntimeException("Brand name already exists");
+            responseJson(response, false, "Brand name already exists.");
+            return;
         }
-        return brandDao.createBrand(name, imageUrl);
+        String imageUrl = Utils.CloudinaryConfig.uploadSingleImage(imagePart);
+        if (imageUrl == null || imageUrl.isEmpty()) {
+            responseJson(response, false, "Error uploading brand image!");
+            return;
+        }
+        boolean created = brandDao.createBrand(name, imageUrl);
+        responseJson(response, created, created ? "Brand created successfully." : "Failed to create brand.");
     }
 
-    private boolean handleUpdate(HttpServletRequest request) throws IOException, ServletException {
-        int id = Integer.parseInt(request.getParameter("id"));
-        String name = request.getParameter("name").trim();
-
+    private void handleUpdate(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
+        int id = Integer.parseInt(request.getParameter("brandId"));
+        String name = request.getParameter("brandName");
         Brand oldBrand = brandDao.getBrandById(id);
         String imageUrl = oldBrand != null ? oldBrand.getUrl() : "";
 
-        Part imagePart = request.getPart("image");
+        Part imagePart = request.getPart("brandImage");
         if (imagePart != null && imagePart.getSize() > 0) {
             imageUrl = Utils.CloudinaryConfig.uploadSingleImage(imagePart);
             if (imageUrl == null || imageUrl.isEmpty()) {
-                throw new RuntimeException("Error uploading brand image!");
+                responseJson(response, false, "Error uploading brand image!");
+                return;
             }
         }
-        if (name.isEmpty() || imageUrl.isEmpty()) {
-            throw new RuntimeException("Missing brand name or image.");
+        if (name == null || name.trim().isEmpty() || imageUrl == null || imageUrl.isEmpty()) {
+            responseJson(response, false, "Missing brand name or image.");
+            return;
         }
         if (brandDao.isBrandNameExistsExceptId(name, id)) {
-            throw new RuntimeException("The brand has existed.");
+            responseJson(response, false, "Brand name already exists.");
+            return;
         }
-        return brandDao.updateBrand(id, name, imageUrl);
+        boolean updated = brandDao.updateBrand(id, name, imageUrl);
+        responseJson(response, updated, updated ? "Brand updated successfully." : "Failed to update brand.");
     }
 
-    private boolean handleDelete(HttpServletRequest request) {
-        int id = Integer.parseInt(request.getParameter("id"));
-        Brand brand = brandDao.getBrandById(id);
-        if (brand == null) {
-            throw new RuntimeException("Brand does not exist");
+    private void handleDelete(HttpServletRequest request, HttpServletResponse response) throws IOException {
+    int id = Integer.parseInt(request.getParameter("brandId"));
+    Brand brand = brandDao.getBrandById(id);
+    if (brand == null) {
+        responseJson(response, false, "Brand does not exist.");
+        return;
+    }
+    try {
+        boolean deleted = brandDao.deleteBrand(id);
+        responseJson(response, deleted, deleted ? "Brand deleted successfully." : "Cannot delete brand due to system error.");
+    } catch (RuntimeException ex) {
+        String msg = ex.getMessage() != null ? ex.getMessage() : "Cannot delete brand due to system error.";
+        if (msg.contains("cannot be set to null") || msg.contains("product table constraints")) {
+            responseJson(response, false, "Không thể xóa Brand vì sản phẩm còn tham chiếu đến Brand này hoặc Products.brandId không cho phép NULL!");
+        } else {
+            responseJson(response, false, msg);
         }
-        boolean success = brandDao.deleteBrand(id);
-        if (!success) {
-            throw new RuntimeException("Cannot delete brand due to system error");
-        }
-        return true;
+    }
+}
+
+
+    private void responseJson(HttpServletResponse response, boolean isSuccess, String message) throws IOException {
+        response.setContentType("application/json");
+        response.setCharacterEncoding("UTF-8");
+        Map<String, Object> result = new HashMap<>();
+        result.put("isSuccess", isSuccess);
+        result.put("message", message);
+        response.getWriter().write(new com.google.gson.Gson().toJson(result));
     }
 }

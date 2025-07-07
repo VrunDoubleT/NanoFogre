@@ -17,20 +17,25 @@
     </a>
 
     <!-- Search Bar -->
-    <div class="flex-1 px-6 hidden md:block">
-      <div class="relative max-w-xl mx-auto">
-        <input
-          type="text"
-          placeholder="Search models..."
-          class="w-full px-4 py-2 rounded-full bg-slate-800 text-white placeholder-blue-200 border border-slate-600 focus:outline-none focus:ring-2 focus:ring-yellow-400"
-        />
-        <button class="absolute top-1/2 right-3 -translate-y-1/2 text-yellow-400 hover:text-yellow-300">
-          <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-            <path fill-rule="evenodd" d="M8 4a4 4 0 014 4v.586l2.707 2.707a1 1 0 01-1.414 1.414L10.586 10H10a4 4 0 110-6z" clip-rule="evenodd" />
-          </svg>
-        </button>
-      </div>
-    </div>
+<div class="flex-1 px-6 hidden md:block">
+  <div class="relative max-w-xl mx-auto">
+    <form action="/SearchServlet" method="get" autocomplete="off">
+      <input
+        type="text"
+        name="keyword"
+        placeholder="Search models..."
+        class="w-full px-4 py-2 rounded-full bg-slate-800 text-white placeholder-blue-200 border border-slate-600 focus:outline-none focus:ring-2 focus:ring-yellow-400"
+        value="${param.keyword != null ? param.keyword : ''}"
+        autocomplete="off"
+      />
+      <button type="submit" class="absolute top-1/2 right-3 -translate-y-1/2 text-yellow-400 hover:text-yellow-300">
+        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+          <path fill-rule="evenodd" d="M8 4a4 4 0 014 4v.586l2.707 2.707a1 1 0 01-1.414 1.414L10.586 10H10a4 4 0 110-6z" clip-rule="evenodd" />
+        </svg>
+      </button>
+    </form>
+  </div>
+</div>
 
     <!-- Login / Register -->
     <div class="flex items-center space-x-4">
@@ -41,3 +46,5 @@
     </div>
   </div>
 </header>
+<script src="/js/search.js"></script>
+

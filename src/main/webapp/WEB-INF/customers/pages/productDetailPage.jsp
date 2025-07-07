@@ -388,24 +388,7 @@
                 const productId = getUrlParam("pId") || 0
                 loadReviewAndPagination(productId, star, 1)
             }
-            function addToCart() {
-                const quantity = document.getElementById('quantity').value;
-                const productId = /* ID lấy từ server-side hoặc URL */;
-                        fetch(ctx + '/cart/add', {
-                            method: 'POST',
-                            headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-                            body: `productId=${productId}&quantity=${quantity}`
-                        })
-                        .then(r => r.json())
-                        .then(data => {
-                            if (data.success) {
-                                showAlert('Đã thêm vào giỏ hàng!', 'success');
-                                // Optionally: window.location.href = ctx + '/cart';
-                            } else {
-                                showAlert(data.message || 'Lỗi thêm giỏ hàng', 'error');
-                            }
-                        });
-            }
+
 
         </script>
     </body>

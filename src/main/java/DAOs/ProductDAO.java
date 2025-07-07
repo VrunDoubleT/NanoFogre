@@ -16,6 +16,8 @@ import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  *
@@ -640,5 +642,140 @@ public class ProductDAO extends DB.DBContext {
             e.printStackTrace();
             return false;
         }
+    }
+     public List<Product> search(String keyword, Integer categoryId, Integer brandId) {
+        List<Product> list = new ArrayList<>();
+        StringBuilder query = new StringBuilder(
+                "SELECT p.productId, p.productTitle, p.productPrice, p.slug, i.url "
+                + "FROM Products p "
+                + "LEFT JOIN ProductImages i ON p.productId = i.productId "
+                + "WHERE p._destroy = 0 "
+        );
+        List<Object> params = new ArrayList<>();
+
+        // Có keyword thì thêm điều kiện
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            query.append("AND p.productTitle LIKE ? ");
+            params.add("%" + keyword.trim() + "%");
+        }
+        // Có category thì thêm điều kiện
+        if (categoryId != null && categoryId > 0) {
+            query.append("AND p.categoryId = ? ");
+            params.add(categoryId);
+        }
+        // Có brand thì thêm điều kiện
+        if (brandId != null && brandId > 0) {
+            query.append("AND p.brandId = ? ");
+            params.add(brandId);
+        }
+
+        try ( ResultSet rs = execSelectQuery(query.toString(), params.toArray())) {
+            Map<Integer, Product> productMap = new HashMap<>();
+            while (rs.next()) {
+                int pid = rs.getInt("productId");
+                Product p = productMap.get(pid);
+                if (p == null) {
+                    p = new Product();
+                    p.setProductId(pid);
+                    p.setTitle(rs.getString("productTitle"));
+                    p.setPrice(rs.getDouble("productPrice"));
+                    p.setSlug(rs.getString("slug"));
+                    p.setUrls(new ArrayList<String>());
+                    productMap.put(pid, p);
+                    list.add(p);
+                }
+                String url = rs.getString("url");
+                if (url != null && !url.isEmpty()) {
+                    p.getUrls().add(url);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
+
+    public List<Product> searchByKeyword(String keyword) {
+        List<Product> list = new ArrayList<>();
+        String query = "SELECT p.productId, p.productTitle, p.productPrice, p.slug, i.url "
+                + "FROM Products p "
+                + "LEFT JOIN ProductImages i ON p.productId = i.productId "
+                + "LEFT JOIN Brands b ON p.brandId = b.brandId "
+                + "LEFT JOIN Categories c ON p.categoryId = c.categoryId "
+                + "WHERE (p.productTitle LIKE ? OR b.brandName LIKE ? OR c.categoryName LIKE ?) AND p._destroy = 0";
+        Object[] params = {"%" + keyword + "%", "%" + keyword + "%", "%" + keyword + "%"};
+
+        try ( ResultSet rs = execSelectQuery(query, params)) {
+            Map<Integer, Product> productMap = new HashMap<>();
+            while (rs.next()) {
+                int pid = rs.getInt("productId");
+                Product p = productMap.get(pid);
+                if (p == null) {
+                    p = new Product();
+                    p.setProductId(pid);
+                    p.setTitle(rs.getString("productTitle"));
+                    p.setPrice(rs.getDouble("productPrice"));
+                    p.setSlug(rs.getString("slug"));
+                    p.setUrls(new ArrayList<String>());
+                    productMap.put(pid, p);
+                    list.add(p);
+                }
+                String url = rs.getString("url");
+                if (url != null && !url.isEmpty()) {
+                    p.getUrls().add(url);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
+
+    public Product getProductBySlug(String slug) {
+        Product product = null;
+        String query = "SELECT p.*, c.categoryName, b.brandName "
+                + "FROM Products p "
+                + "LEFT JOIN Categories c ON p.categoryId = c.categoryId "
+                + "LEFT JOIN Brands b ON p.brandId = b.brandId "
+                + "WHERE p.slug = ? AND p._destroy = 0";
+        Object[] params = {slug};
+        try ( ResultSet rs = execSelectQuery(query, params)) {
+            if (rs.next()) {
+                product = new Product();
+                int productId = rs.getInt("productId");
+                product.setProductId(productId);
+                product.setTitle(rs.getString("productTitle"));
+                product.setSlug(slug);
+                product.setDescription(rs.getString("productDescription"));
+                product.setMaterial(rs.getString("material"));
+                product.setPrice(rs.getDouble("productPrice"));
+                product.setQuantity(rs.getInt("productQuantity"));
+                product.setDestroy(rs.getBoolean("_destroy"));
+                product.setIsActive(rs.getBoolean("isActive"));
+                Object brandIdObj = rs.getObject("brandId");
+                if (brandIdObj != null) {
+                    int brandId = (int) brandIdObj;
+                    String brandName = rs.getString("brandName");
+                    product.setBrand(new Brand(brandId, brandName, null));
+                }
+                Object categoryIdObj = rs.getObject("categoryId");
+                if (categoryIdObj != null) {
+                    int categoryIdRs = (int) categoryIdObj;
+                    String categoryName = rs.getString("categoryName");
+                    product.setCategory(new Category(categoryIdRs, categoryName));
+                }
+                // Lấy ảnh
+                ResultSet urlsResult = execSelectQuery("SELECT * FROM ProductImages WHERE productId = ?", new Object[]{productId});
+                List<String> urls = new ArrayList<>();
+                while (urlsResult.next()) {
+                    urls.add(urlsResult.getString("url"));
+                }
+                product.setUrls(urls);
+                // Có thể bổ sung lấy reviewStats/attributes nếu muốn
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return product;
     }
 }
