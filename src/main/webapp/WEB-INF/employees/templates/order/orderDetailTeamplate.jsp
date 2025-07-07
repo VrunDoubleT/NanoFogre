@@ -4,6 +4,7 @@
     Author     : iphon
     Updated    : Enhanced UI with modern design
 --%>
+<%@page import="Utils.CurrencyFormatter"%>
 <%@page import="java.math.BigDecimal"%>
 <%@page import="Models.OrderDetails"%>
 <%@page import="java.time.format.DateTimeFormatter"%>
@@ -326,7 +327,8 @@
 
 
                                 <td class="px-6 py-4">
-                                    <span class="text-sm font-semibold text-green-500"><%= String.format("%.2f", d.getPrice())%>VND</span>
+
+                                    <span class="text-sm font-semibold text-green-500"><%= CurrencyFormatter.formatVietNamCurrency(d.getPrice())%> VND</span>
                                 </td>
                                 <td class="px-6 py-4 text-center">
                                     <span class="inline-flex items-center justify-center w-8 h-8 bg-blue-100 text-blue-800 rounded-full text-sm font-semibold">
@@ -334,7 +336,8 @@
                                     </span>
                                 </td>
                                 <td class="px-6 py-4 text-right">
-                                    <span class="text-sm font-bold text-green-500"><%= String.format("%.2f", lineTotal)%>VND</span>
+
+                                    <span class="text-sm font-semibold text-green-500"> <%= CurrencyFormatter.formatVietNamCurrency(lineTotal)%> VND</span>
                                 </td>
                             </tr>
                             <% }%>
@@ -350,7 +353,8 @@
                 <div class="w-80 space-y-4">
                     <div class="flex justify-between items-center py-2 border-b border-gray-100">
                         <span class="text-gray-600">Subtotal:</span>
-                        <span class="font-semibold text-green-500"><%= String.format("%.2f", order.getTotalAmount())%>VND</span>
+
+                        <span class="font-semibold text-green-500"><%= String.format("%.03f", order.getTotalAmount())%>VND</span>
                     </div>
                     <div class="flex justify-between items-center py-2 border-b border-gray-100">
                         <div class="flex items-center gap-2">
@@ -359,13 +363,14 @@
                             </svg>
                             <span class="text-gray-600">Shipping Fee:</span>
                         </div>
-                        <span class="font-semibold text-green-500"><%= String.format("%.2f", order.getShippingFee())%>VND</span>
+
+                        <span class="font-semibold text-green-500"><%= String.format("%.03f", order.getShippingFee())%>VND</span>
                     </div>
                     <div class="flex justify-between items-center py-3 border-t-2 border-gray-200">
                         <span class="text-lg font-semibold text-gray-800">Total Amount:</span>
                         <div class="text-right">
-                            <span class="text-2xl font-bold text-green-600">
-                                <%= String.format("%.2f", order.getTotalAmount() + order.getShippingFee())%>VND
+                            <span class="text-2xl font-bold text-green-600"><%= String.format("%.03f", order.getTotalAmount() + order.getShippingFee())%>VND
+
                             </span>
                             <p class="text-sm text-gray-500 mt-1">Including all fees</p>
                         </div>
