@@ -82,6 +82,28 @@
                     rgba(59, 130, 246, 0.85) 50%,
                     rgba(139, 92, 246, 0.95) 100%);
             }
+
+
+            @keyframes scroll {
+                0% {
+                    transform: translateX(0);
+                }
+                100% {
+                    transform: translateX(-100%);
+                }
+            }
+
+            .scroll-animation {
+                animation: scroll 20s linear infinite;
+            }
+
+            .brand-item {
+                transition: all 0.3s ease;
+            }
+
+            .brand-item:hover {
+                transform: scale(1.1);
+            }
         </style>
     </head>
     <body>
@@ -90,7 +112,42 @@
 
         <div class="w-full flex justify-center mt-6">
             <div class="container max-w-[1200px] w-full px-4 sm:px-6 lg:px-8">
-                <div class="space-y-16">
+                <div class="mb-16">
+                    <div class="text-center mb-10">
+                        <h2 class="text-5xl leading-normal font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-2">
+                            Category List
+                        </h2>
+                        <p class="text-base text-gray-500">
+                            Discover high-quality models across all collections
+                        </p>
+                    </div>
+                    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 px-4 sm:px-6 lg:px-8 gap-4 sm:gap-6 lg:gap-8 mt-8">
+                        <c:forEach var="category" items="${categories}">
+                            <div class="w-full flex justify-center items-center flex-col group transform transition-all duration-300 hover:scale-105">
+                                <div class="relative rounded-full border-2 border-gray-200 w-28 h-28 sm:w-32 sm:h-32 lg:w-36 lg:h-36 overflow-hidden cursor-pointer shadow-lg hover:shadow-xl transition-all duration-300 group-hover:border-blue-400">
+                                    <a href="/products/category?categoryId=${category.id}" class="block w-full h-full">
+                                        <img class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110 group-hover:rotate-2" 
+                                             src="${category.avatar}" 
+                                             alt="${category.name}"
+                                             loading="lazy" />
+                                        <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-center justify-center">
+                                            <div class="text-center transform translate-y-2 group-hover:translate-y-0 transition-transform duration-300">
+                                                <span class="text-white font-bold text-sm sm:text-base drop-shadow-lg">Xem ngay</span>
+                                                <div class="w-8 h-0.5 bg-white mx-auto mt-1 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300"></div>
+                                            </div>
+                                        </div>
+                                    </a>
+                                </div>
+                                <span class="text-sm sm:text-base font-semibold text-gray-800 mt-3 text-center leading-tight px-2 group-hover:text-blue-600 transition-colors duration-300">
+                                    ${category.name}
+                                </span>
+                            </div>
+                        </c:forEach>
+                    </div>
+                </div>
+
+                <div class="section-divider"></div>
+                <div class="space-y-16 mt-16">
                     <!-- Newest Products -->
                     <section>
                         <div class="flex items-center gap-2 mb-8">

@@ -239,7 +239,6 @@ public class CategoryDAO extends DB.DBContext {
         }
     }
 
-
     public List<ProductAttribute> getAttributesByCategoryId(int categoryId) {
         List<ProductAttribute> list = new ArrayList<>();
         String sql = "SELECT * FROM ProductAttributes WHERE categoryId = ?";
@@ -320,4 +319,22 @@ public class CategoryDAO extends DB.DBContext {
         }
     }
 
+    public List<Category> getActiveCategories() {
+        List<Category> categories = new ArrayList<>();
+        String query = "SELECT TOP 10 *\n"
+                + "FROM Categories c\n"
+                + "WHERE c.isActive = 1;";
+        try ( ResultSet rs = execSelectQuery(query)) {
+            while (rs.next()) {
+                Category category = new Category();
+                category.setId(rs.getInt("categoryId"));
+                category.setName(rs.getString("categoryName"));
+                category.setAvatar(rs.getString("image"));
+                categories.add(category);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return categories;
+    }
 }
