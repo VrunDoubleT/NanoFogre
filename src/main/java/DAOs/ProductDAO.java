@@ -179,7 +179,7 @@ public class ProductDAO extends DB.DBContext {
                         + "from OrderDetails od\n"
                         + "where od.productId = ?\n"
                         + "group by od.productId", params);
-                if(soltResult.next()){
+                if (soltResult.next()) {
                     product.setSolt(soltResult.getInt("solt"));
                 }
                 List<ProductAttribute> pas = getAttributesByProductId(productId);
@@ -485,5 +485,8 @@ public class ProductDAO extends DB.DBContext {
             return false;
         }
     }
+
+ 
+
 
 }
