@@ -184,4 +184,29 @@ public class BrandDAO extends DBContext {
         System.err.println(message + ": " + e.getMessage());
         e.printStackTrace();
     }
+
+    public List<Brand> getBrandsByCategoryId(int categoryId) {
+        List<Brand> brands = new ArrayList<>();
+        String query = "select b.brandId, b.brandName, b.image\n"
+                + "from Categories c\n"
+                + "JOIN Products p\n"
+                + "on c.categoryId = p.categoryId\n"
+                + "join Brands b\n"
+                + "on b.brandId = p.brandId\n"
+                + "where c.categoryId = ?\n"
+                + "group by b.brandId, b.brandName, b.image";
+        Object[] params = {categoryId};
+        try ( ResultSet rs = execSelectQuery(query, params)) {
+            while (rs.next()) {
+                Brand brand = new Brand();
+                brand.setId(rs.getInt("brandId"));
+                brand.setName(rs.getString("brandName"));
+                brand.setUrl(rs.getString("image"));
+                brands.add(brand);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return brands;
+    }
 }

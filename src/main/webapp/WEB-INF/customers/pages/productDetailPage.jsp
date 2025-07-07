@@ -117,14 +117,23 @@
                             <div class="space-y-4 mt-2">
                                 <h3 class="text-lg font-semibold text-gray-900">Specifications</h3>
                                 <div class="space-y-3">
+                                    <c:set var="hasValue" value="false" />
                                     <c:forEach var="attr" items="${product.attributes}">
-                                        <div class="flex justify-between items-center">
-                                            <span class="text-gray-600">${attr.name}:</span>
-                                            <span class="font-semibold text-gray-900 text-right">
-                                                ${attr.value}<c:if test="${not empty attr.unit}"> ${attr.unit}</c:if>
-                                                </span>
-                                            </div>
+                                        <c:if test="${not empty attr.value}">
+                                            <c:set var="hasValue" value="true" />
+                                            <div class="flex justify-between items-center">
+                                                <span class="text-gray-600">${attr.name}:</span>
+                                                <span class="font-semibold text-gray-900 text-right">
+                                                    ${attr.value}<c:if test="${not empty attr.unit}"> ${attr.unit}</c:if>
+                                                    </span>
+                                                </div>
+                                        </c:if>
                                     </c:forEach>
+                                    <c:if test="${empty product.attributes or not hasValue}">
+                                        <div class="text-gray-500 text-sm italic">
+                                            This product has no attributes.
+                                        </div>
+                                    </c:if>
                                 </div>
                             </div>
 
