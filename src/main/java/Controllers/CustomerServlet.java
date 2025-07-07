@@ -44,7 +44,7 @@ public class CustomerServlet extends HttpServlet {
                 int did = Integer.parseInt(request.getParameter("id"));
                 Customer item = cDao.getCustomerById(did);
                 int orderCount = cDao.countOrdersByCustomerId(did);
-                String address = cDao.getAddressDetailsByCustomerId(did);
+                String address = cDao.getAddressDefaultByCustomerId(did);
                 List<Order> orders = cDao.getOrdersByCustomerId(did);
                 
                 request.setAttribute("customer", item);

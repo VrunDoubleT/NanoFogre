@@ -171,7 +171,7 @@
                         });
             }
 
-            const updateAvtiveSidebar = (page) => {
+            const updateActiveSidebar = (page) => {
                 document.querySelectorAll(".nav-link").forEach((element) => {
                     if (element.getAttribute("data-page") === page) {
                         element.classList.add("bg-gray-100", "text-blue-600", "border-r-4", "border-blue-600");
@@ -186,7 +186,7 @@
                     link.addEventListener('click', function (e) {
                         e.preventDefault();
                         const page = this.dataset.page;
-                        updateAvtiveSidebar(page);
+                        updateActiveSidebar(page);
                         loadContent(page, true);
                     });
                 });
@@ -200,7 +200,7 @@
                 });
                 const params = new URLSearchParams(window.location.search);
                 const viewPage = params.get('view') || 'dashboard';
-                updateAvtiveSidebar(viewPage);
+                updateActiveSidebar(viewPage);
                 switch (viewPage) {
                     case "product":
                         const categoryId = params.get('categoryId') || '0';

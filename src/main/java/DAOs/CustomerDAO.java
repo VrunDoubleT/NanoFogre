@@ -103,8 +103,8 @@ public class CustomerDAO extends DB.DBContext {
         return null;
     }
 
-    public String getAddressDetailsByCustomerId(int customerId) {
-        String query = "SELECT addressDetails FROM Address WHERE customerId = ?";
+    public String getAddressDefaultByCustomerId(int customerId) {
+        String query = "SELECT addressDetails FROM Address WHERE customerId = ? AND isDefault = 1";
         try ( ResultSet rs = execSelectQuery(query, new Object[]{customerId})) {
             if (rs.next()) {
                 return rs.getString("addressDetails");
@@ -176,24 +176,17 @@ public class CustomerDAO extends DB.DBContext {
 
         try ( ResultSet rs = execSelectQuery(query, params)) {
             while (rs.next()) {
-                // Tạo đối tượng Product
                 Product product = new Product();
                 product.setProductId(rs.getInt("productId"));
                 product.setTitle(rs.getString("productTitle"));
 
-                // Xử lý URL hình ảnh
                 List<String> urls = new ArrayList<>();
                 String imageUrl = rs.getString("imageUrl");
                 if (imageUrl != null && !imageUrl.isEmpty()) {
                     urls.add(imageUrl);
                 }
-//else {
-//                    // Nếu không có ảnh, thêm ảnh default để tránh lỗi khi JSP gọi .get(0)
-//                    urls.add("/default-image.png");
-//                }
                 product.setUrls(urls);
 
-                // Tạo đối tượng OrderDetails
                 OrderDetails detail = new OrderDetails();
                 detail.setId(rs.getInt("orderDetailId"));
                 detail.setOrderId(rs.getInt("orderId"));
@@ -201,7 +194,6 @@ public class CustomerDAO extends DB.DBContext {
                 detail.setPrice(rs.getDouble("detailPrice"));
                 detail.setQuantity(rs.getInt("detailQuantity"));
 
-                // Thêm vào list
                 details.add(detail);
             }
         } catch (Exception e) {
@@ -237,6 +229,32 @@ public class CustomerDAO extends DB.DBContext {
         return null;
     }
 
+    public boolean updateCustomer(int customerId, String name, String email, String phone, String avatarUrl) {
+        String query = "UPDATE Customers SET customerName = ?, customerEmail = ?, customerPhone = ?, customerAvatar = ? WHERE customerId = ?";
+        Object[] params = {name, email, phone, avatarUrl, customerId};
+
+        try {
+            int updated = execQuery(query, params);
+            return updated > 0;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public boolean isEmailExistsExceptOwn(String email, int id) {
+        String query = "SELECT COUNT(*) FROM Customers WHERE customerEmail = ? AND customerId != ?";
+        Object[] params = {email, id};
+        try ( ResultSet rs = execSelectQuery(query, params)) {
+            if (rs.next()) {
+                return rs.getInt(1) > 0;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
 // Kiểm tra email đã tồn tại chưa
     public boolean checkEmailExists(String email) {
         String sql = "SELECT 1 FROM Customers WHERE customerEmail=? AND _destroy=0";
@@ -267,5 +285,45 @@ public class CustomerDAO extends DB.DBContext {
             e.printStackTrace();
         }
         return false;
+    }
+
+    public List<Address> getAddressesByCustomerId(int customerId) {
+        List<Address> addresses = new ArrayList<>();
+        String query = "SELECT * FROM Address WHERE customerId = ?";
+        Object[] params = {customerId};
+
+        try ( ResultSet rs = execSelectQuery(query, params)) {
+            while (rs.next()) {
+                Address address = new Address();
+                address.setId(rs.getInt("addressId"));
+                address.setRecipientName(rs.getString("recipientName"));
+                address.setDetails(rs.getString("addressDetails"));
+                address.setPhone(rs.getString("addressPhone"));
+                address.setIsDefault(rs.getBoolean("isDefault"));
+                address.setCustomerId(rs.getInt("customerId"));
+                addresses.add(address);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return addresses;
+    }
+
+    public boolean updateAddress(int addressId, String recipientName, String addressDetails, String addressPhone, boolean isDefault, int customerId) throws SQLException {
+        if (isDefault) {
+            String resetDefault = "UPDATE Address SET isDefault = 0 WHERE customerId = ?";
+            execQuery(resetDefault, new Object[]{customerId});
+        }
+        
+        String query = "UPDATE Address SET recipientName = ?, addressDetails = ?, addressPhone = ?, isDefault = ? WHERE addressId = ?";
+        Object[] params = {recipientName, addressDetails, addressPhone, isDefault, addressId};
+
+        try {
+            int updated = execQuery(query, params);
+            return updated > 0;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
     }
 }
