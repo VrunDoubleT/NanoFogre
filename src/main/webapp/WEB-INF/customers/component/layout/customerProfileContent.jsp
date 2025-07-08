@@ -26,22 +26,15 @@
         <!-- Basic Info -->
         <div class="bg-pink-50 border border-pink-200 rounded-xl p-6 space-y-6">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <%
-                    String[][] inputs = {
-                        {"Name", "nameEdit", pro.getName()},
-                        {"Email", "emailEdit", pro.getEmail()},
-                        {"Phone Number", "phoneEdit", pro.getPhone()}
-                    };
-                    for (String[] input : inputs) {
-                %>
+                <!-- Name Field -->
                 <div class="relative">
-                    <label class="block text-sm font-semibold text-gray-700 uppercase tracking-wide mb-2"><%= input[0]%></label>
-                    <input type="text" id="<%= input[1]%>" name="<%= input[1]%>" value="<%= input[2]%>"
-                           data-original="<%= input[2]%>" readonly
+                    <label class="block text-sm font-semibold text-gray-700 uppercase tracking-wide mb-2">Name</label>
+                    <input type="text" id="nameEdit" name="nameEdit" value="<%= pro.getName()%>"
+                           data-original="<%= pro.getName()%>" readonly
                            class="editable-field w-full px-4 py-3 pr-10 border border-gray-300 rounded-lg bg-gray-50 text-gray-700 focus:outline-none"
-                           placeholder="Enter new <%= input[0].toLowerCase()%>...">
-                        <p id="<%= input[1].replace("Edit", "Error")%>" class="text-sm text-red-500"></p>
-                        <button type="button" onclick="toggleEdit(this, '<%= input[1]%>')"
+                           placeholder="Enter new name...">
+                        <p id="nameError" class="text-sm text-red-500"></p>
+                        <button type="button" onclick="toggleEdit(this, 'nameEdit')"
                                 class="absolute top-11 right-3 text-gray-500 hover:text-blue-600 transition">
                             <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none"
                                  viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -50,13 +43,57 @@
                             </svg>
                         </button>
                 </div>
-                <% } %>
+
+                <!-- Email Field -->
+                <div class="relative">
+                    <label class="block text-sm font-semibold text-gray-700 uppercase tracking-wide mb-2">Email</label>
+                    <input type="text" value="<%= pro.getEmail()%>"
+                           data-original="<%= pro.getEmail()%>" readonly
+                           class="editable-field w-full px-4 py-3 pr-10 border border-gray-300 rounded-lg bg-gray-50 text-gray-700 focus:outline-none"
+                           placeholder="Enter new email...">
+                </div>
+
+                <%
+                    String phone = pro.getPhone();
+                    boolean hasPhone = phone != null && !phone.trim().isEmpty();
+                %>
+                <!-- Phone Number Field -->
+                <div class="relative">
+                    <label class="block text-sm font-semibold text-gray-700 uppercase tracking-wide mb-2">Phone Number</label>
+                    <input type="text" id="phoneEdit" name="phoneEdit"
+                           value="<%= hasPhone ? phone : ""%>"
+                           data-original="<%= hasPhone ? phone : ""%>" readonly
+                           class="editable-field w-full px-4 py-3 pr-10 border border-gray-300 rounded-lg bg-gray-50 text-gray-700 focus:outline-none"
+                           placeholder="<%= hasPhone ? "Enter new phone number..." : "No phone number added yet"%>">
+                        <p id="phoneError" class="text-sm text-red-500"></p>
+                        <button type="button" onclick="toggleEdit(this, 'phoneEdit')"
+                                class="absolute top-11 right-3 text-gray-500 hover:text-blue-600 transition">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none"
+                                 viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                      d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5M18.5 2.5a2.121 2.121 0 113 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                            </svg>
+                        </button>
+
+                        <% if (!hasPhone) { %>
+                        <p class="text-sm text-gray-500 italic mt-1">You haven't added a phone number yet</p>
+                        <% } %>
+                </div>
+
             </div>
         </div>
 
         <!-- Address list -->
         <div class="bg-blue-50 border border-blue-200 rounded-xl p-6 space-y-6">
-            <label class="block text-sm font-semibold text-gray-700 uppercase tracking-wide">Addresses</label>
+            <div class="flex items-center justify-between">
+                <label class="block text-sm font-semibold text-gray-700 uppercase tracking-wide">Addresses</label>
+                <div class="flex items-center space-x-3">
+                    <button id="create-address-button" type="button" class="bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold py-2 px-6 rounded-lg shadow-lg hover:shadow-xl transform transition-all duration-200 flex items-center space-x-2">
+                        <i data-lucide="diamond-plus" class="w-5 h-5"></i>
+                        <span>Add New Adress</span>
+                    </button>
+                </div>
+            </div>
             <% if (addressList != null && !addressList.isEmpty()) {
                     int index = 1;
                     for (Address addr : addressList) {
@@ -71,14 +108,26 @@
                     <% }%>
                 </label>
 
-                <button type="button" onclick="toggleEditAddress(this, '<%= addrId%>')"
-                        class="absolute top-1 right-3 text-gray-500 hover:text-blue-600 transition">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none"
-                         viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round"
-                              d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5M18.5 2.5a2.121 2.121 0 113 3L12 15l-4 1 1-4 9.5-9.5z"/>
-                    </svg>
-                </button>
+                <div class="absolute top-1 right-3 flex items-center space-x-2">
+                    <!-- Edit button -->
+                    <button type="button"
+                            onclick="toggleEditAddress(this, '<%= addrId%>')"
+                            class="text-gray-500 hover:text-blue-700 transition">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none"
+                             viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                  d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5M18.5 2.5a2.121 2.121 0 113 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                        </svg>
+                    </button>
+
+                    <!-- Delete button -->
+                    <button type="button" class="text-gray-500 hover:text-red-700 transition">
+                        <i data-lucide="trash-2"
+                           data-id="<%= addrId%>"
+                           data-default="<%= addr.isIsDefault()%>"
+                           class="delete-address-button w-5 h-5"></i>
+                    </button>
+                </div>
 
                 <input type="text" name="recipient_<%= addrId%>" id="recipient_<%= addrId%>"
                        value="<%= addr.getRecipientName()%>" data-original="<%= addr.getRecipientName()%>"
@@ -98,8 +147,14 @@
                        placeholder="Phone number..." />
                 <p id="phoneError_<%= addrId%>" class="text-sm text-red-500"></p>
 
+                <input type="text" name="name_<%= addrId%>" id="name_<%= addrId%>"
+                       value="<%= addr.getName()%>" data-original="<%= addr.getName()%>"
+                       readonly class="editable-field w-full px-4 py-3 mt-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-700 focus:outline-none"
+                       placeholder="Type of address..." />
+                <p id="addrNameError_<%= addrId%>" class="text-sm text-red-500"></p>
+
                 <div class="mt-2 flex items-center space-x-2 text-sm hidden default-radio">
-                    <input type="radio" name="defaultAddressId" value="<%= addrId%>" <%= addr.isIsDefault() ? "checked data-original=\"true\"" : "data-original=\"false\"" %> />
+                    <input type="radio" name="defaultAddressId" value="<%= addrId%>" <%= addr.isIsDefault() ? "checked data-original=\"true\"" : "data-original=\"false\""%> />
                     <span class="<%= addr.isIsDefault() ? "text-green-600 font-semibold" : "text-gray-700"%>">Set as default</span>
                 </div>
             </div>
@@ -142,6 +197,11 @@
         <div class="flex justify-end">
             <button type="submit" id="updateCustomerBtn"
                     class="flex items-center gap-2 bg-green-600 text-white py-3 px-6 rounded-xl font-semibold text-lg transition hover:scale-105 hover:shadow-lg">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none"
+                     viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                          d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5M18.5 2.5a2.121 2.121 0 113 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                </svg>
                 Save
             </button>
         </div>

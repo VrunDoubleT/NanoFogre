@@ -141,7 +141,7 @@ function toggleEdit(button, inputId) {
 // Toggle address fields editable
 function toggleEditAddress(button, addrId) {
     const container = button.closest('.address-item');
-    const fieldIds = ['recipient_', 'address_', 'phone_'];
+    const fieldIds = ['recipient_', 'address_', 'phone_', 'name_'];
 
     fieldIds.forEach(prefix => {
         const input = document.getElementById(prefix + addrId);
@@ -169,43 +169,6 @@ function validateName(input, errorEl) {
     }
     errorEl.textContent = "";
     input.classList.remove("border-red-500");
-    input.classList.add("ring-1", "ring-green-500");
-    return true;
-}
-
-// Validate email
-async function validateEmail(input, errorEl) {
-    const value = input.value.trim();
-    const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-    input.classList.remove("border-red-500", "ring-1", "ring-green-500");
-    errorEl.textContent = "";
-
-    if (!value) {
-        errorEl.textContent = "Email is required.";
-        input.classList.add("border-red-500");
-        return false;
-    }
-    if (!regex.test(value)) {
-        errorEl.textContent = "Invalid email format.";
-        input.classList.add("border-red-500");
-        return false;
-    }
-
-    try {
-        const res = await fetch(`/customer/self?type=checkEmail&email=${encodeURIComponent(value)}`);
-        const isExist = await res.text();
-        if (isExist === "true") {
-            errorEl.textContent = "This email is already in use.";
-            input.classList.add("border-red-500");
-            return false;
-        }
-    } catch (err) {
-        errorEl.textContent = "Failed to validate email.";
-        input.classList.add("border-red-500");
-        return false;
-    }
-
     input.classList.add("ring-1", "ring-green-500");
     return true;
 }
@@ -272,11 +235,9 @@ function initCustomerForm() {
     }
 
     const nameInput = document.getElementById("nameEdit");
-    const emailInput = document.getElementById("emailEdit");
     const phoneInput = document.getElementById("phoneEdit");
 
     const nameError = document.getElementById("nameError");
-    const emailError = document.getElementById("emailError");
     const phoneError = document.getElementById("phoneError");
 
     const resetErrorStyle = (input, error) => {
@@ -287,10 +248,21 @@ function initCustomerForm() {
     nameInput?.addEventListener("blur", () => validateName(nameInput, nameError));
     nameInput?.addEventListener("input", () => resetErrorStyle(nameInput, nameError));
 
-    emailInput?.addEventListener("blur", () => validateEmail(emailInput, emailError));
-    emailInput?.addEventListener("input", () => resetErrorStyle(emailInput, emailError));
+    phoneInput?.addEventListener("blur", () => {
+        const value = phoneInput.value.trim();
+        const phoneRegex = /^0[0-9]{9}$/; 
+        if (value !== "" && !phoneRegex.test(value)) {
+            phoneError.textContent = "Invalid phone number format.";
+            phoneInput.classList.add("border-red-500");
+        } else if (value === ""){
+            phoneInput.classList.remove("border-red-500");
+        } else {
+            phoneError.textContent = "";
+            phoneInput.classList.remove("border-red-500");
+            phoneInput.classList.add("ring-1", "ring-green-500");
+        }
+    });
 
-    phoneInput?.addEventListener("blur", () => validatePhone(phoneInput, phoneError));
     phoneInput?.addEventListener("input", () => resetErrorStyle(phoneInput, phoneError));
 
     const addressItems = document.querySelectorAll(".address-item");
@@ -300,10 +272,12 @@ function initCustomerForm() {
         const recipient = document.getElementById(`recipient_${id}`);
         const address = document.getElementById(`address_${id}`);
         const phone = document.getElementById(`phone_${id}`);
+        const addrName = document.getElementById(`name_${id}`);
 
         const errRecipient = document.getElementById(`recipientError_${id}`);
         const errAddress = document.getElementById(`addressError_${id}`);
         const errPhone = document.getElementById(`phoneError_${id}`);
+        const errAddrName = document.getElementById(`addrNameError_${id}`);
 
         recipient?.addEventListener("blur", () => {
             if (!recipient.hasAttribute("readonly")) validateName(recipient, errRecipient);
@@ -319,6 +293,11 @@ function initCustomerForm() {
             if (!phone.hasAttribute("readonly")) validatePhone(phone, errPhone);
         });
         phone?.addEventListener("input", () => resetErrorStyle(phone, errPhone));
+        
+        addrName?.addEventListener("blur", () => {
+            if (!recipient.hasAttribute("readonly")) validateName(addrName, errAddrName);
+        });
+        addrName?.addEventListener("input", () => resetErrorStyle(addrName, errAddrName));
     });
 
     const isChanged = () => {
@@ -326,7 +305,7 @@ function initCustomerForm() {
             input && !input.hasAttribute("readonly") &&
             input.value.trim() !== input.dataset.original?.trim();
 
-        if (check(nameInput) || check(emailInput) || check(phoneInput)) return true;
+        if (check(nameInput) || check(phoneInput)) return true;
         if (avatarInput?.files.length > 0) return true;
 
         for (const item of addressItems) {
@@ -334,7 +313,8 @@ function initCustomerForm() {
             const recipient = document.getElementById(`recipient_${id}`);
             const address = document.getElementById(`address_${id}`);
             const phone = document.getElementById(`phone_${id}`);
-            if (check(recipient) || check(address) || check(phone)) return true;
+            const addrName = document.getElementById(`name_${id}`);
+            if (check(recipient) || check(address) || check(phone) || check(addrName)) return true;
         }
         const defaultRadios = document.querySelectorAll('input[name="defaultAddressId"]');
         for (const radio of defaultRadios) {
@@ -344,7 +324,7 @@ function initCustomerForm() {
     }
         return false;
     };
-
+ 
     form.addEventListener("submit", async function (e) {
         e.preventDefault();
 
@@ -360,8 +340,22 @@ function initCustomerForm() {
         }
 
         const nameValid = !nameInput.hasAttribute("readonly") ? validateName(nameInput, nameError) : true;
-        const emailValid = !emailInput.hasAttribute("readonly") ? await validateEmail(emailInput, emailError) : true;
-        const phoneValid = !phoneInput.hasAttribute("readonly") ? validatePhone(phoneInput, phoneError) : true;
+        const phoneValid = !phoneInput.hasAttribute("readonly") ? (() => {
+        const value = phoneInput.value.trim();
+        const phoneRegex = /^0[0-9]{9}$/; 
+        if (value !== "" && !phoneRegex.test(value)) {
+            phoneError.textContent = "Invalid phone number format.";
+            phoneInput.classList.add("border-red-500", "ring-1", "ring-red-500");
+            return false;
+        }
+        if (value === ""){
+            phoneInput.classList.remove("border-red-500", "ring-1", "ring-red-500");
+        }
+        phoneError.textContent = "";
+        phoneInput.classList.remove("border-red-500", "ring-1", "ring-red-500");
+        phoneInput.classList.add("ring-1", "ring-green-500");
+        return true;
+        })() : true;
 
         let addressValid = true;
         for (const item of addressItems) {
@@ -369,19 +363,22 @@ function initCustomerForm() {
             const recipient = document.getElementById(`recipient_${id}`);
             const address = document.getElementById(`address_${id}`);
             const phone = document.getElementById(`phone_${id}`);
+            const addrName = document.getElementById(`name_${id}`);
 
             const errRecipient = document.getElementById(`recipientError_${id}`);
             const errAddress = document.getElementById(`addressError_${id}`);
             const errPhone = document.getElementById(`phoneError_${id}`);
+            const errAddrName = document.getElementById(`addrNameError_${id}`);
 
             if (!recipient.hasAttribute("readonly")) {
                 if (!validateName(recipient, errRecipient)) addressValid = false;
                 if (!validateAddress(address, errAddress)) addressValid = false;
                 if (!validatePhone(phone, errPhone)) addressValid = false;
+                if (!validateName(addrName, errAddrName)) addressValid = false;
             }
         }
 
-        if (nameValid && emailValid && phoneValid && addressValid) {
+        if (nameValid && phoneValid && addressValid) {
             showLoading();
             window.scrollTo({ top: 0});
             try {
@@ -402,6 +399,7 @@ function initCustomerForm() {
                                 main.innerHTML = html;
                                 lucide.createIcons();
                                 initCustomerForm();
+                                initCreateAddressButton();
                             }
                         });
                     hiddenLoading();
@@ -434,6 +432,187 @@ function initCustomerForm() {
         }
     });
 }
+
+const updateModalContent = (path, loadEvent) => {
+    fetch(path)
+        .then(res => res.text())
+        .then(html => {
+            document.getElementById('modalContent').innerHTML = html;
+            requestAnimationFrame(() => {
+                if (typeof loadEvent === 'function') loadEvent();
+            });
+        });
+};
+
+// Handle create address button
+function initCreateAddressButton() {
+    const createAddressBtn = document.getElementById("create-address-button");
+    createAddressBtn.addEventListener("click", () => {
+        const modal = document.getElementById("modal");
+        openModal(modal);
+        updateModalContent("/customer/self?type=createAddress", loadCreateCustomerAddressEvent);
+    });
+}
+
+// Add new address
+function loadCreateCustomerAddressEvent() {
+    lucide.createIcons();
+
+    const nameInput = document.getElementById("addressName");
+    const recipientInput = document.getElementById("recipientName");
+    const detailInput = document.getElementById("addressDetails");
+    const phoneInput = document.getElementById("addressPhone");
+    const defaultCheckbox = document.getElementById("isDefault");
+
+    const nameError = document.getElementById("addressNameError");
+    const recipientError = document.getElementById("recipientNameError");
+    const detailError = document.getElementById("addressDetailsError");
+    const phoneError = document.getElementById("addressPhoneError");
+
+    const resetErrorStyle = (input, errorEl) => {
+        errorEl.textContent = "";
+        input.classList.remove("border-red-500", "ring-1", "ring-green-500");
+    };
+
+    nameInput?.addEventListener("blur", () => validateName(nameInput, nameError));
+    recipientInput?.addEventListener("blur", () => validateName(recipientInput, recipientError));
+    detailInput?.addEventListener("blur", () => validateAddress(detailInput, detailError));
+    phoneInput?.addEventListener("blur", () => validatePhone(phoneInput, phoneError));
+
+    nameInput?.addEventListener("input", () => resetErrorStyle(nameInput, nameError));
+    recipientInput?.addEventListener("input", () => resetErrorStyle(recipientInput, recipientError));
+    detailInput?.addEventListener("input", () => resetErrorStyle(detailInput, detailError));
+    phoneInput?.addEventListener("input", () => resetErrorStyle(phoneInput, phoneError));
+
+    // Submit event
+    const createBtn = document.getElementById("create-address-btn");
+    createBtn.onclick = () => {
+        const isValidName = validateName(nameInput, nameError);
+        const isValidRecipient = validateName(recipientInput, recipientError);
+        const isValidDetail = validateAddress(detailInput, detailError);
+        const isValidPhone = validatePhone(phoneInput, phoneError);
+
+        if (!isValidName || !isValidRecipient || !isValidDetail || !isValidPhone) return;
+
+        const formData = new URLSearchParams();
+        formData.append("type", "createAddress");
+        formData.append("addressName", nameInput.value.trim());
+        formData.append("recipientName", recipientInput.value.trim());
+        formData.append("addressDetails", detailInput.value.trim());
+        formData.append("addressPhone", phoneInput.value.trim());
+        if (defaultCheckbox?.checked) {
+            formData.append("isDefault", "on");
+        }
+
+        showLoading();
+        fetch("/customer/self", {
+            method: "POST",
+            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+            body: formData.toString()
+        })
+        .then(res => {
+            if (!res.ok) throw new Error("Create failed");
+            return res.text();
+        })
+        .then(() => {
+            hiddenLoading();
+            closeModal();
+            Toastify({
+                text: "Address created successfully!",
+                duration: 4000,
+                gravity: "top",
+                position: "right",
+                style: { background: "#22c55e" },
+                close: true
+            }).showToast();
+            loadContent("profile", false);
+        })
+        .catch(() => {
+            hiddenLoading();
+            Toastify({
+                text: "Failed to create address.",
+                duration: 4000,
+                gravity: "top",
+                position: "right",
+                style: { background: "#ef4444" },
+                close: true
+            }).showToast();
+        });
+    };
+}
+
+// Delete address
+document.addEventListener("click", function (e) {
+    const deleteBtn = e.target.closest(".delete-address-button");
+    if (deleteBtn) {
+        const id = deleteBtn.dataset.id;
+        const isDefault = deleteBtn.dataset.default === "true";
+
+        if (isDefault) {
+            Toastify({
+                text: "You cannot delete the default address.",
+                duration: 4000,
+                gravity: "top",
+                position: "right",
+                backgroundColor: "#f59e0b", // warning màu vàng
+                close: true
+            }).showToast();
+            return;
+        }
+
+        Swal.fire({
+            title: 'Are you sure you want to delete this address?',
+            text: "This address will be permanently removed.",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Yes, delete it',
+            cancelButtonText: 'Cancel'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                fetch(`/customer/self`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/x-www-form-urlencoded"
+                    },
+                    body: `type=deleteAddress&id=${id}`
+                })
+                .then(response => {
+                    const isSuccess = response.ok;
+
+                    Toastify({
+                        text: isSuccess ? "Address deleted successfully!" : "Delete failed.",
+                        duration: 4000,
+                        gravity: "top",
+                        position: "right",
+                        style: {
+                            background: isSuccess ? "#22c55e" : "#ef4444"
+                        },
+                        close: true
+                    }).showToast();
+
+                    if (isSuccess) {
+                        loadContent("profile", false); // Reload trang profile
+                    }
+                })
+                .catch(() => {
+                    Toastify({
+                        text: "An error occurred while deleting.",
+                        duration: 4000,
+                        gravity: "top",
+                        position: "right",
+                        style: { background: "#ef4444" },
+                        close: true
+                    }).showToast();
+                });
+            }
+        });
+    }
+});
+
+
+
 
 
 

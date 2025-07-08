@@ -6,9 +6,7 @@
 
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
-<%
-    Integer count = (Integer) request.getAttribute("count");
-%>
+
 <div class="">
     <div class="bg-white w-full rounded-xl shadow-sm border border-gray-100">
         <div class="flex items-center justify-between p-6">  

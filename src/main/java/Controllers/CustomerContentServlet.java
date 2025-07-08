@@ -18,7 +18,7 @@ import jakarta.servlet.http.HttpSession;
  *
  * @author Duong Tran Ngoc Chau - CE181040
  */
-@WebServlet(name = "CustomerContentServlet", urlPatterns = {"/customer/account"})
+@WebServlet(name = "CustomerContentServlet", urlPatterns = {"/account"})
 public class CustomerContentServlet extends HttpServlet {
 
     // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">

@@ -15,7 +15,11 @@
     <body>
         <%@ include file="../../../common/loading.jsp" %>
         <%@ include file="../../common/header.jsp" %>
-
+        <div id="modal" class="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50 hidden">
+            <div id="modalContent" class="bg-white max-h-[90%] rounded-2xl overflow-y-auto">
+                <!-- Load content -->
+            </div>
+        </div>
         <div class="bg-gray-100 w-full flex justify-center mt-6">
             <div class="container max-w-[1200px] w-full px-4 sm:px-6 lg:px-8">
                 <div class="flex">
@@ -37,6 +41,18 @@
             function parseOptionNumber(input, min) {
                 const num = Number(input);
                 return isNaN(num) || num < min ? min : num;
+            }
+
+            const openModal = (modal) => {
+                modal.classList.remove("hidden");
+                modal.classList.add("flex");
+                document.body.classList.add('overflow-hidden');
+            };
+
+            const closeModal = () => {
+                document.getElementById("modal").classList.remove("flex")
+                document.body.classList.remove("overflow-hidden")
+                document.getElementById("modal").classList.add("hidden")
             }
 
             function loadSidebar() {
@@ -77,9 +93,10 @@
                             const container = document.getElementById('main-content');
                             container.innerHTML = html;
                             lucide.createIcons();
-                            initCustomerForm();
+                            if (typeof initCustomerForm === 'function') initCustomerForm();
+                            if (typeof initCreateAddressButton === 'function') initCreateAddressButton();
                             if (push) {
-                                history.pushState({page: path}, '', '/customer/account?view=' + path);
+                                history.pushState({page: path}, '', '/account?view=' + path);
                             }
                         });
             }
@@ -104,7 +121,14 @@
                         loadContent(page, true);
                     });
                 });
-
+                document.getElementById("modal").onclick = () => {
+                    document.getElementById("modal").classList.remove("flex");
+                    document.body.classList.remove("overflow-hidden");
+                    document.getElementById("modal").classList.add("hidden");
+                };
+                document.getElementById("modalContent").addEventListener("click", function (event) {
+                    event.stopPropagation();
+                });
                 const params = new URLSearchParams(window.location.search);
                 const viewPage = params.get('view') || 'profile';
                 updateActiveSidebar(viewPage);

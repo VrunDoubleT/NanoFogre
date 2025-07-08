@@ -66,20 +66,8 @@ public class CustomerSelfServlet extends HttpServlet {
                 request.getRequestDispatcher("/WEB-INF/customers/component/layout/customerOrders.jsp")
                         .forward(request, response);
                 break;
-
-            case "checkEmail":
-                String email = request.getParameter("email");
-                int idCheck = sessionCustomer != null ? sessionCustomer.getId() : -1;
-
-                if (email == null || email.trim().isEmpty()) {
-                    response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                    response.getWriter().write("false");
-                    break;
-                }
-
-                boolean exists = dao.isEmailExistsExceptOwn(email.trim(), idCheck);
-                response.setContentType("text/plain");
-                response.getWriter().write(String.valueOf(exists));
+            case "createAddress":
+                request.getRequestDispatcher("/WEB-INF/customers/component/layout/createCustomerAddress.jsp").forward(request, response);
                 break;
         }
     }
@@ -87,17 +75,15 @@ public class CustomerSelfServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-
+        CustomerDAO dao = new CustomerDAO();
         String type = request.getParameter("type") != null ? request.getParameter("type") : "";
         switch (type) {
             case "update": {
-                CustomerDAO dao = new CustomerDAO();
                 HttpSession session = request.getSession();
                 Customer sessionCustomer = (Customer) session.getAttribute("customer");
                 int customerId = sessionCustomer.getId();
 
                 String name = request.getParameter("nameEdit");
-                String email = request.getParameter("emailEdit");
                 String phone = request.getParameter("phoneEdit");
 
                 String defaultAddressIdRaw = request.getParameter("defaultAddressId");
@@ -115,7 +101,7 @@ public class CustomerSelfServlet extends HttpServlet {
                     }
                 }
 
-                boolean updatedCustomer = dao.updateCustomer(customerId, name, email, phone, avatarUrl);
+                boolean updatedCustomer = dao.updateCustomer(customerId, name, phone, avatarUrl);
 
                 boolean updatedAddresses = true;
                 String[] addressIdList = request.getParameterValues("addressIdList");
@@ -124,6 +110,7 @@ public class CustomerSelfServlet extends HttpServlet {
                     for (String addrIdStr : addressIdList) {
                         try {
                             int addrId = Integer.parseInt(addrIdStr);
+                            String addrName = request.getParameter("name_" + addrId);
                             String recipient = request.getParameter("recipient_" + addrId);
                             String detail = request.getParameter("addressDetails_" + addrId);
                             String addrPhone = request.getParameter("phone_" + addrId);
@@ -135,7 +122,7 @@ public class CustomerSelfServlet extends HttpServlet {
                                     && !addrPhone.trim().isEmpty()) {
 
                                 boolean updated = dao.updateAddress(
-                                        addrId, recipient.trim(), detail.trim(), addrPhone.trim(), isDefault, customerId
+                                        addrId, addrName.trim(), recipient.trim(), detail.trim(), addrPhone.trim(), isDefault, customerId
                                 );
 
                                 if (!updated) {
@@ -159,6 +146,43 @@ public class CustomerSelfServlet extends HttpServlet {
                 }
                 break;
             }
+            case "createAddress":
+                HttpSession session = request.getSession();
+                Customer customer = (Customer) session.getAttribute("customer");
+                int customerId = customer.getId();
+
+                String addressName = request.getParameter("addressName");
+                String recipientName = request.getParameter("recipientName");
+                String addressDetails = request.getParameter("addressDetails");
+                String addressPhone = request.getParameter("addressPhone");
+                boolean isDefault = "on".equals(request.getParameter("isDefault"));
+
+                boolean inserted = false;
+                try {
+                    inserted = dao.addAddress(addressName, recipientName, addressDetails, addressPhone, isDefault, customerId);
+                } catch (SQLException ex) {
+                    Logger.getLogger(CustomerSelfServlet.class.getName()).log(Level.SEVERE, null, ex);
+                }
+
+                if (inserted) {
+                    session.setAttribute("address", dao.getAddressDefaultByCustomerId(customerId));
+                    session.setAttribute("addressList", dao.getAddressesByCustomerId(customerId));
+                    response.setStatus(200);
+                } else {
+                    response.setStatus(500);
+                }
+                break;
+            case "deleteAddress":
+            try {
+                int addressId = Integer.parseInt(request.getParameter("id"));
+                boolean deleted = dao.deleteAddressById(addressId);
+                response.setStatus(deleted ? 200 : 500);
+            } catch (Exception e) {
+                response.setStatus(500);
+                e.printStackTrace();
+            }
+            break;
+
         }
     }
 }
