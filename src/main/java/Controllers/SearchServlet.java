@@ -14,12 +14,13 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.PrintWriter;
+import java.util.ArrayList;
 
 /**
  *
  * @author Modern 15
  */
-@WebServlet(name = "SearchServlet", urlPatterns = {"/SearchServlet"})
+@WebServlet(name = "SearchServlet", urlPatterns = {"/search-products"})
 public class SearchServlet extends HttpServlet {
 
     private final ProductDAO productDAO = new ProductDAO();
@@ -39,13 +40,18 @@ public class SearchServlet extends HttpServlet {
         } catch (Exception e) {
         }
 
-        List<Product> products = productDAO.search(keyword, categoryId, brandId);
+        List<Product> products = null;
+        boolean hasKeyword = keyword != null && !keyword.trim().isEmpty();
+
+        if (hasKeyword) {
+            products = productDAO.search(keyword, categoryId, brandId);
+        }
 
         String isAjax = request.getHeader("X-Requested-With");
         if ("XMLHttpRequest".equals(isAjax)) {
             response.setContentType("application/json");
             PrintWriter out = response.getWriter();
-            out.print(productsToJson(products));
+            out.print(productsToJson(products != null ? products : new ArrayList<Product>()));
             out.flush();
             return;
         }

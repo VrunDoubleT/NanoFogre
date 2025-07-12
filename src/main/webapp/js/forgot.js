@@ -33,10 +33,11 @@ document.addEventListener("DOMContentLoaded", function () {
         if (!valid) return;
 
         btnSendCode.disabled = true;
-        fetch("auth?action=forget", {
+        // Gửi request gửi mã xác thực
+        fetch("auth", {
             method: "POST",
             headers: { "Content-Type": "application/x-www-form-urlencoded" },
-            body: `action=sendCode&userType=customer&email=${encodeURIComponent(email)}`
+            body: `action=forgot&email=${encodeURIComponent(email)}`
         })
         .then(res => res.json())
         .then(data => {
@@ -112,10 +113,11 @@ document.addEventListener("DOMContentLoaded", function () {
         if (!valid) return;
 
         btnChangePassword.disabled = true;
-        fetch("auth?action=forget", {
+        // Gửi request xác thực mã và đổi mật khẩu (ĐÚNG action=verifyCode!)
+        fetch("auth", {
             method: "POST",
             headers: { "Content-Type": "application/x-www-form-urlencoded" },
-            body: `action=verifyCode&userType=customer&email=${encodeURIComponent(email)}&code=${encodeURIComponent(code)}&newPassword=${encodeURIComponent(pwd)}`
+            body: `action=verifyCode&email=${encodeURIComponent(email)}&code=${encodeURIComponent(code)}&newPassword=${encodeURIComponent(pwd)}`
         })
         .then(res => res.json())
         .then(data => {

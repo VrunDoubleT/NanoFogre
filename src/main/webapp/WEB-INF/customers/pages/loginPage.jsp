@@ -12,13 +12,15 @@
         <meta charset="UTF-8">
         <title>Login</title>
         <script src="https://cdn.tailwindcss.com"></script>
-        <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600&display=swap" rel="stylesheet">
+        <!-- Import Inter + Orbitron -->
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Orbitron:wght@600&display=swap" rel="stylesheet">
     </head>
-    <body class="bg-gradient-to-br from-gray-900 to-gray-800 min-h-screen flex items-center justify-center font-[Orbitron]">
+    <body class="bg-gradient-to-br from-gray-900 to-gray-800 min-h-screen flex items-center justify-center" style="font-family: 'Inter', sans-serif;">
         <form id="loginForm" action="${pageContext.request.contextPath}/auth" method="post"
               class="bg-white/10 backdrop-blur-md shadow-xl p-8 rounded-2xl w-full max-w-md border border-white/20 space-y-6 text-white">
             <input type="hidden" name="action" value="login" />
-            <h2 class="text-3xl font-bold text-center text-blue-400">Login</h2>
+            <!-- Heading dùng Orbitron -->
+            <h2 class="text-3xl font-bold text-center text-blue-400" style="font-family: 'Orbitron', sans-serif;">Login</h2>
 
             <c:if test="${not empty error}">
                 <div id="backend-error" class="text-red-500 hidden">${error}</div>
@@ -28,7 +30,7 @@
                 <input type="email" name="email" id="login-email"
                        placeholder="Email"
                        value="<c:choose>
-                           <c:when test="${not empty rememberedEmail}">
+                           <c:when test='${not empty rememberedEmail}'>
                                ${rememberedEmail}
                            </c:when>
                            <c:otherwise>
@@ -70,10 +72,10 @@
                     ← Back to Home
                 </a>
             </p>
-
         </form>
 
         <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
         <script src="${pageContext.request.contextPath}/js/auth.js"></script>
     </body>
 </html>
+

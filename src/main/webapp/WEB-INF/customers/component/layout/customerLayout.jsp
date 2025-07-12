@@ -65,24 +65,32 @@
             }
 
             function loadContent(path, push, params = []) {
-                const rootUrl = '/customer/self?type=' + path;
-                let paramUrl = '';
-                if (params.length > 0) {
-                    paramUrl = params.map(obj => `&${obj.name}=${obj.value}`).join('');
-                }
+    const rootUrl = '/customer/self?type=' + path;
+    let paramUrl = '';
+    if (params.length > 0) {
+        paramUrl = params.map(obj => `&${obj.name}=${obj.value}`).join('');
+    }
 
-                fetch(rootUrl + paramUrl)
-                        .then(res => res.text())
-                        .then(html => {
-                            const container = document.getElementById('main-content');
-                            container.innerHTML = html;
-                            lucide.createIcons();
-                            initCustomerForm();
-                            if (push) {
-                                history.pushState({page: path}, '', '/customer/account?view=' + path);
-                            }
-                        });
+    fetch(rootUrl + paramUrl)
+        .then(res => res.text())
+        .then(html => {
+            const container = document.getElementById('main-content');
+            container.innerHTML = html;   // GÁN HTML MỚI vào vùng #main-content
+            lucide.createIcons();
+            initCustomerForm();           // Gọi hàm khởi tạo form nếu cần
+
+            // ---- THÊM ĐOẠN NÀY: ----
+            if (path === 'order' && typeof initCustomerOrdersPage === 'function') {
+                initCustomerOrdersPage(); // Gọi lại hàm khởi tạo cho trang orders
             }
+            // ------------------------
+
+            if (push) {
+                history.pushState({page: path}, '', '/customer/account?view=' + path);
+            }
+        });
+}
+
 
 
             const updateActiveSidebar = (page) => {
@@ -118,8 +126,8 @@
                 }
             };
         </script>
-
         <script src="/js/customer.js"></script>
         <script src="/js/loading.js"></script>
+        <script src="/js/customerOrders.js"></script>
     </body>
 </html>

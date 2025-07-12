@@ -10,7 +10,8 @@ public class OrderDetails {
     private Product product;
     private double price;
     private int quantity;
-
+    private boolean reviewed;
+    
     public OrderDetails() {
     }
 
@@ -20,6 +21,14 @@ public class OrderDetails {
         this.product = product;
         this.price = price;
         this.quantity = quantity;
+    }
+     public OrderDetails(int id, int orderId, Product product, double price, int quantity, boolean reviewed) {
+        this.id = id;
+        this.orderId = orderId;
+        this.product = product;
+        this.price = price;
+        this.quantity = quantity;
+        this.reviewed = reviewed;
     }
 
     public int getId() {
@@ -61,9 +70,16 @@ public class OrderDetails {
     public void setQuantity(int quantity) {
         this.quantity = quantity;
     }
+     public boolean isReviewed() {
+        return reviewed;
+    }
+
+    public void setReviewed(boolean reviewed) {
+        this.reviewed = reviewed;
+    }
 
     @Override
     public String toString() {
-        return "OrderDetails{" + "id=" + id + ", orderId=" + orderId + ", product=" + product + ", price=" + price + ", quantity=" + quantity + '}';
+        return "OrderDetails{" + "id=" + id + ", orderId=" + orderId + ", product=" + product + ", price=" + price + ", quantity=" + quantity + ", reviewed=" + reviewed + '}';
     }
 }

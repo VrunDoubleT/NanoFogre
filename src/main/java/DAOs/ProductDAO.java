@@ -643,51 +643,79 @@ public class ProductDAO extends DB.DBContext {
             return false;
         }
     }
-     public List<Product> search(String keyword, Integer categoryId, Integer brandId) {
+
+    public List<Product> search(String keyword, Integer categoryId, Integer brandId) {
         List<Product> list = new ArrayList<>();
         StringBuilder query = new StringBuilder(
-                "SELECT p.productId, p.productTitle, p.productPrice, p.slug, i.url "
+                "SELECT p.productId, p.productTitle, p.productDescription, p.material, p.slug, "
+                + "p.productPrice, p.productQuantity, "
+                + "b.brandId, b.brandName, b.image AS brandImage, "
+                + "c.categoryId, c.categoryName, c.image AS categoryImage, c.isActive AS categoryIsActive, "
+                + "(SELECT TOP 1 url FROM ProductImages WHERE productId = p.productId) AS imageUrl, "
+                + "ISNULL((SELECT SUM(detailQuantity) FROM OrderDetails WHERE productId = p.productId), 0) AS sold, "
+                + "ISNULL((SELECT AVG(CAST(star AS FLOAT)) FROM Reviews WHERE productId = p.productId AND _destroy=0), 0) AS averageStar, "
+                + "(SELECT COUNT(*) FROM Reviews WHERE productId = p.productId AND _destroy=0) AS totalReviews "
                 + "FROM Products p "
-                + "LEFT JOIN ProductImages i ON p.productId = i.productId "
+                + "LEFT JOIN Brands b ON p.brandId = b.brandId "
+                + "LEFT JOIN Categories c ON p.categoryId = c.categoryId "
                 + "WHERE p._destroy = 0 "
         );
+
         List<Object> params = new ArrayList<>();
 
-        // Có keyword thì thêm điều kiện
         if (keyword != null && !keyword.trim().isEmpty()) {
             query.append("AND p.productTitle LIKE ? ");
             params.add("%" + keyword.trim() + "%");
         }
-        // Có category thì thêm điều kiện
         if (categoryId != null && categoryId > 0) {
             query.append("AND p.categoryId = ? ");
             params.add(categoryId);
         }
-        // Có brand thì thêm điều kiện
         if (brandId != null && brandId > 0) {
             query.append("AND p.brandId = ? ");
             params.add(brandId);
         }
 
         try ( ResultSet rs = execSelectQuery(query.toString(), params.toArray())) {
-            Map<Integer, Product> productMap = new HashMap<>();
             while (rs.next()) {
-                int pid = rs.getInt("productId");
-                Product p = productMap.get(pid);
-                if (p == null) {
-                    p = new Product();
-                    p.setProductId(pid);
-                    p.setTitle(rs.getString("productTitle"));
-                    p.setPrice(rs.getDouble("productPrice"));
-                    p.setSlug(rs.getString("slug"));
-                    p.setUrls(new ArrayList<String>());
-                    productMap.put(pid, p);
-                    list.add(p);
+                Product p = new Product();
+                p.setProductId(rs.getInt("productId"));
+                p.setTitle(rs.getString("productTitle"));
+                p.setDescription(rs.getString("productDescription"));
+                p.setMaterial(rs.getString("material"));
+                p.setSlug(rs.getString("slug"));
+                p.setPrice(rs.getDouble("productPrice")); // RẤT QUAN TRỌNG, KHÔNG ĐƯỢC ĐỔI FIELD
+                p.setQuantity(rs.getInt("productQuantity"));
+
+                // Brand
+                Brand brand = new Brand();
+                brand.setId(rs.getInt("brandId"));
+                brand.setName(rs.getString("brandName"));
+                brand.setUrl(rs.getString("brandImage"));
+                p.setBrand(brand);
+
+                // Category
+                Category cat = new Category();
+                cat.setId(rs.getInt("categoryId"));
+                cat.setName(rs.getString("categoryName"));
+                cat.setAvatar(rs.getString("categoryImage"));
+                cat.setIsActive(rs.getBoolean("categoryIsActive"));
+                p.setCategory(cat);
+
+                // Ảnh đại diện (urls)
+                List<String> urls = new ArrayList<>();
+                String imageUrl = rs.getString("imageUrl");
+                if (imageUrl != null && !imageUrl.isEmpty()) {
+                    urls.add(imageUrl);
                 }
-                String url = rs.getString("url");
-                if (url != null && !url.isEmpty()) {
-                    p.getUrls().add(url);
-                }
+                p.setUrls(urls);
+
+                // Đã bán, đánh giá
+                p.setSold(rs.getInt("sold"));
+                p.setAverageStar(rs.getDouble("averageStar"));
+                p.setTotalReviews(rs.getInt("totalReviews"));
+
+                list.add(p);
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -778,4 +806,5 @@ public class ProductDAO extends DB.DBContext {
         }
         return product;
     }
+
 }

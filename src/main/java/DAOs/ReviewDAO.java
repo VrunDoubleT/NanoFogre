@@ -49,8 +49,9 @@ public class ReviewDAO extends DBContext {
                         rs.getString("customerName"),
                         rs.getString("customerAvatar"),
                         rs.getString("customerPhone"),
-                        LocalDateTime.MAX,
-                        rs.getBoolean("isBlock")
+                        rs.getTimestamp("createdAt").toLocalDateTime(),
+                        rs.getInt("isBlock") == 1,
+                        rs.getInt("isVerify") == 1 // <<== Bổ sung dòng này
                 );
                 review.setCustomer(customer);
 
@@ -229,6 +230,18 @@ public class ReviewDAO extends DBContext {
         }
 
         return count;
+    }
+
+    public boolean insertReview(int productId, int customerId, int star, String content) {
+        String sql = "INSERT INTO Reviews (productId, customerId, star, reviewContent, createdAt, _destroy) VALUES (?, ?, ?, ?, GETDATE(), 0)";
+        Object[] params = {productId, customerId, star, content};
+        try {
+            int rows = execQuery(sql, params);
+            return rows > 0;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
     }
 
 }

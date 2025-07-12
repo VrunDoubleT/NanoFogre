@@ -17,6 +17,7 @@ import Models.Voucher;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -205,7 +206,7 @@ public class CustomerDAO extends DB.DBContext {
 // Đăng nhập khách hàng
 
     public Customer login(String email, String hashedPassword) {
-        String sql = "SELECT * FROM Customers WHERE customerEmail=? AND customerPassword=? AND isBlock=0 AND _destroy=0";
+        String sql = "SELECT * FROM Customers WHERE customerEmail=? AND customerPassword=? AND isBlock=0 AND isVerify=1 AND _destroy=0";
         Object[] params = {email, hashedPassword};
         try ( ResultSet rs = this.execSelectQuery(sql, params)) {
             if (rs.next()) {
@@ -221,6 +222,7 @@ public class CustomerDAO extends DB.DBContext {
                     c.setCreatedAt(ts.toLocalDateTime());
                 }
                 c.setIsBlock(rs.getInt("isBlock") == 1);
+                c.setIsVerify(rs.getInt("isVerify") == 1);
                 return c;
             }
         } catch (SQLException e) {
@@ -287,6 +289,62 @@ public class CustomerDAO extends DB.DBContext {
         return false;
     }
 
+    public Customer findCustomerByEmail(String email) {
+    String sql = "SELECT * FROM Customers WHERE customerEmail=? AND _destroy=0";
+    try (ResultSet rs = this.execSelectQuery(sql, new Object[]{email})) {
+        if (rs.next()) {
+            Customer c = new Customer();
+            c.setId(rs.getInt("customerId"));
+            c.setEmail(rs.getString("customerEmail"));
+            c.setPassword(rs.getString("customerPassword")); 
+            c.setName(rs.getString("customerName"));
+            c.setAvatar(rs.getString("customerAvatar"));
+            c.setPhone(rs.getString("customerPhone"));
+            java.sql.Timestamp ts = rs.getTimestamp("createdAt");
+            if (ts != null) {
+                c.setCreatedAt(ts.toLocalDateTime());
+            }
+            c.setIsBlock(rs.getBoolean("isBlock"));
+            c.setIsVerify(rs.getInt("isVerify") == 1);
+            return c;
+        }
+    } catch (Exception ex) {
+        ex.printStackTrace();
+    }
+    return null;
+}
+
+
+// 4. Đánh dấu khách hàng đã xác thực email (isVerify = 1)
+    public boolean setVerified(int customerId) {
+        String sql = "UPDATE Customers SET isVerify = 1 WHERE customerId = ?";
+        try {
+            int result = this.execQuery(sql, new Object[]{customerId});
+            return result > 0;
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        return false;
+    }
+
+// 5. Lưu mã xác thực vào bảng VerifyCodes (dùng cho register)
+    public boolean insertCodeCustomer(int userId, String code, LocalDateTime expiredAt) {
+        String sql = "INSERT INTO VerifyCodes (userType, userId, code, isVerified, createdAt, expiredAt) VALUES (0, ?, ?, 0, ?, ?)";
+        Object[] params = {
+            userId,
+            code,
+            Timestamp.valueOf(LocalDateTime.now()),
+            Timestamp.valueOf(expiredAt)
+        };
+        try {
+            int result = this.execQuery(sql, params);
+            return result > 0;
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        return false;
+    }
+
     public List<Address> getAddressesByCustomerId(int customerId) {
         List<Address> addresses = new ArrayList<>();
         String query = "SELECT * FROM Address WHERE customerId = ?";
@@ -314,7 +372,7 @@ public class CustomerDAO extends DB.DBContext {
             String resetDefault = "UPDATE Address SET isDefault = 0 WHERE customerId = ?";
             execQuery(resetDefault, new Object[]{customerId});
         }
-        
+
         String query = "UPDATE Address SET recipientName = ?, addressDetails = ?, addressPhone = ?, isDefault = ? WHERE addressId = ?";
         Object[] params = {recipientName, addressDetails, addressPhone, isDefault, addressId};
 

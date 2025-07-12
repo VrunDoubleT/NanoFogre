@@ -16,6 +16,7 @@ public class Customer {
     private String phone;
     private LocalDateTime createdAt;
     private boolean isBlock;
+    private boolean isVerify;
 
     public Customer() {
     }
@@ -29,6 +30,18 @@ public class Customer {
         this.phone = phone;
         this.createdAt = createdAt;
         this.isBlock = isBlock;
+    }
+
+    public Customer(int id, String email, String password, String name, String avatar, String phone, LocalDateTime createdAt, boolean isBlock, boolean isVerify) {
+        this.id = id;
+        this.email = email;
+        this.password = password;
+        this.name = name;
+        this.avatar = avatar;
+        this.phone = phone;
+        this.createdAt = createdAt;
+        this.isBlock = isBlock;
+        this.isVerify = isVerify;
     }
 
     public int getId() {
@@ -95,9 +108,16 @@ public class Customer {
         this.isBlock = isBlock;
     }
 
-    @Override
-    public String toString() {
-        return "Customer{" + "id=" + id + ", email=" + email + ", password=" + password + ", name=" + name + ", avatar=" + avatar + ", phone=" + phone + ", createdAt=" + createdAt + '}';
+    public boolean isIsVerify() {
+        return isVerify;
     }
 
+    public void setIsVerify(boolean isVerify) {
+        this.isVerify = isVerify;
+    }
+
+    @Override
+    public String toString() {
+        return "Customer{" + "id=" + id + ", email=" + email + ", password=" + password + ", name=" + name + ", avatar=" + avatar + ", phone=" + phone + ", createdAt=" + createdAt + ", isBlock=" + isBlock + ", isVerify=" + isVerify + '}';
+    }
 }
