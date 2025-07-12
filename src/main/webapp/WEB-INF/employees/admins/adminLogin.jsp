@@ -57,7 +57,7 @@
                 padding: 40px;
                 width: 400px;
                 box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-                animation: scaleUp 3.5s ease forwards;
+                animation: scaleUp 2.5s ease forwards;
             }
 
             @keyframes scaleUp {
@@ -484,10 +484,7 @@
         </style>
     </head>
     <body>
-        <div class="background-video-container">
-            <video autoplay muted loop playsinline>
-                <source src="https://res.cloudinary.com/dd9jweqlv/video/upload/v1751740709/Untitled_video_-_Made_with_Clipchamp_1_kfm9nh.mp4" type="video/mp4">
-            </video>
+        <div class="background-video-container">          
         </div>
 
         <div class="login-container">

@@ -477,8 +477,12 @@
 
 
 
-                                <button class="checkout-btn w-full mt-6 py-3 rounded-xl bg-gradient-to-r from-purple-500 to-pink-500 font-bold text-lg text-white shadow-lg hover:scale-105 transition-transform duration-300">
-                                    Proceed to Checkout
+
+                                <button
+                                    id="purchaseBtn"
+                                    type="button"
+                                    class="checkout-btn w-full mt-6 py-3 rounded-xl bg-gradient-to-r from-purple-500 to-pink-500 font-bold text-lg text-white shadow-lg hover:scale-105 transition-transform duration-300">
+                                    Purchase
                                 </button>
                             </div>
                         </div>
@@ -514,6 +518,14 @@
             </div>
         </div>
 
+        <!--        purchase-->
+        <div id="purchaseModal" class="modal-overlay">
+            <div class="modal-content p-6">
+                <div id="purchaseModalContent">
+                    <!-- Nội dung sẽ được fill từ Purchase.jsp -->
+                </div>
+            </div>
+        </div>
         <!-- JavaScript -->
         <script>
             const baseUrl = '${cartUrl}';
@@ -986,6 +998,24 @@
                 });
                 recalc();
             });
+            //----------Purchase-----------------//
+document.getElementById('purchaseBtn').addEventListener('click', () => {
+    const checked = Array.from(document.querySelectorAll('.item-checkbox'))
+        .filter(ch => ch.checked)
+        .map(ch => ch.dataset.id);
+    if (!checked.length) {
+        Swal.fire({
+            icon: 'warning',
+            title: 'No items selected',
+            text: 'Please select at least one item to purchase.'
+        });
+        return;
+    }
+    const param = encodeURIComponent(JSON.stringify(checked));
+    console.log('Selected cartIds:', checked); // Debug
+    console.log('Encoded param:', param); // Debug
+    window.location.href = '<%= request.getContextPath() %>/checkout?cartIds=' + param;
+});
 
         </script>
     </body>

@@ -17,6 +17,8 @@
         <title>${product.title} - Product Detail</title>
         <script src="https://cdn.tailwindcss.com"></script>
         <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
         <style>
             .star-filled {
                 color: #fbbf24;
@@ -39,6 +41,7 @@
             <div class="container max-w-[1200px] w-full px-4 sm:px-6 lg:px-8 py-6">
                 <!-- Main Product Section -->
                 <div class="">
+
                     <div class="grid grid-cols-1 lg:grid-cols-10 gap-10">
                         <!-- Product Images -->
                         <div class="lg:col-span-4">
@@ -148,7 +151,7 @@
                                                 onclick="decreaseQuantity()">
                                             <i data-lucide="minus" class="w-4 h-4 text-gray-600"></i>
                                         </button>
-                                        <input disabled type="number" id="quantity" value="1" min="1" max="${product.quantity}" 
+                                        <input type="number" id="quantity" value="1" min="1" max="${product.quantity}" 
                                                class="w-16 bg-transparent text-center border-0 focus:ring-0 focus:outline-none py-2 font-medium appearance-none [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none">
                                         <button type="button" 
                                                 class="px-3 py-2 hover:bg-gray-50 transition-colors border-l border-gray-300" 
@@ -312,7 +315,7 @@
                     input.value = current - 1;
                 }
             }
-            
+
             function getUrlParam(name) {
                 const urlParams = new URLSearchParams(window.location.search);
                 return urlParams.get(name);
@@ -375,6 +378,7 @@
                 const productId = getUrlParam("pId") || 0
                 loadReviewAndPagination(productId, 0, 1)
             });
+
             function handleFilterReview(event, star) {
                 const element = event.currentTarget;
                 document.querySelectorAll(".filterReview").forEach((elm) => {
@@ -389,6 +393,40 @@
                 loadReviewAndPagination(productId, star, 1)
             }
 
+            function addToCart() {
+                const qty = parseInt(document.getElementById('quantity').value, 10);
+                const productId = getUrlParam('pId');
+
+                fetch('/cart', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+                    body: new URLSearchParams({
+                        action: 'add',
+                        productId: productId,
+                        quantity: qty    
+                    })
+                })
+                        .then(res => res.json()) 
+                        .then(data => {
+                            if (data.success) {
+                               
+                                const badge = document.querySelector('.cart-badge');
+                                if (badge)
+                                    badge.textContent = data.cartQuantity;
+                               
+                                const cartCountEl = document.getElementById('cartCount');
+                                if (cartCountEl)
+                                    cartCountEl.textContent = data.cartQuantity;
+                                Swal.fire('Added!', 'Product has been added to your cart.', 'success');
+                            } else {
+                                Swal.fire('Error', data.message || 'Could not add to cart!', 'error');
+                            }
+                        })
+                        .catch(err => {
+                            console.error('Add to cart failed:', err);
+                            Swal.fire('Error', 'Could not add to cart!', 'error');
+                        });
+            }
 
         </script>
     </body>
