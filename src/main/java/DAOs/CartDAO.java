@@ -21,6 +21,91 @@ import java.util.List;
 
 public class CartDAO extends DB.DBContext {
 
+    public List<Cart> getCartItemsByUserId(int customerId, int page, int limit) {
+        List<Cart> list = new ArrayList<>();
+        String sql = "SELECT c.cartId, c.customerId, c.cartQuantity, "
+                + "       p.productId, p.productTitle, p.productPrice, p.productQuantity, "
+                + "       pi.imageUrl, "
+                + "       ISNULL(r.avgStar, 0) AS avgStar, "
+                + "       b.brandName, b.brandId, cat.categoryName,cat.categoryId "
+                + "FROM Carts c "
+                + "JOIN Products p ON c.productId = p.productId "
+                + "LEFT JOIN ( "
+                + "    SELECT productId, url AS imageUrl "
+                + "    FROM ProductImages "
+                + "    WHERE imageId IN (SELECT MIN(imageId) FROM ProductImages GROUP BY productId) "
+                + ") pi ON p.productId = pi.productId "
+                + "LEFT JOIN ( "
+                + "    SELECT productId, AVG(CAST(star AS FLOAT)) AS avgStar "
+                + "    FROM Reviews GROUP BY productId "
+                + ") r ON p.productId = r.productId "
+                + "LEFT JOIN Brands b ON p.brandId = b.brandId "
+                + "LEFT JOIN Categories cat ON p.categoryId = cat.categoryId "
+                + "WHERE c.customerId = ? "
+                + "ORDER BY c.cartId DESC "
+                + "OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";   // <-- thêm dòng này để phân trang
+
+        int offset = (page - 1) * limit;
+        Object[] params = {customerId, offset, limit};
+
+        try ( ResultSet rs = execSelectQuery(sql, params)) {
+            while (rs.next()) {
+                Cart cart = new Cart();
+                cart.setCartId(rs.getInt("cartId"));
+                cart.setCustomerId(rs.getInt("customerId"));
+                cart.setQuantity(rs.getInt("cartQuantity"));
+
+                // Map Product
+                Product product = new Product();
+                product.setProductId(rs.getInt("productId"));
+                product.setTitle(rs.getString("productTitle"));
+                product.setPrice(rs.getDouble("productPrice"));
+                product.setQuantity(rs.getInt("productQuantity"));
+
+                // Map image(s)
+                List<String> urls = new ArrayList<>();
+                String imgUrl = rs.getString("imageUrl");
+                if (imgUrl != null && !imgUrl.isEmpty()) {
+                    urls.add(imgUrl);
+                }
+                product.setUrls(urls);
+
+                Brand bra = new Brand();
+                bra.setId(rs.getInt("brandId"));
+                bra.setName(rs.getString("brandName"));
+                product.setBrand(bra);
+
+                Category c = new Category();
+                c.setId(rs.getInt("categoryId"));
+                c.setName(rs.getString("categoryName"));
+                product.setCategory(c);
+
+                double avg = rs.getDouble("avgStar");
+                product.setAverageStar(avg);
+
+                cart.setProduct(product);
+                list.add(cart);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return list;
+    }
+
+    public int countCartItems(int customerId) {
+        String sql = "SELECT COUNT(*) FROM Carts WHERE customerId = ?";
+        Object[] params = {customerId};
+        try ( ResultSet rs = execSelectQuery(sql, params)) {
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return 0;
+    }
+
     public List<Cart> getCartItemsByUserId(int customerId) {
         List<Cart> list = new ArrayList<>();
         String sql
@@ -91,7 +176,6 @@ public class CartDAO extends DB.DBContext {
 
         return list;
     }
-
     public boolean addOrUpdateCartItem(int customerId, int productId, int quantity) {
         try {
 

@@ -17,19 +17,6 @@ import java.util.List;
  * @author iphon
  */
 public class AddressDAO extends DB.DBContext {
-//    public boolean updateDefaultAddressByCustomerId(int customerId, String newAddress) {
-//    String sql = "UPDATE Address SET addressDetails = ? WHERE customerId = ? AND isDefault = 1";
-//    Object[] params = {newAddress, customerId};
-//    try {
-//        int rows = execQuery(sql, params);
-//        System.out.println("DEBUG updateDefaultAddressByCustomerId → rows updated: " + rows);
-//        return rows > 0;
-//    } catch (Exception e) {
-//        System.out.println("Error in updateDefaultAddressByCustomerId: " + e.getMessage());
-//        e.printStackTrace();
-//        return false;
-//    }
-//}
 
     public List<Address> getAddressesByCustomerId(int customerId) {
         List<Address> list = new ArrayList<>();
@@ -54,7 +41,6 @@ public class AddressDAO extends DB.DBContext {
         return list;
     }
 
-    // Thêm mới
     public int insert(Address a) throws SQLException {
         String sql = "INSERT INTO Address(addressName, recipientName, addressDetails, addressPhone, customerId, isDefault) "
                 + "VALUES(?,?,?,?,?,0)";
@@ -63,7 +49,6 @@ public class AddressDAO extends DB.DBContext {
         });
     }
 
-    // Cập nhật (không thay đổi isDefault)
     public boolean update(Address a) throws SQLException {
         String sql = "UPDATE Address SET addressName=?, recipientName=?, addressDetails=?, addressPhone=? "
                 + "WHERE addressId=?";
@@ -72,15 +57,11 @@ public class AddressDAO extends DB.DBContext {
         }) > 0;
     }
 
-    // Xoá
     public boolean delete(int addressId) throws SQLException {
         String sql = "DELETE FROM Address WHERE addressId=?";
         return execQuery(sql, new Object[]{addressId}) > 0;
     }
 
-    /**
-     * Lấy Address theo addressId
-     */
     public Address getById(int addressId) throws SQLException {
         String sql = "SELECT * "
                 + "FROM Address WHERE addressId = ?";
@@ -100,81 +81,52 @@ public class AddressDAO extends DB.DBContext {
         return null;
     }
 
-   public Address getDefaultAddress(int customerId) {
-    String sql = "SELECT TOP 1 addressId, addressName, recipientName, addressDetails, addressPhone, isDefault "
-               + "FROM Address WHERE customerId = ? AND isDefault = 1";
+    public Address getDefaultAddress(int customerId) {
+        String sql = "SELECT TOP 1 addressId, addressName, recipientName, addressDetails, addressPhone, isDefault "
+                + "FROM Address WHERE customerId = ? AND isDefault = 1";
 
-    Address address = null;
+        Address address = null;
 
-    // Mở connection 1 lần và đóng đúng cách.
-    try (Connection conn = getConnection();
-         PreparedStatement ps = conn.prepareStatement(sql)) {
+        try ( Connection conn = getConnection();  PreparedStatement ps = conn.prepareStatement(sql)) {
 
-        ps.setInt(1, customerId);
+            ps.setInt(1, customerId);
 
-        try (ResultSet rs = ps.executeQuery()) {
-            if (rs.next()) {
-                address = new Address();
-                address.setId(rs.getInt("addressId"));
-                address.setName(rs.getString("addressName"));
-                address.setRecipientName(rs.getString("recipientName"));
-                address.setDetails(rs.getString("addressDetails"));
-                address.setPhone(rs.getString("addressPhone"));
-                address.setIsDefault(rs.getBoolean("isDefault"));
-                address.setCustomerId(customerId);
+            try ( ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    address = new Address();
+                    address.setId(rs.getInt("addressId"));
+                    address.setName(rs.getString("addressName"));
+                    address.setRecipientName(rs.getString("recipientName"));
+                    address.setDetails(rs.getString("addressDetails"));
+                    address.setPhone(rs.getString("addressPhone"));
+                    address.setIsDefault(rs.getBoolean("isDefault"));
+                    address.setCustomerId(customerId);
+                }
             }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
 
-    } catch (SQLException e) {
-        e.printStackTrace();
+        return address;
     }
 
-    return address; // trả về null nếu không tìm thấy
-}
-
-
-    
     public boolean setDefaultAddress(int customerId, int addressId) throws SQLException {
-        // 1. Kiểm tra addressId có thuộc customerId không
         String sqlCheck = "SELECT addressId FROM Address WHERE addressId = ? AND customerId = ?";
         Object[] checkParams = {addressId, customerId};
         try ( ResultSet rs = execSelectQuery(sqlCheck, checkParams)) {
             if (!rs.next()) {
-                return false; // Không tìm thấy address thuộc customer
+                return false;
             }
         }
 
-        // 2. Bỏ mặc định các address khác của customer này
         String sqlUnset = "UPDATE Address SET isDefault = 0 WHERE customerId = ?";
         Object[] unsetParams = {customerId};
         execQuery(sqlUnset, unsetParams);
 
-        // 3. Đặt mặc định cho addressId vừa chọn
         String sqlSet = "UPDATE Address SET isDefault = 1 WHERE addressId = ? AND customerId = ?";
         Object[] setParams = {addressId, customerId};
         return execQuery(sqlSet, setParams) > 0;
     }
-
-//public boolean setDefaultAddress(int customerId, int addressId) throws SQLException {
-//    Connection conn = getConnection();
-//    try {
-//        // 1. Bỏ mặc định tất cả địa chỉ của customer
-//        String unsetSql = "UPDATE Address SET isDefault = 0 WHERE customerId = ?";
-//        PreparedStatement ps1 = conn.prepareStatement(unsetSql);
-//        ps1.setInt(1, customerId);
-//        ps1.executeUpdate();
-//
-//        // 2. Set mặc định cho addressId vừa chọn
-//        String setSql = "UPDATE Address SET isDefault = 1 WHERE addressId = ? AND customerId = ?";
-//        PreparedStatement ps2 = conn.prepareStatement(setSql);
-//        ps2.setInt(1, addressId);
-//        ps2.setInt(2, customerId);
-//        int affected = ps2.executeUpdate();
-//
-//        return affected > 0;
-//    } finally {
-//        conn.close();
-//    }
-//}
 
 }

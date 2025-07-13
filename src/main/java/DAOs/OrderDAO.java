@@ -68,47 +68,40 @@ public class OrderDAO extends DBContext {
                 o.setCreatedAt(rs.getTimestamp("createdAt").toLocalDateTime());
                 o.setUpdatedAt(rs.getTimestamp("updatedAt").toLocalDateTime());
 
-                // employee
                 Employee emp = new Employee();
                 emp.setId(rs.getInt("employeeId"));
                 o.setEmployee(emp);
 
-                // customer
                 Customer cust = new Customer();
                 cust.setId(rs.getInt("customerId"));
                 cust.setName(rs.getString("customerName"));
                 cust.setPhone(rs.getString("customerPhone"));
-                // Lấy avatar
+
                 String avatar = rs.getString("customerAvatar");
                 cust.setAvatar(avatar);
                 o.setCustomer(cust);
                 System.out.println(rs.getString("customerAvatar"));
 
-                // payment method
                 PaymentMethod pm = new PaymentMethod();
                 pm.setId(rs.getInt("paymentMethodId"));
                 pm.setName(rs.getString("paymentMethodName"));
                 o.setPaymentMethod(pm);
 
-                // payment status
                 PaymentStatus psObj = new PaymentStatus();
                 psObj.setId(rs.getInt("paymentStatusId"));
                 psObj.setName(rs.getString("paymentStatusName"));
                 o.setPaymentStatus(psObj);
 
-                // order status
                 OrderStatus osObj = new OrderStatus();
                 osObj.setId(rs.getInt("statusId"));
                 osObj.setName(rs.getString("orderStatusName"));
                 o.setOrderStatus(osObj);
 
-                // voucher
                 Voucher v = new Voucher();
                 v.setId(rs.getInt("voucherId"));
                 v.setCode(rs.getString("voucherCode"));
                 o.setVoucher(v);
 
-                // address
                 Address a = new Address();
                 a.setId(rs.getInt("addressId"));
                 a.setFullAddress(rs.getString("shippingAddress"));
@@ -165,7 +158,6 @@ public class OrderDAO extends DBContext {
 
     public List<Order> getOrders() {
         List<Order> list = new ArrayList<>();
-
         String sql
                 = "SELECT TOP (1000) "
                 + "  o.[orderId], o.[employeeId], o.[customerId], o.[totalAmount], o.[shippingFee], "
@@ -241,7 +233,6 @@ public class OrderDAO extends DBContext {
     public List<Order> getOrders(int page, int limit) {
         List<Order> list = new ArrayList<>();
         int offset = (page - 1) * limit;
-
         String sql
                 = "SELECT "
                 + "  o.[orderId], o.[employeeId], o.[customerId], o.[totalAmount], o.[shippingFee], "
@@ -330,16 +321,6 @@ public class OrderDAO extends DBContext {
         return 0;
     }
 
-    ///////////// 
-    /**
-     * Cập nhật trạng thái đơn hàng bằng statusName (ví dụ 'Processing',
-     * 'Delivered'…). Tự động JOIN sang bảng OrderStatus để lấy statusId tương
-     * ứng.
-     *
-     * @param orderId id của đơn cần cập nhật
-     * @param statusName tên trạng thái mới
-     * @return true nếu update thành công
-     */
     public boolean updateOrderStatus(int orderId, String statusName) {
         String sql = "UPDATE o\n"
                 + "SET o.statusId = s.statusId,\n"
@@ -376,19 +357,6 @@ public class OrderDAO extends DBContext {
         }
     }
 
-//    public boolean insertOrderDetail(int orderId, int productId, int quantity, double price) {
-//        String sql = "INSERT INTO OrderDetails (orderId, productId, detailQuantity, detailPrice, createdAt) "
-//                + "VALUES (?, ?, ?, ?, GETDATE())";
-//
-//        try {
-//            Object[] params = new Object[]{orderId, productId, quantity, price};
-//
-//            return execQuery(sql, params) > 0;
-//        } catch (SQLException e) {
-//            e.printStackTrace();
-//            return false;
-//        }
-//    }
     public boolean insertOrderDetail(int orderId, int productId, int quantity, double price) {
         String sql = "INSERT INTO OrderDetails (orderId, productId, detailQuantity, detailPrice) VALUES (?, ?, ?, ?)";
         try {
@@ -400,29 +368,6 @@ public class OrderDAO extends DBContext {
         }
     }
 
-//    public int insertOrder(Order order) {
-//        String sql = "INSERT INTO Orders "
-//                + "(employeeId, customerId, totalAmount, shippingFee, paymentMethodId, "
-//                + "paymentStatusId, statusId, voucherId, addressId, createdAt) "
-//                + "VALUES (2, ?, ?, ?, ?, ?, 1, ?, ?, GETDATE())";
-//
-//        try {
-//            Object[] params = new Object[]{
-//                order.getCustomer().getId(),
-//                order.getTotalAmount(),
-//                order.getShippingFee(),
-//                order.getPaymentMethod().getId(),
-//                order.getOrderStatus().getId(),
-//                order.getVoucher() != null ? order.getVoucher().getId() : null,  // voucherId
-//                order.getAddress().getId()
-//            };
-//
-//            return execQueryReturnId(sql, params);
-//        } catch (SQLException e) {
-//            e.printStackTrace();
-//            return -1;
-//        }
-//    }
     public int insertOrder(Order order) {
         String sql = "INSERT INTO Orders "
                 + "(employeeId, customerId, totalAmount, shippingFee, "
@@ -431,12 +376,12 @@ public class OrderDAO extends DBContext {
 
         try {
             Object[] params = new Object[]{
-                order.getCustomer().getId(), // 1
-                order.getTotalAmount(), // 2
-                order.getShippingFee(), // 3
-                order.getPaymentMethod().getId(), // 4
-                order.getVoucher() != null ? order.getVoucher().getId() : null, // 5
-                order.getAddress().getId() // 6
+                order.getCustomer().getId(),
+                order.getTotalAmount(),
+                order.getShippingFee(),
+                order.getPaymentMethod().getId(),
+                order.getVoucher() != null ? order.getVoucher().getId() : null,
+                order.getAddress().getId()
             };
             return execQueryReturnId(sql, params);
         } catch (SQLException e) {

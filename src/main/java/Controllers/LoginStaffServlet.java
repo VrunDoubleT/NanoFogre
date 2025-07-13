@@ -60,9 +60,7 @@ public class LoginStaffServlet extends HttpServlet {
             return;
         }
 
-        // Đăng nhập thành công
         request.getSession().setAttribute("employee", emp);
-        // Remember me
         if (remember != null && remember.equals("on")) {
             Cookie cookie = new Cookie("employee_email", email);
             cookie.setMaxAge(1 * 24 * 60 * 60); 

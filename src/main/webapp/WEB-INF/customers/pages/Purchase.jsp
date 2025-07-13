@@ -383,6 +383,11 @@
                 border-width: 2px !important;
                 border-color: #ef4444 !important; /* đỏ */
             }
+            body.modal-open {
+                overflow: hidden !important;
+                touch-action: none;
+                overscroll-behavior: contain;
+            }
         </style>
 
 
@@ -390,7 +395,7 @@
 
     <body class="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50">
         <jsp:include page="../common/header.jsp" />
-        <main class="container mx-auto px-4 py-8">
+        <main class="container mx-auto max-w-6xl px-4 py-8">
             <div class="w-full h-full overflow-auto px-4 py-8">
                 <!-- Header -->
                 <div class="text-center mb-8 mt-8 animate-fade-in">
@@ -444,7 +449,7 @@
                                     <p class="text-gray-600">Your personal and delivery details</p>
                                 </div>
                             </div>
-                            <!-- Nút đổi địa chỉ -->
+
                             <button
                                 id="toggleAddressesBtn"
                                 class="p-2 rounded-lg hover:bg-gray-100 transition-colors"
@@ -453,7 +458,7 @@
                             </button>
                         </div>
 
-                        <!-- 1️⃣ Basic Information + Selected Address -->
+
                         <div id="basicInfo" class="space-y-6">
                             <!-- Full Name -->
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -507,7 +512,7 @@
 
                         </div>
 
-                        <!-- 2️⃣ Delivery Addresses: ẩn theo toggle -->
+                        <!-- Delivery Addresses -->
                         <div id="addressesSection" class="hidden bg-white p-6 space-y-8">
                             <div class="flex justify-between items-center mb-4">
                                 <h3 class="text-xl font-semibold text-gray-800">
@@ -607,15 +612,15 @@
                                     int qty = cart.getQuantity();
                                     double lineTotal = p.getPrice() * qty; %>
                             <div class="product-card p-6 rounded-xl">
-                                <div class="flex items-center space-x-4">
-                                    <div class="w-20 h-20 bg-gradient-to-br from-gray-100 to-gray-200 rounded-xl flex items-center justify-center">
+                               <div class="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-4">
+                                    <div  class="flex-shrink-0 w-20 h-20 mx-auto sm:mx-0">
                                         <% if (p.getUrls() != null && !p.getUrls().isEmpty()) {%>
                                         <img loading="lazy"
                                              src="<%= p.getUrls().get(0)%>"
                                              alt="<%= p.getTitle()%>"
                                              class="product-image">
                                         <% } else { %>
-                                        <div class="product-image bg-gray-200 flex items-center justify-center"><i class="fas fa-image text-gray-400 text-2xl"></i></div>
+                                        <div class="product-image bg-gray-200 flex items-center justify-center"><i class=" text-gray-400 text-2xl"></i></div>
                                             <% }%>
                                     </div>
                                     <div class="flex-1">
@@ -683,6 +688,7 @@
                             <% if (voucher != null) {%>
                             <!-- Applied Voucher -->
                             <div class="voucher-card">
+                                >
                                 <div class="flex items-center justify-between">
                                     <div class="flex items-center">
                                         <i class="fas fa-ticket-alt text-xl mr-3"></i>
@@ -725,9 +731,17 @@
                                                 data-code="<%= v.getCode()%>"
                                                 onclick="selectVoucher('<%= v.getCode()%>')"
                                                 title="<%= v.getDescription()%>">
-                                            <%= v.getCode()%>
+                                            <span class="font-mono"><%= v.getCode()%></span>
+                                            <span class="ml-1 text-gray-500 text-xs">
+                                                (<% if ("PERCENTAGE".equalsIgnoreCase(v.getType())) {%>
+                                                <%= ((int) v.getValue())%>% off, up to <%= CurrencyFormatter.formatVietNamCurrency(v.getMaxValue())%>
+                                                <% } else {%>
+                                                <%= CurrencyFormatter.formatVietNamCurrency(v.getValue())%> off
+                                                <% } %>)
+                                            </span>
                                         </button>
-                                        <% }%>
+                                        <% } %>
+
                                     </div>
                                 </div>
                                 <% }%>
@@ -774,7 +788,7 @@
         </main>
         <jsp:include page="../common/footer.jsp" />   
 
-        <!-- Confirmation Modal -->
+
         <!-- Confirmation Modal -->
         <div id="confirmModal"
              class="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center opacity-0 pointer-events-none transition-opacity duration-300 z-50">
@@ -878,13 +892,13 @@
                 renderInitialSelectedAddress();
             });
 
-// Initialize address selection system
+            // Initialize address selection system
             function initializeAddressSelection() {
                 attachRadioListeners();
                 setupMutationObserver();
             }
 
-// Function to handle address selection
+            // Function to handle address selection
             function selectAddress(addressId) {
                 console.log('Selecting address ID:', addressId);
 
@@ -916,7 +930,7 @@
 
                                 // Show success notification
                                 showNotification(json.message, 'success');
-                            window.location.reload();
+                                window.location.reload();
                             } else {
                                 showNotification(json.message || 'Có lỗi xảy ra', 'error');
                             }
@@ -930,7 +944,7 @@
                         });
             }
 
-// Enhanced function to render selected address card
+            // Enhanced function to render selected address card
             function renderSelectedAddressCard(address) {
                 const container = document.getElementById('selectedAddressCard');
                 if (!container)
@@ -982,7 +996,7 @@
                 }, 150);
             }
 
-// Function to update address list selection state
+            // Function to update address list selection state
             function updateAddressListSelection(selectedAddressId) {
                 const addressItems = document.querySelectorAll('.address-item');
 
@@ -1017,7 +1031,7 @@
                 });
             }
 
-// Function to render initial selected address
+            // Function to render initial selected address
             function renderInitialSelectedAddress() {
                 const checkedRadio = document.querySelector('input[name="selectedAddress"]:checked');
                 if (checkedRadio) {
@@ -1037,7 +1051,7 @@
                 }
             }
 
-// Enhanced radio button event handling
+            // Enhanced radio button event handling
             function attachRadioListeners() {
                 document.querySelectorAll('#addressesList input[name="selectedAddress"]').forEach(radio => {
                     // Remove existing listeners to prevent duplicates
@@ -1054,7 +1068,7 @@
                 }
             }
 
-// Setup mutation observer for dynamic content
+            // Setup mutation observer for dynamic content
             function setupMutationObserver() {
                 const observer = new MutationObserver(function (mutations) {
                     mutations.forEach(function (mutation) {
@@ -1070,7 +1084,7 @@
                 }
             }
 
-// Enhanced update purchase button function
+            // Enhanced update purchase button function
             function updatePurchaseButton() {
                 const purchaseBtn = document.getElementById('purchaseBtn');
                 const selectedAddressCard = document.getElementById('selectedAddressCard');
@@ -1093,7 +1107,7 @@
                 }
             }
 
-// Enhanced toggle addresses function
+            // Enhanced toggle addresses function
             function toggleAddresses() {
                 const sec = document.getElementById('addressesSection');
                 const chevron = document.getElementById('addressesChevron');
@@ -1116,12 +1130,12 @@
                 chevron.classList.toggle('rotate-180');
             }
 
-// Helper function to safely display text (optional, for extra security)
+            // Helper function to safely display text (optional, for extra security)
             function safeText(text) {
                 return text || '';
             }
 
-// Loading state functions
+            // Loading state functions
             function showLoadingState() {
                 const container = document.getElementById('selectedAddressCard');
                 if (container) {
@@ -1138,7 +1152,7 @@
                 }
             }
 
-// Enhanced notification function
+            // Enhanced notification function
             function showNotification(message, type = 'success') {
                 // Remove existing notifications
                 document.querySelectorAll('.notification').forEach(n => n.remove());
@@ -1174,7 +1188,7 @@
 
             ///craeete/edit address 
             document.addEventListener('DOMContentLoaded', () => {
-                // 1️⃣ DOM elements
+
                 const addressModal = document.getElementById('addressModal');
                 const form = document.getElementById('addressForm');
                 const addrIdInput = document.getElementById('addressIdInput');
@@ -1189,7 +1203,6 @@
                 const addBtn = document.getElementById('addAddressBtn');
                 const editBtns = document.querySelectorAll('.edit-address-btn');
 
-                // 2️⃣ Danh sách prefix hợp lệ
                 const prefixes = [
                     '032', '033', '034', '035', '036', '037', '038', '039',
                     '056', '058', '059', '099',
@@ -1198,21 +1211,21 @@
                     '086', '096', '097', '098'
                 ];
 
-                // 3️⃣ Hàm toggle class valid/invalid + error message
+
                 function validateField(el, ok, errEl, msg) {
                     el.classList.toggle('valid-field', ok);
                     el.classList.toggle('invalid-field', !ok);
                     errEl.textContent = ok ? '' : msg;
                 }
 
-                // 4️⃣ Lấy danh sách address hiện có để so sánh trùng
+
                 function getExistingAddresses() {
                     return Array
                             .from(document.querySelectorAll('.address-item'))
                             .map(item => item.dataset.details.trim().toLowerCase());
                 }
 
-                // 5️⃣ Clear mọi validation cũ mỗi lần mở modal
+
                 function clearValidation() {
                     [nameInput, recInput, phoneInput, detailsInput].forEach(i => {
                         i.classList.remove('valid-field', 'invalid-field');
@@ -1222,19 +1235,22 @@
                     });
                 }
 
-                // 6️⃣ Mở/đóng modal
                 function openModal() {
                     addressModal.classList.remove('opacity-0', 'pointer-events-none');
+                    document.body.classList.add('modal-open'); // <-- Thêm dòng này
                 }
-                function closeModal() {
+
+                function closeAddressModal() {
                     addressModal.classList.add('opacity-0', 'pointer-events-none');
+                    document.body.classList.remove('modal-open'); // <-- Và dòng này
                 }
+
                 addressModal.addEventListener('click', e => {
                     if (e.target === addressModal)
                         closeModal();
                 });
 
-                // 7️⃣ Add mới
+
                 addBtn.addEventListener('click', () => {
                     clearValidation();
                     addrIdInput.value = '';
@@ -1245,7 +1261,7 @@
                     openModal();
                 });
 
-                // 8️⃣ Edit existing
+
                 editBtns.forEach(btn => btn.addEventListener('click', e => {
                         clearValidation();
                         const item = e.currentTarget.closest('.address-item');
@@ -1260,7 +1276,7 @@
                         openModal();
                     }));
 
-                // 9️⃣ Realtime validate cho từng trường
+
                 nameInput.addEventListener('input', () => {
                     validateField(nameInput, nameInput.value.trim() !== '', nameError, 'Address name is required.');
                 });
@@ -1302,11 +1318,10 @@
                                 'This address already exists. Please enter a different address.');
                         return;
                     }
-                    // c) OK
+
                     validateField(detailsInput, true, detailsError, '');
                 });
 
-                // 🔟 Kiểm tra lần cuối khi submit
                 form.addEventListener('submit', e => {
                     let ok = true;
                     if (nameInput.value.trim() === '') {
@@ -1338,7 +1353,7 @@
 
 
 
-            // --- Các biến DOM ---
+            // --- DOM ---
             const addressModal = document.getElementById('addressModal');
             const form = document.getElementById('addressForm');
             const addrIdInput = document.getElementById('addressIdInput');
@@ -1352,7 +1367,7 @@
             const modalSubmit = document.getElementById('modalSubmit');
             const addressesList = document.getElementById('addressesList'); // nơi chứa danh sách địa chỉ
 
-            // Mở/đóng modal
+
             function openModal() {
                 addressModal.classList.remove('opacity-0', 'pointer-events-none');
             }
@@ -1364,7 +1379,7 @@
                 const addressModal = document.getElementById('addressModal');
 
                 addressModal.addEventListener('click', function (event) {
-                    // Nếu click chính xác ở phần container (không phải bên trong modal content)
+
                     if (event.target === addressModal) {
                         closeAddressModal();
                     }
@@ -1372,7 +1387,7 @@
             });
 
 
-            // Thêm mới địa chỉ
+
             document.getElementById('addAddressBtn').addEventListener('click', () => {
                 addrIdInput.value = '';
                 nameInput.value = '';
@@ -1385,7 +1400,7 @@
                 openModal();
             });
 
-            // Sửa địa chỉ
+
             document.querySelectorAll('.edit-address-btn').forEach(btn =>
                 btn.addEventListener('click', e => {
                     const item = e.currentTarget.closest('.address-item');
@@ -1401,29 +1416,29 @@
                 })
             );
 
-            // Xử lý submit form add/edit và cập nhật DOM
+
             form.addEventListener('submit', e => {
                 e.preventDefault();
 
-                // Lấy giá trị địa chỉ mới nhập
+
                 const newDetails = detailsInput.value.trim();
 
-                // Lấy tất cả địa chỉ hiện có trong danh sách
+
                 const existingAddresses = Array.from(document.querySelectorAll('#addressesList .address-item'))
                         .map(item => item.dataset.details.trim());
 
-                // Kiểm tra trùng địa chỉ (có thể ignore case nếu muốn)
+
                 const isDuplicate = existingAddresses.some(addr => addr.toLowerCase() === newDetails.toLowerCase());
 
-                // Nếu trùng và đang là thêm mới (không phải sửa)
+
                 if (isDuplicate && !addrIdInput.value.trim()) {
-                    // Hiện lỗi cho trường địa chỉ
+
                     detailsError.textContent = 'This address already exists. Please enter a different address.';
                     detailsInput.classList.add('invalid-field');
                     detailsInput.focus();
-                    return; // Ngăn submit
+                    return;
                 } else {
-                    // Xóa lỗi nếu trước đó có
+
                     detailsError.textContent = '';
                     detailsInput.classList.remove('invalid-field');
                 }
@@ -1459,10 +1474,10 @@
 
                             if (json.success) {
                                 closeAddressModal();
-   window.location.reload();
-                                // Cập nhật DOM: thêm mới hoặc sửa đổi address-item tương ứng
+                                window.location.reload();
+
                                 if (isEdit) {
-                                    // Sửa: tìm address-item theo data-address-id rồi cập nhật nội dung và data-*
+
                                     const existingItem = addressesList.querySelector(`.address-item[data-address-id="${addrIdInput.value.trim()}"]`);
                                     if (existingItem) {
                                         existingItem.dataset.name = nameInput.value.trim();
@@ -1470,7 +1485,7 @@
                                         existingItem.dataset.phone = phoneInput.value.trim();
                                         existingItem.dataset.details = detailsInput.value.trim();
 
-                                        // Cập nhật nội dung hiển thị trong existingItem
+
                                         existingItem.querySelector('span.font-medium').textContent = nameInput.value.trim();
                                         existingItem.querySelector('p.text-sm:nth-child(2)').innerHTML = `
                         <i class="fas fa-phone mr-2 text-gray-400"></i><strong class="mr-1">Phone:</strong>${phoneInput.value.trim()}
@@ -1483,8 +1498,8 @@
                     `;
                                     }
                                 } else {
-                                    // Thêm mới: tạo thẻ div.address-item mới với data và nội dung tương tự mẫu hiện có
-                                    const newId = json.newAddressId; // giả sử backend trả id mới trong json
+
+                                    const newId = json.newAddressId;
                                     if (newId) {
                                         const newDiv = document.createElement('div');
                                         newDiv.className = 'address-item group flex items-start justify-between p-4 bg-gray-50 rounded-lg border border-gray-200 hover:bg-white hover:shadow-md transition-all';
@@ -1525,7 +1540,7 @@
 
                                         addressesList.appendChild(newDiv);
 
-                                        // Gán lại event cho nút edit và delete mới tạo
+
                                         newDiv.querySelector('.edit-address-btn').addEventListener('click', e => {
                                             const item = e.currentTarget.closest('.address-item');
                                             addrIdInput.value = item.dataset.addressId;
@@ -1570,12 +1585,12 @@
                     return;
                 }
                 Swal.fire({
-                    title: 'Bạn chắc chắn muốn xóa địa chỉ này?',
-                    text: 'Địa chỉ sẽ bị xoá vĩnh viễn.',
+                    title: 'Are you sure you want to delete this address?',
+                    text: 'The address will be permanently deleted.',
                     icon: 'warning',
                     showCancelButton: true,
-                    confirmButtonText: 'Xóa',
-                    cancelButtonText: 'Hủy',
+                    confirmButtonText: 'Delete',
+                    cancelButtonText: 'Cancle',
                     confirmButtonColor: '#d33',
                     cancelButtonColor: '#6c757d'
                 }).then(result => {
@@ -1600,7 +1615,7 @@
                                 if (js.success) {
                                     itemDiv.remove();
                                     updatePurchaseButton();
-                                    // nếu xóa luôn address đang chọn thì reset chọn
+
                                     const sel = document.querySelector(`input[name="selectedAddress"][value="${addressId}"]`);
                                     if (sel) {
                                         document.getElementById('selectedAddressCard').innerHTML = `
@@ -1638,11 +1653,11 @@
 
 
 
-            /////////////////code củ /////////////////////////////////////
+            /////////////////code /////////////////////////////////////
 
             function selectVoucher(code, event) {
                 if (event)
-                    event.preventDefault(); // ngăn reload form nếu có
+                    event.preventDefault();
 
                 const input = document.getElementById('voucherInput');
                 input.value = code;
@@ -1676,7 +1691,7 @@
                         .then(data => {
                             if (data.success) {
                                 showVoucherMessage(data.message, "green");
-                                // cập nhật UI giá và voucher
+
                                 document.getElementById('subtotalAmount').textContent = data.subtotalFormatted + " VND";
                                 if (data.discount > 0) {
                                     document.getElementById('discountRow').style.display = 'flex';
@@ -1686,7 +1701,7 @@
                                 }
                                 document.getElementById('totalAmount').textContent = data.totalFormatted + " VND";
                                 document.getElementById('confirmModalTotal').textContent = data.totalFormatted + " VND";
-                                // **CHÍNH**: gán voucherId mới vào hidden field
+
                                 document.getElementById('voucherId').value = data.voucherId;
                             } else {
                                 showVoucherMessage(data.message, "red");
@@ -1701,34 +1716,60 @@
 
 
             function removeVoucher() {
-                if (confirm('Are you sure you want to remove this voucher?')) {
-                    const formData = new FormData();
-                    formData.append('cartIds', '<%= cartIdsJson%>');
+                if (!confirm('Are you sure you want to remove this voucher?'))
+                    return;
 
-                    fetch('<%= request.getContextPath()%>/checkout?action=removeVoucher', {
-                        method: 'POST',
-                        body: formData
-                    })
-                            .then(response => response.json())
-                            .then(data => {
-                                if (data.success) {
-                                    window.location.reload();
-                                } else {
-                                    alert(data.message || 'Failed to remove voucher');
-                                }
-                            })
-                            .catch(error => {
-                                console.error('Error:', error);
-                                alert('An error occurred. Please try again.');
-                            });
-                }
+                const formData = new FormData();
+                formData.append('cartIds', '<%= cartIdsJson%>');
+
+                fetch('<%= request.getContextPath()%>/checkout?action=removeVoucher', {
+                    method: 'POST',
+                    body: formData
+                })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                // 1. Ẩn block voucher đã áp dụng
+                                const voucherCard = document.querySelector('.voucher-card');
+                                if (voucherCard)
+                                    voucherCard.style.display = 'none';
+
+                                // 2. Hiện lại block nhập voucher (nằm trong .space-y-3)
+                                const voucherFormBlock = document.querySelector('.space-y-3');
+                                if (voucherFormBlock)
+                                    voucherFormBlock.style.display = '';
+
+                                // 3. Reset lại input voucher, voucherId
+                                document.getElementById('voucherId').value = '';
+                                document.getElementById('voucherInput').value = '';
+
+                                // 4. Update lại discount/total về số gốc
+                                document.getElementById('discountRow').style.display = 'none';
+                                document.getElementById('discountAmount').textContent = '';
+                                document.getElementById('subtotalAmount').textContent = data.subtotalFormatted + " VND";
+                                document.getElementById('totalAmount').textContent = data.totalFormatted + " VND";
+                                document.getElementById('confirmModalTotal').textContent = data.totalFormatted + " VND";
+
+                                // 5. Nếu có message thì show ra
+                                showVoucherMessage(data.message, "green");
+                            } else {
+                                alert(data.message || 'Failed to remove voucher');
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                            alert('An error occurred. Please try again.');
+                        });
             }
+            document.getElementById('voucherInput').focus();
+
+
 
             function showVoucherMessage(message, color) {
                 const messageDiv = document.getElementById('voucherMessage');
                 messageDiv.textContent = message;
 
-                // Set color based on message type
+
                 if (color === "green") {
                     messageDiv.className = 'text-sm mt-3 min-h-[20px] text-center font-medium rounded-lg text-green-600 bg-green-50 p-2';
                 } else {
@@ -1779,7 +1820,7 @@
                         .then(data => {
                             if (data.success) {
                                 showUpdateMessage(data.message, "green");
-                                // Remove required-field styling after successful update
+
                                 document.getElementById('recipientInput').classList.remove('required-field');
                                 document.getElementById('addressNameInput').classList.remove('required-field');
                                 document.getElementById('phoneInput').classList.remove('required-field');
@@ -1811,7 +1852,7 @@
 
                 messageDiv.textContent = message;
 
-                // Set color based on message type
+
                 if (color === "green") {
                     messageDiv.className = 'mt-4 p-3 rounded-lg text-center font-medium text-green-600 bg-green-50 border border-green-200';
                 } else {
@@ -1822,14 +1863,14 @@
 
             function confirmPurchase() {
                 const modal = document.getElementById('confirmModal');
-                // bỏ đi lớp ẩn
                 modal.classList.remove('opacity-0', 'pointer-events-none');
+                document.body.classList.add('modal-open'); // <-- Thêm dòng này
             }
 
             function closeModal() {
                 const modal = document.getElementById('confirmModal');
-                // thêm lại lớp ẩn
                 modal.classList.add('opacity-0', 'pointer-events-none');
+                document.body.classList.remove('modal-open'); // <-- Và dòng này
             }
 
 
@@ -1849,24 +1890,20 @@
                 const params = new URLSearchParams();
                 params.append('cartIds', '<%= cartIdsJson%>');
 
-                // 1) Address
                 const addr = document.querySelector('input[name="selectedAddress"]:checked');
                 if (!addr) {
-                    alert('Please select an address');
+                    Swal.fire('Please select an address');
                     btn.innerHTML = orig;
                     btn.disabled = false;
                     return;
                 }
                 params.append('addressId', addr.value);
 
-                // 2) Voucher — read the same id="voucherId" you rendered above
                 const vid = document.getElementById('voucherId').value;
-                console.log('sending voucherId =', vid);
                 if (vid) {
                     params.append('voucherId', vid);
                 }
 
-                // 3) Fire off the POST
                 fetch('<%= request.getContextPath()%>/checkout?action=processPurchase', {
                     method: 'POST',
                     headers: {'Content-Type': 'application/x-www-form-urlencoded'},
@@ -1874,17 +1911,48 @@
                 })
                         .then(r => r.json())
                         .then(data => {
+                            if (!data.success && data.message === "You must log in first.") {
+                                Swal.fire({
+                                    icon: 'warning',
+                                    title: 'Login required',
+                                    text: data.message,
+                                    confirmButtonText: 'Go to Login',
+                                    allowOutsideClick: false,
+                                    allowEscapeKey: false
+                                }).then(() => {
+                                    window.location.href = '<%= request.getContextPath()%>/login';
+                                });
+                                return;
+                            }
+
                             if (data.success) {
                                 closeModal();
-                                alert(data.message);
-                                window.location.href = '<%= request.getContextPath()%>/cart';
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'Order Placed Successfully!',
+                                    text: data.message || 'Your order has been placed.',
+                                    showConfirmButton: true,
+                                    confirmButtonText: 'View My Carts',
+                                    willClose: () => {
+                                        // Redirect after closing popup
+                                        window.location.href = '<%= request.getContextPath()%>/cart';
+                                    }
+                                });
                             } else {
-                                alert(data.message || 'Failed to process order');
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Oops...',
+                                    text: data.message || 'Failed to process order'
+                                });
                                 closeModal();
                             }
                         })
                         .catch(() => {
-                            alert('An error occurred. Please try again.');
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error',
+                                text: 'An error occurred. Please try again.'
+                            });
                             closeModal();
                         })
                         .finally(() => {
@@ -1895,7 +1963,8 @@
 
 
 
-            // Form validation function
+
+
             function validateForm() {
                 const phone = document.getElementById('phoneInput').value.trim();
                 const address = document.getElementById('addressInput').value.trim();
@@ -1919,21 +1988,21 @@
                 return isValid;
             }
 
-            // Event listeners and initialization
+
             document.addEventListener('DOMContentLoaded', function () {
-                // Wire up the update button click listener
+
                 const updateBtn = document.getElementById('updateInfoBtn');
                 if (updateBtn) {
                     updateBtn.addEventListener('click', updateCustomerInfo);
                 }
 
-                // Auto-focus phone input if empty
+
                 const phoneInput = document.getElementById('phoneInput');
                 if (phoneInput && !phoneInput.value.trim()) {
                     phoneInput.focus();
                 }
 
-                // Handle Enter key in voucher input
+
                 const voucherInput = document.getElementById('voucherInput');
                 if (voucherInput) {
                     voucherInput.addEventListener('keypress', function (e) {
@@ -1943,7 +2012,7 @@
                     });
                 }
 
-                // Add input event listeners for real-time validation
+
                 if (phoneInput) {
                     phoneInput.addEventListener('input', function () {
                         if (this.value.trim()) {
@@ -1979,7 +2048,7 @@
                     });
                 }
 
-                // Close modal when clicking outside
+
                 const modal = document.getElementById('confirmModal');
                 if (modal) {
                     window.onclick = function (event) {

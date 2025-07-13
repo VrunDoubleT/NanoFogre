@@ -49,9 +49,9 @@ public class CategoryServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
-        int limit = 5; // Default limit for pagination
+        int limit = 5;
         CategoryDAO categoryDao = new CategoryDAO();
-        String type = request.getParameter("type") != null ? request.getParameter("type") : "categories"; // Get type for list or pagination
+        String type = request.getParameter("type") != null ? request.getParameter("type") : "categories";
 
         switch (type) {
             case "list":
@@ -139,7 +139,7 @@ public class CategoryServlet extends HttpServlet {
                     return;
                 }
 
-                String attrsJson = request.getParameter("attributes"); // JSON từ front-end, có thể null hoặc "[]"
+                String attrsJson = request.getParameter("attributes");
 
                 String imageUrl = null;
                 try {
@@ -156,7 +156,6 @@ public class CategoryServlet extends HttpServlet {
 
                 }
 
-                // 4) save Category and ID new
                 category.setName(newName);
                 category.setAvatar(imageUrl);
                 int newCategoryId = dao.createCategoryAndReturnId(category);
@@ -210,13 +209,11 @@ public class CategoryServlet extends HttpServlet {
                 CategoryDAO daose = new CategoryDAO();
                 Gson gsonse = new Gson();
 
-                // 1.  params
                 int categoryId = Integer.parseInt(request.getParameter("categoryId"));
                 String newNamese = request.getParameter("categoryName");
 
                 String attrsJsonse = request.getParameter("attributes");
 
-                // 2. update image
                 Category current = daose.getCategoryById(categoryId);
                 boolean updateImage = false;
                 String imageUrlse = current.getAvatar();
@@ -241,14 +238,12 @@ public class CategoryServlet extends HttpServlet {
                 }
                 daose.updateCategory(current, updateImage);
 
-                // 3. Parse JSON attributes
                 List<Map<String, Object>> maps = gsonse.fromJson(
                         attrsJsonse,
                         new TypeToken<List<Map<String, Object>>>() {
                         }.getType()
                 );
 
-                // 4.  toUpdate vs toInsert
                 List<ProductAttribute> toUpdate = new ArrayList<>();
                 List<ProductAttribute> toInsert = new ArrayList<>();
 
@@ -279,7 +274,6 @@ public class CategoryServlet extends HttpServlet {
                     }
                 }
 
-                // 5. Call DAO o DB
                 if (!toUpdate.isEmpty()) {
                     daose.saveAttributes(categoryId, toUpdate);
                 }

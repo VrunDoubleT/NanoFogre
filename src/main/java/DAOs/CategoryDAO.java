@@ -20,7 +20,6 @@ import java.util.logging.Logger;
  */
 public class CategoryDAO extends DB.DBContext {
 
-    //List category sort by desc
     public List<Category> getCategories() {
         List<Category> categories = new ArrayList<>();
         String query = "SELECT * FROM Categories ";
@@ -45,14 +44,13 @@ public class CategoryDAO extends DB.DBContext {
 
         try ( ResultSet rs = execSelectQuery(query)) {
             while (rs.next()) {
-                // Instantiate Category using the constructor that takes parameters
                 Category category = new Category(
                         rs.getInt("categoryId"),
                         rs.getString("categoryName"),
-                        rs.getBoolean("isActive"), // Assuming the column for active status is 'isActive'
-                        rs.getString("image") // Column for image
+                        rs.getBoolean("isActive"),
+                        rs.getString("image")
                 );
-                categories.add(category); // Add category to the list
+                categories.add(category);
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -61,9 +59,8 @@ public class CategoryDAO extends DB.DBContext {
         return categories;
     }
 
-    //count category
     public int countCategory() {
-        String query = "SELECT COUNT(*) FROM Categories"; // SQL query to get the total count of categories
+        String query = "SELECT COUNT(*) FROM Categories";
         try ( ResultSet rs = execSelectQuery(query)) {
             if (rs.next()) {
                 return rs.getInt(1);
@@ -74,7 +71,6 @@ public class CategoryDAO extends DB.DBContext {
         return 0;
     }
 
-    //update category
     public boolean updateCategory(Category category, boolean updateImage) {
         String query;
         Object[] params;
@@ -96,7 +92,6 @@ public class CategoryDAO extends DB.DBContext {
         return false;
     }
 
-    // category by id
     public Category getCategoryById(int categoryId) {
         Category category = null;
         String query = "SELECT * FROM Categories WHERE categoryId = ?";
@@ -115,24 +110,20 @@ public class CategoryDAO extends DB.DBContext {
     }
 
     public boolean createCategory(Category category) {
-        // Updated query to insert categoryName, image, and isActive status
         String query = "INSERT INTO Categories (categoryName, image) VALUES (?, ?)";
-
         try {
-            // Pass categoryName, image, and isActive status to the query
             int rowsAffected = execQuery(query, new Object[]{
-                category.getName(), // categoryName
-                category.getAvatar() // image (assuming 'avatar' stores the image URL)
+                category.getName(),
+                category.getAvatar()
             });
 
-            return rowsAffected > 0; // Return true if the insertion is successful
+            return rowsAffected > 0;
         } catch (SQLException e) {
             e.printStackTrace();
-            return false; // Return false in case of an error
+            return false;
         }
     }
 
-    // Category Name exist
     public boolean isCategoryNameExists(String categoryName) {
 
         String query = "SELECT COUNT(*) FROM Categories WHERE categoryName = ?";
@@ -149,7 +140,6 @@ public class CategoryDAO extends DB.DBContext {
         return false;
     }
 
-    // hide Category
     public boolean hideCategory(int categoryId) {
         String sql = "UPDATE Categories SET isActive = 0 WHERE categoryId = ?";
         Object[] params = {categoryId};
@@ -163,7 +153,6 @@ public class CategoryDAO extends DB.DBContext {
         return false;
     }
 
-    // enable Category
     public boolean enableCategory(int categoryId) {
         String sql = "UPDATE Categories SET isActive = 1 WHERE categoryId = ?";
         Object[] params = {categoryId};
@@ -184,7 +173,7 @@ public class CategoryDAO extends DB.DBContext {
             ps.executeUpdate();
             ResultSet rs = ps.getGeneratedKeys();
             if (rs.next()) {
-                return rs.getInt(1); // categoryId
+                return rs.getInt(1);
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -192,33 +181,11 @@ public class CategoryDAO extends DB.DBContext {
         return -1;
     }
 
-//    public List<ProductAttribute> getAttributesByCategoryId(int categoryId) {
-//        List<ProductAttribute> list = new ArrayList<>();
-//        String sql = "SELECT * FROM ProductAttributes WHERE categoryId = ?";
-//        try ( ResultSet rs = execSelectQuery(sql, new Object[]{categoryId})) {
-//            while (rs.next()) {
-//                ProductAttribute attr = new ProductAttribute();
-//                attr.setAttributeId(rs.getInt("attributeId"));
-//                attr.setAttributeName(rs.getString("attributeName"));
-//                attr.setUnit(rs.getString("unit"));
-//                attr.setMinValue(rs.getObject("minValue") != null ? rs.getDouble("minValue") : null);
-//                attr.setMaxValue(rs.getObject("maxValue") != null ? rs.getDouble("maxValue") : null);
-//                attr.setDataType(rs.getString("dataType"));
-//                attr.setIsRequired(rs.getBoolean("isRequired"));
-//                attr.setIsActive(rs.getBoolean("isActive"));
-//                attr.setCategoryId(rs.getInt("categoryId"));
-//                list.add(attr);
-//            }
-//        } catch (SQLException e) {
-//            e.printStackTrace();
-//        }
-//        return list;
-//    }
     public void saveAttributes(int categoryId, List<ProductAttribute> list) {
         String updateSql = "UPDATE ProductAttributes SET "
                 + "attributeName = ?, unit = ?, minValue = ?, maxValue = ?, dataType = ?, "
                 + "isRequired = ?, isActive = ? "
-                + "WHERE attributeId = ?";  // <-- dùng attributeId làm khóa
+                + "WHERE attributeId = ?";
 
         for (ProductAttribute attr : list) {
             try {
@@ -230,7 +197,7 @@ public class CategoryDAO extends DB.DBContext {
                     attr.getDataType(),
                     attr.getIsRequired() != null && attr.getIsRequired(),
                     attr.getIsActive() != null && attr.getIsActive(),
-                    attr.getId() // <-- chỉ cung cấp attributeId
+                    attr.getId()
                 };
                 execQuery(updateSql, params);
             } catch (SQLException e) {
@@ -248,7 +215,6 @@ public class CategoryDAO extends DB.DBContext {
                 attr.setId(rs.getInt("attributeId"));
                 attr.setName(rs.getString("attributeName"));
                 attr.setUnit(rs.getString("unit"));
-                // đọc chuỗi nguyên gốc
                 attr.setMinValue(rs.getString("minValue"));
                 attr.setMaxValue(rs.getString("maxValue"));
                 attr.setDataType(rs.getString("dataType"));
@@ -286,7 +252,6 @@ public class CategoryDAO extends DB.DBContext {
                 pstmt.setString(1, attr.getName().trim());
                 pstmt.setString(2, attr.getUnit());
 
-                // ghi nguyên chuỗi (có thể là số hoặc yyyy-MM-dd)
                 if (attr.getMinValue() != null) {
                     pstmt.setString(3, attr.getMinValue());
                 } else {

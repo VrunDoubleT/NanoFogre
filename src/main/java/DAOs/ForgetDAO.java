@@ -69,7 +69,6 @@ public class ForgetDAO extends DB.DBContext {
                 Employee emp = new Employee();
                 emp.setId(rs.getInt("employeeId"));
                 emp.setEmail(rs.getString("employeeEmail"));
-                // ... set các trường khác nếu muốn
                 return emp;
             }
         } catch (Exception ex) {

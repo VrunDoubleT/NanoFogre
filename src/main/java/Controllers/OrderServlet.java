@@ -21,13 +21,13 @@ import jakarta.servlet.http.HttpServletResponse;
 @WebServlet(name = "OrderViewServlet", urlPatterns = {"/order/view"})
 public class OrderServlet extends HttpServlet {
 
-    private static final int DEFAULT_LIMIT = 5; // Default limit for pagination
+    private static final int DEFAULT_LIMIT = 5; 
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
-        int limit = 5; // Default limit for pagination
+        int limit = 5; 
         OrderDAO orderDao = new OrderDAO();
         String type = request.getParameter("type") != null ? request.getParameter("type") : "orders";
 

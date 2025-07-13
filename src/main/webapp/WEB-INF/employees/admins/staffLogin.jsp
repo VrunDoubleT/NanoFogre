@@ -481,6 +481,33 @@
                     transform: rotate(360deg);
                 }
             }
+            .otp-input {
+                width: 38px;
+                height: 45px;
+                text-align: center;
+                font-size: 1.4rem;
+                border-radius: 8px;
+                border: 2px solid #e1e5e9;
+                background: #fff;
+                margin-right: 2px;
+                outline: none;
+                transition: border 0.2s;
+            }
+            .otp-input:focus {
+                border-color: #ff6b6b;
+                box-shadow: 0 0 0 2px rgba(255,107,107,0.13);
+            }
+            @media (max-width: 480px) {
+                .otp-input {
+                    width: 32px;
+                    height: 40px;
+                    font-size:1.1rem;
+                }
+            }
+            .otp-input.error {
+                border-color: #e74c3c !important;
+                background: #ffecec !important;
+            }
         </style>
     </head>
     <body>
@@ -561,7 +588,14 @@
                     <div id="step-code" class="form-step">
                         <div class="forgot-form-group">
                             <label for="forgot-code">Verification Code</label>
-                            <input id="forgot-code" type="text" maxlength="6" placeholder="Enter 6-digit code" required />
+                            <div id="otp-group" style="display:flex;gap:10px;justify-content:center;">
+                                <input type="text" inputmode="numeric" pattern="[0-9]*" maxlength="1" class="otp-input" />
+                                <input type="text" inputmode="numeric" pattern="[0-9]*" maxlength="1" class="otp-input" />
+                                <input type="text" inputmode="numeric" pattern="[0-9]*" maxlength="1" class="otp-input" />
+                                <input type="text" inputmode="numeric" pattern="[0-9]*" maxlength="1" class="otp-input" />
+                                <input type="text" inputmode="numeric" pattern="[0-9]*" maxlength="1" class="otp-input" />
+                                <input type="text" inputmode="numeric" pattern="[0-9]*" maxlength="1" class="otp-input" />
+                            </div>
                         </div>
                         <div class="forgot-form-group">
                             <label for="new-password">New Password</label>
@@ -748,23 +782,97 @@
                         });
             }
 
-            function verifyCodeAndChangePass() {
+
+            let verifiedOTP = false;
+
+            document.querySelectorAll('.otp-input').forEach((input, idx, arr) => {
+                input.addEventListener('input', function () {
+                    this.value = this.value.replace(/[^0-9]/g, '');
+                    if (this.value.length === 1 && idx < arr.length - 1)
+                        arr[idx + 1].focus();
+                    this.classList.remove('error');
+                    const code = Array.from(arr).map(i => i.value).join('');
+                    if (code.length === 6) {
+                        checkOTPCode(code);
+                    } else {
+                        verifiedOTP = false;
+                        document.getElementById('verify-code-btn').disabled = true;
+                    }
+                });
+
+                input.addEventListener('keydown', function (e) {
+                    if (e.key === "Backspace" && !this.value && idx > 0)
+                        arr[idx - 1].focus();
+                    if (e.key.length === 1 && !/[0-9]/.test(e.key))
+                        e.preventDefault();
+                });
+
+                input.addEventListener('paste', function (e) {
+                    e.preventDefault();
+                    const paste = (e.clipboardData || window.clipboardData).getData('text').replace(/\D/g, '').substring(0, 6);
+                    for (let i = 0; i < arr.length; i++)
+                        arr[i].value = paste[i] || '';
+                    const code = Array.from(arr).map(i => i.value).join('');
+                    if (code.length === 6)
+                        checkOTPCode(code);
+                });
+            });
+
+            function checkOTPCode(code) {
                 const email = document.getElementById('forgot-email').value.trim();
-                const code = document.getElementById('forgot-code').value.trim();
+                if (!email) {
+                    showError("Please enter your email address first.");
+                    return;
+                }
+
+                showInfo("Verifying code...");
+                fetch('${pageContext.request.contextPath}/forget', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+                    body: 'email=' + encodeURIComponent(email) +
+                            '&code=' + encodeURIComponent(code) +
+                            '&action=checkCode'
+                })
+                        .then(r => r.json())
+                        .then(data => {
+                            if (data.success) {
+                                showSuccess("Verification code is correct! Please enter your new password.");
+                                verifiedOTP = true;
+                                document.getElementById('verify-code-btn').disabled = false;
+                                document.getElementById('new-password').focus();
+                                document.querySelectorAll('.otp-input').forEach(i => i.classList.remove('error'));
+                            } else {
+                                showError(data.message || "Verification code is invalid or expired.");
+                                verifiedOTP = false;
+                                document.getElementById('verify-code-btn').disabled = true;
+                                document.querySelectorAll('.otp-input').forEach(i => i.classList.add('error'));
+                            }
+                        })
+                        .catch(() => {
+                            showError("Network error. Please try again.");
+                            verifiedOTP = false;
+                            document.getElementById('verify-code-btn').disabled = true;
+                            document.querySelectorAll('.otp-input').forEach(i => i.classList.add('error'));
+                        });
+            }
+
+
+            function verifyCodeAndChangePass() {
+                if (!verifiedOTP) {
+                    showError("Please enter a valid verification code first.");
+                    return;
+                }
+                const email = document.getElementById('forgot-email').value.trim();
+                const code = Array.from(document.querySelectorAll('.otp-input')).map(i => i.value).join('');
                 const newPass = document.getElementById('new-password').value.trim();
                 const button = document.getElementById('verify-code-btn');
 
-                if (!code || code.length !== 6) {
-                    showError("Please enter the 6-digit verification code.");
-                    return;
-                }
-
                 if (!newPass || newPass.length < 6) {
-                    showError("Password must be at least 6 characters long.");
+                    showError("Please enter a new password with at least 6 characters.");
+                    document.getElementById('new-password').focus();
                     return;
                 }
 
-                // Show loading state
                 button.disabled = true;
                 button.innerHTML = '<span class="loading-spinner"></span>Updating...';
                 showInfo("Updating your password...");
@@ -796,6 +904,9 @@
                             button.innerHTML = 'Change Password';
                         });
             }
+
+
+
 
             // Close popup when clicking outside
             document.getElementById('forgot-popup').addEventListener('click', function (e) {

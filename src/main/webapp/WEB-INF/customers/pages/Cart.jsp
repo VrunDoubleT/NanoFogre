@@ -3,11 +3,6 @@
     Created on : Jul 3, 2025, 4:21:17 PM
     Author     : iphon
 --%>
-<%-- 
-    Document   : Cart
-    Created on : Jul 3, 2025, 4:21:17 PM
-    Author     : iphon
---%>
 
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
@@ -418,6 +413,61 @@
                                         </div>
                                     </div>
                                 </c:forEach>
+                                <c:if test="${totalItems > 0}">
+                                    <div class="text-sm text-gray-600 font-medium mb-4 text-center">
+                                        Showing 
+                                        <span class="font-semibold text-gray-900">${from}</span>
+                                        to 
+                                        <span class="font-semibold text-gray-900">${to}</span>
+                                        of 
+                                        <span class="font-semibold text-gray-900">${totalItems}</span>
+                                        results
+                                    </div>
+                                </c:if>
+
+                                <!-- Pagination-->
+                                <c:if test="${totalPages > 1}">
+                                    <div class="flex justify-center mt-10">
+                                        <nav class="isolate inline-flex -space-x-px rounded-xl shadow-lg bg-white ring-1 ring-gray-200" aria-label="Pagination">
+                                            <!-- First -->
+                                            <a href="${cartUrl}?page=1" 
+                                               class="relative inline-flex items-center px-3 py-2 rounded-l-xl text-sm font-medium
+                                               ${currentPage == 1 ? 'text-gray-400 cursor-not-allowed bg-gray-50' : 'text-gray-700 bg-white hover:bg-gray-50 hover:text-gray-900'}">
+                                                &laquo;
+                                            </a>
+                                            <!-- Prev -->
+                                            <a href="${cartUrl}?page=${currentPage - 1}"
+                                               class="relative inline-flex items-center px-3 py-2 text-sm font-medium
+                                               ${currentPage == 1 ? 'text-gray-400 cursor-not-allowed bg-gray-50' : 'text-gray-700 bg-white hover:bg-gray-50 hover:text-gray-900'}"
+                                               ${currentPage == 1 ? 'aria-disabled="true"' : ''}>
+                                                &lt;
+                                            </a>
+                                            <!-- Page Numbers -->
+                                            <c:forEach var="i" begin="${startPage}" end="${endPage}">
+                                                <a href="${cartUrl}?page=${i}"
+                                                   class="relative inline-flex items-center px-4 py-2 text-sm font-semibold
+                                                   ${i == currentPage ? 'z-10 bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg ring-2 ring-blue-500 ring-offset-2 transform scale-105'
+                                                     : 'text-gray-700 bg-white hover:bg-gradient-to-r hover:from-gray-50 hover:to-gray-100 hover:text-gray-900 hover:shadow-md hover:scale-105'}"
+                                                   aria-current="${i == currentPage ? 'page' : 'false'}">
+                                                    ${i}
+                                                </a>
+                                            </c:forEach>
+                                            <!-- Next -->
+                                            <a href="${cartUrl}?page=${currentPage + 1}"
+                                               class="relative inline-flex items-center px-3 py-2 text-sm font-medium
+                                               ${currentPage == totalPages ? 'text-gray-400 cursor-not-allowed bg-gray-50' : 'text-gray-700 bg-white hover:bg-gray-50 hover:text-gray-900'}"
+                                               ${currentPage == totalPages ? 'aria-disabled="true"' : ''}>
+                                                &gt;
+                                            </a>
+                                            <!-- Last -->
+                                            <a href="${cartUrl}?page=${totalPages}"
+                                               class="relative inline-flex items-center px-3 py-2 rounded-r-xl text-sm font-medium
+                                               ${currentPage == totalPages ? 'text-gray-400 cursor-not-allowed bg-gray-50' : 'text-gray-700 bg-white hover:bg-gray-50 hover:text-gray-900'}">
+                                                &raquo;
+                                            </a>
+                                        </nav>
+                                    </div>
+                                </c:if>
                             </div>
 
                             <!-- Summary -->
@@ -432,48 +482,12 @@
                                         <span>Subtotal:</span>
                                         <span class="font-bold text-green-600" id="subtotal">0 ₫</span>
                                     </div>
-                                    <div class="flex justify-between">
-                                        <span>Tax (10%):</span>
-                                        <span class="font-bold text-green-600" id="vat">0 ₫</span>
-                                    </div>
                                 </div>
                                 <div class="flex justify-between text-lg font-bold border-t border-gray-200 pt-4 mt-4 mb-5 text-gray-900">
                                     <span>Total:</span>
                                     <span class="text-2xl font-extrabold bg-gradient-to-r from-purple-500 to-pink-500 bg-clip-text text-transparent" id="grandTotal">0 ₫</span>
                                 </div>
-                                <!--voucher-->
-                                <div class="flex flex-col items-center mb-2 gap-3">
-                                    <div class="w-full flex gap-2">
-                                        <input id="voucherInput" type="text"
-                                               class="bg-white border border-gray-300 text-gray-800 text-sm rounded-lg focus:ring-purple-500 focus:border-purple-500 block w-full p-2.5 text-center"
-                                               placeholder="Enter voucher code...">
-                                        <button id="applyVoucherBtn"
-                                                class="bg-gradient-to-r from-green-500 to-green-600 text-white font-bold px-6 py-2 rounded-lg hover:brightness-110 transition"
-                                                onclick="applyVoucher()">
-                                            Apply
-                                        </button>
-                                    </div>
 
-                                    <c:if test="${not empty availableVouchers}">
-                                        <div class="mt-3 w-full">
-                                            <label class="block text-sm text-gray-500">Available vouchers:</label>
-                                            <div class="flex flex-wrap gap-2">
-                                                <c:forEach var="v" items="${availableVouchers}">
-                                                    <button type="button"
-                                                            class="voucher-suggestion px-3 py-1 rounded bg-purple-100 hover:bg-purple-200 text-purple-700 text-sm font-semibold shadow border border-purple-300 transition"
-                                                            data-code="${v.code}"
-                                                            onclick="selectVoucher('${v.code}')"
-                                                            title="${v.description}">
-                                                        ${v.code}
-                                                    </button>
-                                                </c:forEach>
-                                            </div>
-                                        </div>
-                                    </c:if>
-                                </div>
-
-
-                                <div id="voucherMessage" class="text-sm mt-2 min-h-[32px] text-center font-medium rounded-lg"></div>
 
 
 
@@ -522,12 +536,15 @@
         <div id="purchaseModal" class="modal-overlay">
             <div class="modal-content p-6">
                 <div id="purchaseModalContent">
-                    <!-- Nội dung sẽ được fill từ Purchase.jsp -->
+
                 </div>
             </div>
         </div>
+
+
         <!-- JavaScript -->
         <script>
+
             const baseUrl = '${cartUrl}';
             let isProcessing = false;
 
@@ -687,12 +704,10 @@
                             .then(response => {
                                 if (!response.ok)
                                     throw new Error('Network response was not ok');
-                                //  slide-out vs Tailwind:
                                 const cartItemEl = document.getElementById(`cart-item-${index}`);
                                 if (cartItemEl) {
                                     cartItemEl.classList.add('transition-all', 'duration-300', 'ease-in-out');
                                     cartItemEl.classList.add('translate-x-full', 'opacity-0');
-                                    // animation, reload or redirect
                                     setTimeout(() => window.location.href = baseUrl, 500);
                                 } else {
                                     // fallback
@@ -715,7 +730,6 @@
                 });
             }
 
-            // persist checkbox state in localStorage
             function saveChecked() {
                 const checked = Array.from(document.querySelectorAll('.item-checkbox'))
                         .filter(ch => ch.checked)
@@ -746,32 +760,13 @@
                 });
 
                 const vat = Math.round(subtotal * 0.1);
-                let total = subtotal + vat;
+                let total = subtotal;
 
-                // Delete old voucher
-                const discountEl = document.getElementById('voucherDiscountRow');
-                if (discountEl)
-                    discountEl.remove();
 
-                if (voucherDiscount > 0) {
-                    const discountLine = `
-            <div id="voucherDiscountRow" class="summary-row flex justify-between text-green-400 font-bold">
-                <span>Voucher Discount:</span>
-                <span>- ${voucherDiscount.toLocaleString('vi-VN')} ₫</span>
-            </div>
-        `;
-                    const totalRow = document.getElementById('grandTotalRow');
-                    if (totalRow)
-                        totalRow.insertAdjacentHTML('beforebegin', discountLine);
-
-                    total -= voucherDiscount;
-                    if (total < 0)
-                        total = 0;
-                }
 
                 document.getElementById('itemCount').textContent = itemCount;
                 document.getElementById('subtotal').textContent = subtotal.toLocaleString('vi-VN') + ' ₫';
-                document.getElementById('vat').textContent = vat.toLocaleString('vi-VN') + ' ₫';
+
                 document.getElementById('grandTotal').textContent = total.toLocaleString('vi-VN') + ' ₫';
 
                 // toggle nút checkout
@@ -821,13 +816,11 @@
             }
 
 
-// Đóng modal
             function closeRelatedProducts() {
                 document.getElementById('relatedProductsModal').classList.remove('active');
                 setTimeout(() => window.location.reload());
             }
 
-// Đóng khi click nền tối
             document.getElementById('relatedProductsModal').addEventListener('click', function (e) {
                 if (e.target === this)
                     closeRelatedProducts();
@@ -999,23 +992,22 @@
                 recalc();
             });
             //----------Purchase-----------------//
-document.getElementById('purchaseBtn').addEventListener('click', () => {
-    const checked = Array.from(document.querySelectorAll('.item-checkbox'))
-        .filter(ch => ch.checked)
-        .map(ch => ch.dataset.id);
-    if (!checked.length) {
-        Swal.fire({
-            icon: 'warning',
-            title: 'No items selected',
-            text: 'Please select at least one item to purchase.'
-        });
-        return;
-    }
-    const param = encodeURIComponent(JSON.stringify(checked));
-    console.log('Selected cartIds:', checked); // Debug
-    console.log('Encoded param:', param); // Debug
-    window.location.href = '<%= request.getContextPath() %>/checkout?cartIds=' + param;
-});
+            document.getElementById('purchaseBtn').addEventListener('click', () => {
+                const checked = Array.from(document.querySelectorAll('.item-checkbox'))
+                        .filter(ch => ch.checked)
+                        .map(ch => ch.dataset.id);
+                if (!checked.length) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'No items selected',
+                        text: 'Please select at least one item to purchase.'
+                    });
+                    return;
+                }
+                const param = encodeURIComponent(JSON.stringify(checked));
+
+                window.location.href = '<%= request.getContextPath()%>/checkout?cartIds=' + param;
+            });
 
         </script>
     </body>
