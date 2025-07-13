@@ -1726,9 +1726,6 @@
                                     document.getElementById('discountRow').style.display = 'none';
                                 }
 
-                                if (document.getElementById('shippingAmount'))
-                                    document.getElementById('shippingAmount').textContent =
-                                            (data.shipping > 0 ? data.shippingFormatted + " VND" : "Free");
 
                                 document.getElementById('totalAmount').textContent = data.totalFormatted + " VND";
                                 document.getElementById('confirmModalTotal').textContent = data.totalFormatted + " VND";
