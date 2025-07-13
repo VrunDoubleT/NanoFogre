@@ -49,6 +49,9 @@ public class OrderDAO extends DBContext {
                 + "  ps.[paymentStatusName] AS paymentStatusName, "
                 + "  os.[statusName]        AS orderStatusName, "
                 + "  v.[voucherCode]        AS voucherCode, "
+                + "v.[type]        AS voucherType, "
+                + "v.[value]       AS voucherValue,  "
+                + "v.[maxValue]    AS voucherMaxValue , "
                 + "  a.[addressDetails]     AS shippingAddress "
                 + "FROM .[Orders]        o "
                 + "JOIN [Customers]   c  ON o.[customerId]      = c.[customerId] "
@@ -100,6 +103,9 @@ public class OrderDAO extends DBContext {
                 Voucher v = new Voucher();
                 v.setId(rs.getInt("voucherId"));
                 v.setCode(rs.getString("voucherCode"));
+                v.setType(rs.getString("voucherType"));
+                v.setValue(rs.getDouble("voucherValue"));
+                v.setMaxValue(rs.getDouble("voucherMaxValue"));
                 o.setVoucher(v);
 
                 Address a = new Address();

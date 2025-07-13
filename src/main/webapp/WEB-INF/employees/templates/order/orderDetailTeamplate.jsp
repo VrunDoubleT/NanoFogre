@@ -15,6 +15,31 @@
     // Retrieve the single Order object set in the controller
     Order order = (Order) request.getAttribute("order");
     DateTimeFormatter fmt = DateTimeFormatter.ofPattern("MMM dd, yyyy 'at' hh:mm a");
+    double subtotal = 0;
+    List<OrderDetails> detailse = (List<OrderDetails>) request.getAttribute("orderDetails");
+    for (OrderDetails d : detailse) {
+        subtotal += d.getPrice() * d.getQuantity();
+    }
+
+    // Tính discount t? voucher
+    double discount = 0;
+    if (order.getVoucher() != null) {
+        String type = order.getVoucher().getType();   // gi? s? "percentage" ho?c "fixed"
+        double value = order.getVoucher().getValue();
+        if ("percentage".equalsIgnoreCase(type)) {
+            discount = subtotal * (value / 100.0);
+            double max = order.getVoucher().getMaxValue();
+            if (max > 0 && discount > max) {
+                discount = max;
+            }
+        } else {
+            discount = value;
+        }
+    }
+
+    // L?y ti?p shippingFee và total t? order (ho?c tính l?i n?u c?n)
+    double shippingFee = order.getShippingFee();
+    double total = subtotal - discount + shippingFee;
 %>
 
 <div class="bg-gray-100 w-[820px] mx-auto h-[90vh] flex flex-col bg-white shadow-2xl overflow-hidden">
@@ -351,36 +376,42 @@
         <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
             <div class="flex justify-end">
                 <div class="w-80 space-y-4">
-                    <div class="flex justify-between items-center py-2 border-b border-gray-100">
-                        <span class="text-gray-600">Subtotal:</span>
 
-                   
-                        <span class="font-semibold text-green-500"><%= CurrencyFormatter.formatVietNamCurrency(order.getTotalAmount())%>VND</span>
-                    </div>
                     <div class="flex justify-between items-center py-2 border-b border-gray-100">
-                        <div class="flex items-center gap-2">
-                            <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
-                            </svg>
-                            <span class="text-gray-600">Shipping Fee:</span>
-                        </div>
-
-                        
-                        <span class="font-semibold text-green-500"><%= CurrencyFormatter.formatVietNamCurrency(order.getShippingFee())%>VND</span>
+                        <span class="text-sm font-medium text-gray-500">Subtotal:</span>
+                        <span class="font-semibold text-green-500">
+                            <%= CurrencyFormatter.formatVietNamCurrency(subtotal)%> VND
+                        </span>
                     </div>
+
+                    <div class="flex justify-between items-center py-2 border-b border-gray-100">
+                        <span class="text-sm font-medium text-gray-500">Voucher Discount:</span>
+                        <span class="font-semibold text-red-500">
+                            -<%= CurrencyFormatter.formatVietNamCurrency(discount)%> VND
+                        </span>
+                    </div>
+
+                    <div class="flex justify-between items-center py-2 border-b border-gray-100">
+                        <span class="ttext-sm font-medium text-gray-500">Shipping Fee:</span>
+                        <span class="font-semibold text-green-500">
+                            <%= CurrencyFormatter.formatVietNamCurrency(shippingFee)%> VND
+                        </span>
+                    </div>
+
                     <div class="flex justify-between items-center py-3 border-t-2 border-gray-200">
-                        <span class="text-lg font-semibold text-gray-800">Total Amount:</span>
+                        <span class="text-xl font-bold text-gray-800">Total Amount:</span>
                         <div class="text-right">
-                           
-                            <span class="text-2xl font-bold text-green-600"><%= CurrencyFormatter.formatVietNamCurrency(order.getTotalAmount() + order.getShippingFee())%>VND
-
+                            <span class="text-2xl font-bold text-green-600">
+                                <%= CurrencyFormatter.formatVietNamCurrency(total)%> VND
                             </span>
                             <p class="text-sm text-gray-500 mt-1">Including all fees</p>
                         </div>
                     </div>
+
                 </div>
             </div>
         </div>
+
 
         <% }%>
     </div>

@@ -38,7 +38,7 @@
     <!-- Total Amount -->
     <td class="px-3 py-3 whitespace-nowrap text-gray-700 text-center">
        
-        <span class="text-md font-semibold text-green-600 text-md"><%= CurrencyFormatter.formatVietNamCurrency(order.getTotalAmount() + order.getShippingFee())%>VND</span>
+        <span class="text-md font-semibold text-green-600 text-md"><%= CurrencyFormatter.formatVietNamCurrency(order.getTotalAmount())%>VND</span>
     </td>
 
     <!-- Payment Method -->

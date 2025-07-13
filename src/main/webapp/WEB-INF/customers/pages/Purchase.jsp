@@ -52,7 +52,8 @@
         voucherDescription = voucher.getDescription();
     }
 
-    double total = subtotal - discount;
+    double shippingFee = subtotal >= 500_000 ? 0 : 40_000;
+    double total = subtotal - discount + shippingFee;
     if (total < 0) {
         total = 0;
     }
@@ -612,7 +613,7 @@
                                     int qty = cart.getQuantity();
                                     double lineTotal = p.getPrice() * qty; %>
                             <div class="product-card p-6 rounded-xl">
-                               <div class="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-4">
+                                <div class="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-4">
                                     <div  class="flex-shrink-0 w-20 h-20 mx-auto sm:mx-0">
                                         <% if (p.getUrls() != null && !p.getUrls().isEmpty()) {%>
                                         <img loading="lazy"
@@ -710,16 +711,35 @@
                             <% } else { %>
                             <!-- Voucher Input -->
                             <div class="space-y-3">
-                                <div class="flex gap-2">
-                                    <input id="voucherInput" type="text"
-                                           class="modern-input flex-1 text-sm"
-                                           placeholder="Enter voucher code...">
-                                    <button id="applyVoucherBtn"
-                                            class="btn-modern btn-success-modern text-white px-6 py-3 rounded-xl font-semibold"
-                                            onclick="applyVoucher()">
-                                        Apply
-                                    </button>
+                                <div class="space-y-2">
+                                    <div class="flex gap-2 items-center">
+
+                                        <div class="relative flex-1">
+                                            <input id="voucherInput"
+                                                   type="text"
+                                                   class="w-full rounded-xl border border-gray-200 bg-white/70 shadow-inner px-4 py-3 text-sm pr-10 placeholder-gray-400 focus:ring-2 focus:ring-blue-300 outline-none transition-all"
+                                                   placeholder="Enter voucher code..." />
+
+                                            <button
+                                                type="button"
+                                                onclick="removeVoucher()"
+                                                class="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 flex items-center justify-center bg-gray-100 hover:bg-red-200 text-gray-400 hover:text-red-500 rounded-full transition-all duration-150"
+                                                tabindex="-1"
+                                                style="z-index:1;"
+                                                >
+                                                <i class="fas fa-times text-base"></i>
+                                            </button>
+                                        </div>
+
+                                        <button id="applyVoucherBtn"
+                                                class="bg-gradient-to-tr from-teal-400 via-green-400 to-cyan-500 hover:from-green-500 hover:to-cyan-600 transition-all px-8 py-3 rounded-xl font-bold shadow-lg text-white text-base focus:ring-2 focus:ring-teal-300 active:scale-95"
+                                                onclick="applyVoucher()"
+                                                >
+                                            Apply
+                                        </button>
+                                    </div>
                                 </div>
+
 
                                 <% if (availableVouchers != null && !availableVouchers.isEmpty()) {%>
                                 <div class="mt-4">
@@ -734,7 +754,7 @@
                                             <span class="font-mono"><%= v.getCode()%></span>
                                             <span class="ml-1 text-gray-500 text-xs">
                                                 (<% if ("PERCENTAGE".equalsIgnoreCase(v.getType())) {%>
-                                                <%= ((int) v.getValue())%>% off, up to <%= CurrencyFormatter.formatVietNamCurrency(v.getMaxValue())%>
+                                                <%= ((int) v.getValue())%>% off, up to <%= CurrencyFormatter.formatVietNamCurrency(v.getMaxValue())%>VND
                                                 <% } else {%>
                                                 <%= CurrencyFormatter.formatVietNamCurrency(v.getValue())%> off
                                                 <% } %>)
@@ -765,7 +785,13 @@
                                     </span>
                                 </div>
 
-                                <div class="flex justify-between text-gray-600"><span class="text-gray-600">Shipping:</span><span class="font-medium text-green-600">Free</span></div>
+                                <div class="flex justify-between text-gray-600">
+                                    <span class="text-gray-600">Shipping:</span>
+
+                                    <span id="shippingAmount" class="font-medium text-green-600">
+                                        <%= shippingFee > 0 ? CurrencyFormatter.formatVietNamCurrency(shippingFee) + " VND" : "Free"%>
+                                    </span>
+                                </div>
 
                                 <div class="flex justify-between text-gray-600" id="discountRow" style="<%= discount > 0 ? "display:flex;" : "display:none;"%>"><span class="text-gray-600">Voucher Discount:</span><span id="discountAmount" class="text-green-600 font-medium">-<%= CurrencyFormatter.formatVietNamCurrency(discount)%> VND</span></div>
 
@@ -1699,6 +1725,11 @@
                                 } else {
                                     document.getElementById('discountRow').style.display = 'none';
                                 }
+
+                                if (document.getElementById('shippingAmount'))
+                                    document.getElementById('shippingAmount').textContent =
+                                            (data.shipping > 0 ? data.shippingFormatted + " VND" : "Free");
+
                                 document.getElementById('totalAmount').textContent = data.totalFormatted + " VND";
                                 document.getElementById('confirmModalTotal').textContent = data.totalFormatted + " VND";
 
@@ -1714,54 +1745,52 @@
                         });
             }
 
-
             function removeVoucher() {
-                if (!confirm('Are you sure you want to remove this voucher?'))
-                    return;
-
-                const formData = new FormData();
-                formData.append('cartIds', '<%= cartIdsJson%>');
-
                 fetch('<%= request.getContextPath()%>/checkout?action=removeVoucher', {
                     method: 'POST',
-                    body: formData
+                    body: new URLSearchParams({cartIds: '<%= cartIdsJson%>'})
                 })
                         .then(response => response.json())
                         .then(data => {
-                            if (data.success) {
-                                // 1. Ẩn block voucher đã áp dụng
-                                const voucherCard = document.querySelector('.voucher-card');
-                                if (voucherCard)
-                                    voucherCard.style.display = 'none';
+                            // Ẩn block voucher
+                            const voucherCard = document.querySelector('.voucher-card');
+                            if (voucherCard)
+                                voucherCard.style.display = 'none';
+                            // Hiện lại input voucher
+                            const voucherFormBlock = document.querySelector('.space-y-3');
+                            if (voucherFormBlock)
+                                voucherFormBlock.style.display = '';
 
-                                // 2. Hiện lại block nhập voucher (nằm trong .space-y-3)
-                                const voucherFormBlock = document.querySelector('.space-y-3');
-                                if (voucherFormBlock)
-                                    voucherFormBlock.style.display = '';
-
-                                // 3. Reset lại input voucher, voucherId
+                            // Cập nhật các field
+                            if (document.getElementById('voucherId'))
                                 document.getElementById('voucherId').value = '';
+                            if (document.getElementById('voucherInput'))
                                 document.getElementById('voucherInput').value = '';
-
-                                // 4. Update lại discount/total về số gốc
+                            if (document.getElementById('discountRow'))
                                 document.getElementById('discountRow').style.display = 'none';
+                            if (document.getElementById('discountAmount'))
                                 document.getElementById('discountAmount').textContent = '';
+
+                            if (document.getElementById('itemsLine'))
+                                document.getElementById('itemsLine').textContent = `Items (${data.totalItems}):`;
+                            if (document.getElementById('subtotalAmount'))
                                 document.getElementById('subtotalAmount').textContent = data.subtotalFormatted + " VND";
+                            if (document.getElementById('shippingAmount'))
+                                document.getElementById('shippingAmount').textContent =
+                                        (data.shipping > 0 ? data.shippingFormatted + " VND" : "Free");
+
+
+                            if (document.getElementById('totalAmount'))
                                 document.getElementById('totalAmount').textContent = data.totalFormatted + " VND";
+                            if (document.getElementById('confirmModalTotal'))
                                 document.getElementById('confirmModalTotal').textContent = data.totalFormatted + " VND";
 
-                                // 5. Nếu có message thì show ra
-                                showVoucherMessage(data.message, "green");
-                            } else {
-                                alert(data.message || 'Failed to remove voucher');
-                            }
-                        })
-                        .catch(error => {
-                            console.error('Error:', error);
-                            alert('An error occurred. Please try again.');
+
                         });
             }
+
             document.getElementById('voucherInput').focus();
+
 
 
 

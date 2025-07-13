@@ -143,7 +143,7 @@ public class CheckoutServlet extends HttpServlet {
         request.setAttribute("selectedItems", selectedItems);
         request.setAttribute("voucher", voucher);
         request.setAttribute("availableVouchers", availableVouchers);
-        request.setAttribute("cartIdsJson", cartIdsJson); 
+        request.setAttribute("cartIdsJson", cartIdsJson);
         request.setAttribute("availableAddresses", availableAddresses);
         request.setAttribute("address", selectedAddress);
 
@@ -201,7 +201,7 @@ public class CheckoutServlet extends HttpServlet {
                         break;
                     }
                 } else {
-            
+
                     if (newRecipient == null || newRecipient.trim().isEmpty()) {
                         newRecipient = oldAddr.getRecipientName();
                     }
@@ -218,10 +218,10 @@ public class CheckoutServlet extends HttpServlet {
 
                 boolean ok = cartDao.updateCustomerInfo(
                         customer.getId(),
-                        newAddressName, 
-                        newRecipient, 
-                        newPhone, 
-                        newDetails 
+                        newAddressName,
+                        newRecipient,
+                        newPhone,
+                        newDetails
                 );
 
                 json.put("success", ok);
@@ -230,10 +230,80 @@ public class CheckoutServlet extends HttpServlet {
                         : "Failed to update information");
                 break;
 
-            case "removeVoucher":
+            case "removeVoucher": {
 
+                session.removeAttribute("voucher");
+
+                // Lấy lại cartIds từ request
+                String cartIdsStr = request.getParameter("cartIds");
+
+                List<Integer> cartIds = new ArrayList<>();
+
+                if (cartIdsStr != null && !cartIdsStr.trim().isEmpty()) {
+
+                    try {
+
+                        Gson gsonCart = new Gson();
+
+                        Type listType = new TypeToken<List<Integer>>() {
+                        }.getType();
+
+                        cartIds = gsonCart.fromJson(cartIdsStr, listType);
+
+                    } catch (Exception e) {
+
+                        cartIds = new ArrayList<>();
+
+                    }
+
+                }
+
+                // Query lại cart theo cartIds (đúng user)
+                List<Cart> selectedItems = cartDao.getCartItemById(cartIds);
+
+                if (selectedItems == null) {
+                    selectedItems = new ArrayList<>();
+                }
+
+                double subtotal = 0;
+
+                int totalItems = 0;
+
+                for (Cart cart : selectedItems) {
+
+                    subtotal += cart.getQuantity() * cart.getProduct().getPrice();
+
+                    totalItems += cart.getQuantity();
+
+                }
+
+                double shipping = (subtotal < 500000 && subtotal > 0) ? 40000 : 0;
+
+                double total = subtotal + shipping;
+
+                // Prepare response
                 json.put("success", true);
-                break;
+
+                //  json.put("message", "Voucher removed!");
+                json.put("subtotalFormatted", CurrencyFormatter.formatVietNamCurrency(subtotal));
+
+                json.put("totalFormatted", CurrencyFormatter.formatVietNamCurrency(total));
+
+                json.put("totalItems", totalItems);
+
+                json.put("shipping", shipping);
+
+                json.put("shippingFormatted", CurrencyFormatter.formatVietNamCurrency(shipping));
+
+                json.put("discount", 0);
+
+                json.put("discountFormatted", "0");
+
+                out.print(gson.toJson(json));
+
+                return;
+
+            }
 
             case "applyVoucher":
                 String voucherCode = request.getParameter("voucherCode");
@@ -262,17 +332,14 @@ public class CheckoutServlet extends HttpServlet {
                     }
                 }
 
-
                 CartDAO cartDaos = new CartDAO();
                 List<Cart> selectedItems = cartDaos.getCartItemById(cartIdList);
-
 
                 double subtotal = 0;
                 for (Cart cart : selectedItems) {
                     subtotal += cart.getQuantity() * cart.getProduct().getPrice();
                 }
 
- 
                 double discount = 0;
                 if ("percentage".equalsIgnoreCase(v.getType())) {
                     discount = subtotal * (v.getValue() / 100.0);
@@ -282,15 +349,14 @@ public class CheckoutServlet extends HttpServlet {
                 } else {
                     discount = v.getValue();
                 }
-
-                double total = subtotal - discount;
+                double shippingFee = (subtotal >= 500_000) ? 0 : 40_000;
+                double total = subtotal - discount + shippingFee;
                 if (total < 0) {
                     total = 0;
                 }
 
                 HttpSession sess = request.getSession();
                 sess.setAttribute("appliedVoucher", v);
-
 
                 json.put("success", true);
                 json.put("message", "Voucher applied successfully");
@@ -307,7 +373,7 @@ public class CheckoutServlet extends HttpServlet {
                 try {
 
                 String cartIdsParam = request.getParameter("cartIds");
-              
+
                 if (cartIdsParam == null || cartIdsParam.isEmpty()) {
                     json.put("success", false);
                     json.put("message", "No cart items found.");
@@ -329,8 +395,7 @@ public class CheckoutServlet extends HttpServlet {
                     voucherId = Integer.valueOf(voucherParam);
                 }
 
-
-                List<Cart> selectedCarts = cartDao.getCartItemById(cartIdse); 
+                List<Cart> selectedCarts = cartDao.getCartItemById(cartIdse);
                 if (selectedCarts == null || selectedCarts.isEmpty()) {
                     json.put("success", false);
                     json.put("message", "Cart items not found.");
@@ -341,7 +406,7 @@ public class CheckoutServlet extends HttpServlet {
                 for (Cart c : selectedCarts) {
                     subtotals += c.getQuantity() * c.getProduct().getPrice();
                 }
-
+                System.out.println("subtotal:" + subtotals);
                 VoucherDAO voucherDaos = new VoucherDAO();
 
                 double discounts = 0;
@@ -358,9 +423,13 @@ public class CheckoutServlet extends HttpServlet {
                         }
                     }
                 }
-                double totals = Math.max(0, subtotals - discounts);
+                double shippingFees = subtotals >= 500_000 ? 0 : 40_000;
+                double totals = Math.max(0, subtotals - discounts + shippingFees);
+
                 Models.Order order = new Models.Order();
 
+                order.setTotalAmount(totals);
+                order.setShippingFee(shippingFees);
 
                 Customer cust = new Customer();
                 cust.setId(customer.getId());
@@ -369,40 +438,32 @@ public class CheckoutServlet extends HttpServlet {
                 if (voucherId != null) {
                     Voucher voucher = new Voucher();
                     voucher.setId(voucherId);
-                    order.setVoucher(voucher);              
+                    order.setVoucher(voucher);
                 }
-
 
                 Address addr = new Address();
                 addr.setId(addressId);
                 order.setAddress(addr);
 
-
                 PaymentMethod pm = new PaymentMethod();
-                pm.setId(1); 
+                pm.setId(1);
                 order.setPaymentMethod(pm);
 
                 PaymentStatus ps = new PaymentStatus();
-                ps.setId(1); 
+                ps.setId(1);
                 order.setPaymentStatus(ps);
 
                 OrderStatus os = new OrderStatus();
-                os.setId(1); 
+                os.setId(1);
                 order.setOrderStatus(os);
 
-                order.setTotalAmount(totals);
-                order.setShippingFee(0);            
-
                 OrderDAO orderDAO = new OrderDAO();
-                int orderId = orderDAO.insertOrder(order); 
-
+                int orderId = orderDAO.insertOrder(order);
 
                 for (Cart c : selectedCarts) {
                     orderDAO.insertOrderDetail(orderId, c.getProduct().getProductId(), c.getQuantity(), c.getProduct().getPrice());
                     orderDAO.decreaseProductStock(c.getProduct().getProductId(), c.getQuantity());
                 }
-
-
 
                 json.put("success", true);
                 json.put("message", "Order placed successfully!");
@@ -415,44 +476,42 @@ public class CheckoutServlet extends HttpServlet {
             break;
 
             ////////////////////////////
-
             case "addAddress":
-    String addrName = request.getParameter("addressName");
-    String recip = request.getParameter("recipientName");
-    String phone = request.getParameter("addressPhone");
-    String details = request.getParameter("addressDetails");
-    if (addrName == null || addrName.isEmpty()
-            || recip == null || recip.isEmpty()
-            || phone == null || phone.isEmpty()
-            || details == null || details.isEmpty()) {
-        json.put("success", false);
-        json.put("message", "Please fill in all information.");
-        break;
-    }
+                String addrName = request.getParameter("addressName");
+                String recip = request.getParameter("recipientName");
+                String phone = request.getParameter("addressPhone");
+                String details = request.getParameter("addressDetails");
+                if (addrName == null || addrName.isEmpty()
+                        || recip == null || recip.isEmpty()
+                        || phone == null || phone.isEmpty()
+                        || details == null || details.isEmpty()) {
+                    json.put("success", false);
+                    json.put("message", "Please fill in all information.");
+                    break;
+                }
 
-    Address a = new Address();
-    a.setCustomerId(customer.getId());
-    a.setName(addrName);
-    a.setRecipientName(recip);
-    a.setPhone(phone);
-    a.setDetails(details);
-    int newAddressId = -1;
-    try {
-        newAddressId = addressDao.insert(a);
-    } catch (SQLException e) {
-        e.printStackTrace();
-    }
+                Address a = new Address();
+                a.setCustomerId(customer.getId());
+                a.setName(addrName);
+                a.setRecipientName(recip);
+                a.setPhone(phone);
+                a.setDetails(details);
+                int newAddressId = -1;
+                try {
+                    newAddressId = addressDao.insert(a);
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
 
-    if (newAddressId > 0) {
-        json.put("success", true);
-        json.put("message", "Address added successfully");
-        json.put("newAddressId", newAddressId);
-    } else {
-        json.put("success", false);
-        json.put("message", "Failed to add");
-    }
-    break;
-
+                if (newAddressId > 0) {
+                    json.put("success", true);
+                    json.put("message", "Address added successfully");
+                    json.put("newAddressId", newAddressId);
+                } else {
+                    json.put("success", false);
+                    json.put("message", "Failed to add");
+                }
+                break;
 
             case "editAddress":
                 int id = Integer.parseInt(request.getParameter("addressId"));
@@ -471,7 +530,7 @@ public class CheckoutServlet extends HttpServlet {
                 }
                 json.put("success", oks);
                 json.put("message", oks ? "Address updated" : "Failed to update");
-             
+
                 break;
 
             case "deleteAddress":
@@ -479,7 +538,6 @@ public class CheckoutServlet extends HttpServlet {
                 boolean deleted = false;
                 String message = "";
 
-  
                 try {
                     deleted = addressDao.delete(addressIds);
                     if (deleted) {
@@ -500,36 +558,33 @@ public class CheckoutServlet extends HttpServlet {
                 json.put("success", deleted);
                 json.put("message", message);
                 break;
-case "getAddresses":
-    List<Address> addresses = addressDao.getAddressesByCustomerId(customer.getId());
-    Address selectedAddresss = (Address) session.getAttribute("selectedAddress");
-    int selectedAddressId = (selectedAddresss != null) ? selectedAddresss.getId() : 0;
-    Map<String, Object> result = new HashMap<>();
-    result.put("addresses", addresses);
-    result.put("selectedAddressId", selectedAddressId);
-    result.put("selectedAddress", selectedAddresss);
-    out.print(gson.toJson(result));
-    return;
+            case "getAddresses":
+                List<Address> addresses = addressDao.getAddressesByCustomerId(customer.getId());
+                Address selectedAddresss = (Address) session.getAttribute("selectedAddress");
+                int selectedAddressId = (selectedAddresss != null) ? selectedAddresss.getId() : 0;
+                Map<String, Object> result = new HashMap<>();
+                result.put("addresses", addresses);
+                result.put("selectedAddressId", selectedAddressId);
+                result.put("selectedAddress", selectedAddresss);
+                out.print(gson.toJson(result));
+                return;
 
             case "selectAddress":
                  try {
                 int addressId = Integer.parseInt(request.getParameter("addressId"));
                 AddressDAO addressDAO = new AddressDAO();
-              
+
                 boolean success = addressDAO.setDefaultAddress(customer.getId(), addressId);
 
                 if (success) {
-                  
+
                     Address selectedAddress = addressDAO.getById(addressId);
 
-                  
                     session.setAttribute("selectedAddress", selectedAddress);
 
-                 
                     json.put("success", true);
                     json.put("message", "Đã cập nhật địa chỉ giao hàng.");
 
-                
                     if (selectedAddress != null) {
                         JSONObject addressJson = new JSONObject();
                         addressJson.put("id", selectedAddress.getId());
@@ -539,7 +594,6 @@ case "getAddresses":
                         addressJson.put("details", selectedAddress.getDetails());
                         json.put("address", addressJson);
                     }
-                 
 
                 } else {
                     json.put("success", false);
