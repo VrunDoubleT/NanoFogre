@@ -84,7 +84,7 @@ public class AuthServlet extends HttpServlet {
         String email = request.getParameter("email");
         String password = request.getParameter("password");
         String remember = request.getParameter("remember");
-
+        System.out.println(Common.hashPassword(password));
         Customer customer = customerDAO.login(email, Common.hashPassword(password));
 
         if (customer != null) {
