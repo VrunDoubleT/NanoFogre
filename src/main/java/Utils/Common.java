@@ -23,9 +23,10 @@ public class Common {
         }
         return imageParts;
     }
+
     public static String hashPassword(String password) {
         try {
-            MessageDigest md = MessageDigest.getInstance("SHA-256");
+            MessageDigest md = MessageDigest.getInstance("MD5");
             byte[] hashedBytes = md.digest(password.getBytes("UTF-8"));
             StringBuilder sb = new StringBuilder();
             for (byte b : hashedBytes) {
@@ -36,6 +37,5 @@ public class Common {
             throw new RuntimeException(e);
         }
     }
+
 }
-
-

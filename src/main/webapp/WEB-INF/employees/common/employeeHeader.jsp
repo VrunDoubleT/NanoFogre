@@ -8,7 +8,7 @@
     <div class="h-full flex items-center justify-between px-6 py-4">
         <!-- Logo -->
         <div class="h-full">
-            <img class="h-full object-cover" src="https://res.cloudinary.com/dk4fqvp3v/image/upload/v1749393807/nLogo_iik9oj.png" alt="alt"/>
+            <img class="h-full object-cover" src="https://res.cloudinary.com/dk4fqvp3v/image/upload/v1752501574/1_1_r1trli.png" alt="alt"/>
         </div>
 
         <% Models.Employee emp = (Models.Employee) session.getAttribute("employee");%>

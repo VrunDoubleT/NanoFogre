@@ -53,6 +53,7 @@ public class LoginStaffServlet extends HttpServlet {
         String remember = request.getParameter("remember");
 
         AdminDAO ad = new AdminDAO();
+        System.out.println(Common.hashPassword(password));
         Employee emp = ad.getStaffByEmailAndPassword(email, Common.hashPassword(password)); 
 
         if (emp == null) {

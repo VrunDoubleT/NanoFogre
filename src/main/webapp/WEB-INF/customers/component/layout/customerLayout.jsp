@@ -86,7 +86,7 @@
             // ------------------------
 
             if (push) {
-                history.pushState({page: path}, '', '/customer/account?view=' + path);
+                history.pushState({page: path}, '', '/account?view=' + path);
             }
         });
 }

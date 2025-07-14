@@ -132,7 +132,7 @@
                                              loading="lazy" />
                                         <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-center justify-center">
                                             <div class="text-center transform translate-y-2 group-hover:translate-y-0 transition-transform duration-300">
-                                                <span class="text-white font-bold text-sm sm:text-base drop-shadow-lg">Xem ngay</span>
+                                                <span class="text-white font-bold text-sm sm:text-base drop-shadow-lg">View now</span>
                                                 <div class="w-8 h-0.5 bg-white mx-auto mt-1 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300"></div>
                                             </div>
                                         </div>
