@@ -6,6 +6,7 @@ package Controllers;
 
 import DAOs.AdminDAO;
 import Models.Employee;
+import Utils.Common;
 import java.io.IOException;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -55,8 +56,7 @@ public class LoginAdminServlet extends HttpServlet {
         String password = request.getParameter("password");
         String remember = request.getParameter("remember");
 
-        String hashedPassword = hashMd5(password);
-       
+        String hashedPassword = Common.hashPassword(password);
         
         AdminDAO ad = new AdminDAO();
         Employee emp = ad.getAdminByEmailAndPassword(email, hashedPassword);
@@ -74,23 +74,6 @@ public class LoginAdminServlet extends HttpServlet {
             response.addCookie(cookie);
         }
         response.sendRedirect(request.getContextPath() + "/admin/dashboard");
-    }
-
-    private String hashMd5(String raw) {
-        try {
-            MessageDigest md = MessageDigest.getInstance("MD5");
-            byte[] mess = md.digest(raw.getBytes());
-
-            StringBuilder sb = new StringBuilder();
-            for (byte b : mess) {
-                sb.append(String.format("%02x", b));
-            }
-
-            return sb.toString();
-        } catch (NoSuchAlgorithmException ex) {
-            Logger.getLogger(AdminDAO.class.getName()).log(Level.SEVERE, null, ex);
-            return "";
-        }
     }
 
     /**
