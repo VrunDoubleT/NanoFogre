@@ -181,7 +181,9 @@
                 opacity: 0.6;
                 pointer-events: none;
             }
-
+body.modal-open {
+  overflow: hidden;
+}
             /* Modal Styles */
             .modal-overlay {
                 position: fixed;
@@ -413,61 +415,8 @@
                                         </div>
                                     </div>
                                 </c:forEach>
-                                <c:if test="${totalItems > 0}">
-                                    <div class="text-sm text-gray-600 font-medium mb-4 text-center">
-                                        Showing 
-                                        <span class="font-semibold text-gray-900">${from}</span>
-                                        to 
-                                        <span class="font-semibold text-gray-900">${to}</span>
-                                        of 
-                                        <span class="font-semibold text-gray-900">${totalItems}</span>
-                                        results
-                                    </div>
-                                </c:if>
 
-                                <!-- Pagination-->
-                                <c:if test="${totalPages > 1}">
-                                    <div class="flex justify-center mt-10">
-                                        <nav class="isolate inline-flex -space-x-px rounded-xl shadow-lg bg-white ring-1 ring-gray-200" aria-label="Pagination">
-                                            <!-- First -->
-                                            <a href="${cartUrl}?page=1" 
-                                               class="relative inline-flex items-center px-3 py-2 rounded-l-xl text-sm font-medium
-                                               ${currentPage == 1 ? 'text-gray-400 cursor-not-allowed bg-gray-50' : 'text-gray-700 bg-white hover:bg-gray-50 hover:text-gray-900'}">
-                                                &laquo;
-                                            </a>
-                                            <!-- Prev -->
-                                            <a href="${cartUrl}?page=${currentPage - 1}"
-                                               class="relative inline-flex items-center px-3 py-2 text-sm font-medium
-                                               ${currentPage == 1 ? 'text-gray-400 cursor-not-allowed bg-gray-50' : 'text-gray-700 bg-white hover:bg-gray-50 hover:text-gray-900'}"
-                                               ${currentPage == 1 ? 'aria-disabled="true"' : ''}>
-                                                &lt;
-                                            </a>
-                                            <!-- Page Numbers -->
-                                            <c:forEach var="i" begin="${startPage}" end="${endPage}">
-                                                <a href="${cartUrl}?page=${i}"
-                                                   class="relative inline-flex items-center px-4 py-2 text-sm font-semibold
-                                                   ${i == currentPage ? 'z-10 bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg ring-2 ring-blue-500 ring-offset-2 transform scale-105'
-                                                     : 'text-gray-700 bg-white hover:bg-gradient-to-r hover:from-gray-50 hover:to-gray-100 hover:text-gray-900 hover:shadow-md hover:scale-105'}"
-                                                   aria-current="${i == currentPage ? 'page' : 'false'}">
-                                                    ${i}
-                                                </a>
-                                            </c:forEach>
-                                            <!-- Next -->
-                                            <a href="${cartUrl}?page=${currentPage + 1}"
-                                               class="relative inline-flex items-center px-3 py-2 text-sm font-medium
-                                               ${currentPage == totalPages ? 'text-gray-400 cursor-not-allowed bg-gray-50' : 'text-gray-700 bg-white hover:bg-gray-50 hover:text-gray-900'}"
-                                               ${currentPage == totalPages ? 'aria-disabled="true"' : ''}>
-                                                &gt;
-                                            </a>
-                                            <!-- Last -->
-                                            <a href="${cartUrl}?page=${totalPages}"
-                                               class="relative inline-flex items-center px-3 py-2 rounded-r-xl text-sm font-medium
-                                               ${currentPage == totalPages ? 'text-gray-400 cursor-not-allowed bg-gray-50' : 'text-gray-700 bg-white hover:bg-gray-50 hover:text-gray-900'}">
-                                                &raquo;
-                                            </a>
-                                        </nav>
-                                    </div>
-                                </c:if>
+
                             </div>
 
                             <!-- Summary -->
@@ -784,6 +733,10 @@
             function showRelatedProducts(productId, brandId, categoryId) {
                 const modal = document.getElementById('relatedProductsModal');
                 const content = document.getElementById('relatedProductsContent');
+
+                // 1) Thêm body.modal-open để khóa scroll
+                document.body.classList.add('modal-open');
+
                 modal.classList.add('active');
                 content.innerHTML = `
         <div class="flex justify-center items-center py-12">
@@ -816,10 +769,16 @@
             }
 
 
-            function closeRelatedProducts() {
-                document.getElementById('relatedProductsModal').classList.remove('active');
-                setTimeout(() => window.location.reload());
-            }
+   function closeRelatedProducts() {
+  const modal = document.getElementById('relatedProductsModal');
+
+  // 2) Loại bỏ class để khôi phục scroll
+  document.body.classList.remove('modal-open');
+
+  modal.classList.remove('active');
+  // nếu bạn reload trang, scroll vẫn bị khóa cho đến khi reload xong
+  // nhưng nếu chỉ đóng modal, bạn đã khôi phục overflow
+}
 
             document.getElementById('relatedProductsModal').addEventListener('click', function (e) {
                 if (e.target === this)

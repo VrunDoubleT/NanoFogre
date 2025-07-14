@@ -13,6 +13,10 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -51,9 +55,12 @@ public class LoginAdminServlet extends HttpServlet {
         String password = request.getParameter("password");
         String remember = request.getParameter("remember");
 
+        String hashedPassword = hashMd5(password);
+       
+        
         AdminDAO ad = new AdminDAO();
-        Employee emp = ad.getAdminByEmailAndPassword(email, password); 
-
+        Employee emp = ad.getAdminByEmailAndPassword(email, hashedPassword);
+        
         if (emp == null) {
             request.setAttribute("error", "Invalid email or password!");
             request.getRequestDispatcher("/WEB-INF/employees/admins/adminLogin.jsp").forward(request, response);
@@ -67,6 +74,23 @@ public class LoginAdminServlet extends HttpServlet {
             response.addCookie(cookie);
         }
         response.sendRedirect(request.getContextPath() + "/admin/dashboard");
+    }
+
+    private String hashMd5(String raw) {
+        try {
+            MessageDigest md = MessageDigest.getInstance("MD5");
+            byte[] mess = md.digest(raw.getBytes());
+
+            StringBuilder sb = new StringBuilder();
+            for (byte b : mess) {
+                sb.append(String.format("%02x", b));
+            }
+
+            return sb.toString();
+        } catch (NoSuchAlgorithmException ex) {
+            Logger.getLogger(AdminDAO.class.getName()).log(Level.SEVERE, null, ex);
+            return "";
+        }
     }
 
     /**

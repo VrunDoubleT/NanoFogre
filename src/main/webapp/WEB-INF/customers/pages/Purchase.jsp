@@ -494,10 +494,12 @@
                                         </div>
                                     </div>
                                 </label>
-                                <button onclick="toggleAddresses()"
-                                        class="ml-4 flex-shrink-0 text-indigo-600 hover:text-indigo-800 transition-colors">
-                                    <i class="fas fa-pen"></i>
-                                </button>
+             <!-- Nút thay đổi địa chỉ -->
+<button onclick="toggleAddresses()"
+        class="ml-4 flex-shrink-0 text-indigo-600 hover:text-indigo-800 transition-colors">
+  
+  <span>Change Address</span>
+</button>
                                 <% } else { %>
                                 <div class="flex items-center space-x-3 flex-1">
                                     <i class="fas fa-exclamation-circle text-red-500 text-xl"></i>

@@ -74,7 +74,7 @@ public class ForgetServlet extends HttpServlet {
                 // Tạo code random 6 số
                 String code = String.valueOf((int) ((Math.random() * 900000) + 100000));
                 java.time.LocalDateTime expiredAt = java.time.LocalDateTime.now().plusMinutes(5);
-                boolean saved = dao.insertCode(emp.getId(), code, expiredAt);
+                boolean saved = dao.insertCodeEmployee(emp.getId(), code, expiredAt);
 
                 if (!saved) {
                     response.getWriter().write("{\"success\":false,\"message\":\"System error, please try again!\"}");
@@ -108,7 +108,7 @@ public class ForgetServlet extends HttpServlet {
                 // Check Employee
                 Employee emp = dao.findByEmail(email.trim());
                 if (emp != null) {
-                    boolean valid = dao.checkVerifyCode(emp.getId(), code.trim());
+                    boolean valid = dao.checkVerifyCodeEmployee(emp.getId(), code.trim());
                     if (valid) {
                         out.write("{\"success\":true}");
                     } else {
@@ -152,7 +152,7 @@ public class ForgetServlet extends HttpServlet {
                     return;
                 }
 
-                boolean validCode = dao.checkVerifyCode(emp.getId(), code.trim());
+                boolean validCode = dao.checkVerifyCodeEmployee(emp.getId(), code.trim());
                 if (!validCode) {
                     response.getWriter().write("{\"success\":false,\"message\":\"Invalid or expired code.\"}");
                     return;
@@ -161,7 +161,7 @@ public class ForgetServlet extends HttpServlet {
                 boolean updated = dao.confirmResetPassword(emp.getId(), newPassword.trim());
 
                 if (updated) {
-                    dao.markCodeAsUsed(emp.getId(), code.trim());
+                    dao.markCodeAsUsedEmployee(emp.getId(), code.trim());
                     response.getWriter().write("{\"success\":true,\"message\":\"Password changed successfully.\"}");
                 } else {
                     response.getWriter().write("{\"success\":false,\"message\":\"Failed to update password.\"}");

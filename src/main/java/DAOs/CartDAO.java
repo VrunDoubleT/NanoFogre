@@ -248,27 +248,44 @@ public class CartDAO extends DB.DBContext {
     public List<Product> getRelatedProducts(int excludeProductId, int brandId, int categoryId) {
         List<Product> list = new ArrayList<>();
 
-        String sql
-                = "SELECT p.productId, p.productTitle, p.productPrice, p.productQuantity, "
-                + "       pi.url AS imageUrl "
-                + "FROM Products p "
-                + "  JOIN ( "
-                + "    SELECT productId, url "
-                + "    FROM ( "
-                + "      SELECT productId, url, "
-                + "             ROW_NUMBER() OVER (PARTITION BY productId ORDER BY imageId) AS rn "
-                + "      FROM ProductImages "
-                + "    ) t WHERE rn = 1 "
-                + "  ) pi ON pi.productId = p.productId "
-                + "WHERE p.productId <> ? "
-                + "  AND (p.brandId = ? OR p.categoryId = ?) "
-                + "ORDER BY p.productId DESC";
+String sql
+    = "SELECT p.productId, p.productTitle, p.productPrice, p.productQuantity, "
+    + "       pi.url AS imageUrl "
+    + "FROM Products p "
+    + "JOIN ( "
+    + "    SELECT productId, url "
+    + "    FROM ( "
+    + "        SELECT productId, url, "
+    + "               ROW_NUMBER() OVER (PARTITION BY productId ORDER BY imageId) AS rn "
+    + "        FROM ProductImages "
+    + "    ) t "
+    + "    WHERE rn = 1 "
+    + ") pi ON pi.productId = p.productId "
+    + "WHERE p.productId <> ? "
+    + "  AND p.brandId = ? "
+    + "UNION "
+    + "SELECT p.productId, p.productTitle, p.productPrice, p.productQuantity, pi.url AS imageUrl "
+    + "FROM Products p "
+    + "JOIN ( "
+    + "    SELECT productId, url "
+    + "    FROM ( "
+    + "        SELECT productId, url, "
+    + "               ROW_NUMBER() OVER (PARTITION BY productId ORDER BY imageId) AS rn "
+    + "        FROM ProductImages "
+    + "    ) t "
+    + "    WHERE rn = 1 "
+    + ") pi ON pi.productId = p.productId "
+    + "WHERE p.productId <> ? "
+    + "  AND p.categoryId = ? "
+    + "ORDER BY productId DESC";
+    
+Object[] params = {
+    excludeProductId,
+    brandId,
+    excludeProductId,
+    categoryId
+};
 
-        Object[] params = {
-            excludeProductId,
-            brandId,
-            categoryId
-        };
 
         try ( ResultSet rs = execSelectQuery(sql, params)) {
             while (rs.next()) {
