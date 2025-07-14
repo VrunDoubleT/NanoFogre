@@ -494,12 +494,12 @@
                                         </div>
                                     </div>
                                 </label>
-             <!-- Nút thay đổi địa chỉ -->
-<button onclick="toggleAddresses()"
-        class="ml-4 flex-shrink-0 text-indigo-600 hover:text-indigo-800 transition-colors">
-  
-  <span>Change Address</span>
-</button>
+                                <!-- Nút thay đổi địa chỉ -->
+                                <button onclick="toggleAddresses()"
+                                        class="ml-4 flex-shrink-0 text-indigo-600 hover:text-indigo-800 transition-colors">
+
+                                    <span>Change Address</span>
+                                </button>
                                 <% } else { %>
                                 <div class="flex items-center space-x-3 flex-1">
                                     <i class="fas fa-exclamation-circle text-red-500 text-xl"></i>
@@ -1350,6 +1350,7 @@
                     validateField(detailsInput, true, detailsError, '');
                 });
 
+                
                 form.addEventListener('submit', e => {
                     let ok = true;
                     if (nameInput.value.trim() === '') {
@@ -1783,8 +1784,8 @@
                                 document.getElementById('totalAmount').textContent = data.totalFormatted + " VND";
                             if (document.getElementById('confirmModalTotal'))
                                 document.getElementById('confirmModalTotal').textContent = data.totalFormatted + " VND";
-
-
+   showVoucherMessage(data.message, "red");
+                             
                         });
             }
 

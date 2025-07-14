@@ -284,7 +284,7 @@ public class CheckoutServlet extends HttpServlet {
                 // Prepare response
                 json.put("success", true);
 
-                //  json.put("message", "Voucher removed!");
+                  json.put("message", "Voucher removed!");
                 json.put("subtotalFormatted", CurrencyFormatter.formatVietNamCurrency(subtotal));
 
                 json.put("totalFormatted", CurrencyFormatter.formatVietNamCurrency(total));

@@ -42,65 +42,6 @@ public class CartServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
-//        HttpSession session = request.getSession(false);
-//        Customer customer = (session != null) ? (Customer) session.getAttribute("customer") : null;
-//        if (customer == null) {
-//            response.sendRedirect(request.getContextPath() + "/auth?action=login");
-//            return;
-//        }
-//        int customerId = customer.getId();
-//
-//        // Lấy type
-//        String type = request.getParameter("type");
-//
-//        int page = 1;
-//        int limit = 3; // mỗi trang 3 sản phẩm
-//        try {
-//            String pageStr = request.getParameter("page");
-//            if (pageStr != null) {
-//                page = Integer.parseInt(pageStr);
-//            }
-//        } catch (Exception ignore) {
-//        }
-//
-//        CartDAO dao = new CartDAO();
-//
-//        List<Cart> cartItems = dao.getCartItemsByUserId(customerId, page, limit);
-//        int totalItems = dao.countCartItems(customerId);
-//        int totalPages = (int) Math.ceil((double) totalItems / limit);
-//
-//        int from = (page - 1) * limit + 1;
-//int to = Math.min(page * limit, totalItems);
-//request.setAttribute("from", from);
-//request.setAttribute("to", to);
-//
-//        
-//// ==== THÊM PHẦN NÀY ====
-//        int maxPagesToShow = 5;
-//        int half = maxPagesToShow / 2;
-//        int startPage = Math.max(1, page - half);
-//        int endPage = Math.min(totalPages, page + half);
-//        if (endPage - startPage + 1 < maxPagesToShow) {
-//            if (startPage == 1) {
-//                endPage = Math.min(totalPages, startPage + maxPagesToShow - 1);
-//            } else if (endPage == totalPages) {
-//                startPage = Math.max(1, endPage - maxPagesToShow + 1);
-//            }
-//        }
-//        request.setAttribute("startPage", startPage);
-//        request.setAttribute("endPage", endPage);
-//// ==== HẾT PHẦN NÀY ====
-//
-//// Các thuộc tính khác
-//        request.setAttribute("cartItems", cartItems);
-//        request.setAttribute("currentPage", page);
-//        request.setAttribute("limit", limit);
-//        request.setAttribute("totalItems", totalItems);
-//        request.setAttribute("totalPages", totalPages);
-//
-//        request.getRequestDispatcher("/WEB-INF/customers/pages/Cart.jsp").forward(request, response);
-
-
         HttpSession session = request.getSession(false);
         Customer customer = (session != null) ? (Customer) session.getAttribute("customer") : null;
         if (customer == null) {
@@ -320,51 +261,6 @@ public class CartServlet extends HttpServlet {
                 request.getRequestDispatcher("/WEB-INF/customers/pages/Purchase.jsp").forward(request, response);
                 return;
 
-//            case "updateCustomerInfo":
-//                response.setContentType("application/json;charset=UTF-8");
-//                try ( PrintWriter outs = response.getWriter()) {
-//                    // 1) Lấy dữ liệu từ form
-//                    String recipientName = request.getParameter("recipientName");
-//                    String addressName = request.getParameter("addressName");
-//                    String addressDetails = request.getParameter("address");
-//                    String addressPhone = request.getParameter("phone");
-//
-//                    // 2) Validate bắt buộc
-//                    if (recipientName == null || recipientName.trim().isEmpty()
-//                            || addressName == null || addressName.trim().isEmpty()
-//                            || addressDetails == null || addressDetails.trim().isEmpty()
-//                            || addressPhone == null || addressPhone.trim().isEmpty()) {
-//
-//                        outs.print("{\"success\":false,\"message\":\"All fields are required.\"}");
-//                        return;
-//                    }
-//
-//                    int custId = customer.getId();
-//                    CartDAO cartDAO = new CartDAO();
-//
-//                    // 3) Upsert address (chi tiết, tên, điện thoại, người nhận)
-//                    boolean ok = cartDAO.upsertDefaultAddressByCustomerId(
-//                            custId,
-//                            addressDetails,
-//                            addressName,
-//                            addressPhone,
-//                            recipientName
-//                    );
-//
-//                    // 4) Trả về kết quả
-//                    if (ok) {
-//                        outs.print("{\"success\":true,\"message\":\"Information updated successfully.\"}");
-//                    } else {
-//                        outs.print("{\"success\":false,\"message\":\"Failed to update information.\"}");
-//                    }
-//                } catch (Exception e) {
-//                    e.printStackTrace();
-//                    try ( PrintWriter outs = response.getWriter()) {
-//                        String msg = e.getMessage().replace("\"", "\\\"");
-//                        outs.print("{\"success\":false,\"message\":\"" + msg + "\"}");
-//                    }
-//                }
-//                return;
             case "updateCustomerInfo":
                 response.setContentType("application/json;charset=UTF-8");
                 try ( PrintWriter outs = response.getWriter()) {
