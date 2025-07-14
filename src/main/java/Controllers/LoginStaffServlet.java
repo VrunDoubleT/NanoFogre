@@ -7,6 +7,7 @@ package Controllers;
 
 import DAOs.AdminDAO;
 import Models.Employee;
+import Utils.Common;
 import java.io.IOException;
 import java.io.PrintWriter;
 import jakarta.servlet.ServletException;
@@ -52,7 +53,7 @@ public class LoginStaffServlet extends HttpServlet {
         String remember = request.getParameter("remember");
 
         AdminDAO ad = new AdminDAO();
-        Employee emp = ad.getStaffByEmailAndPassword(email, password); 
+        Employee emp = ad.getStaffByEmailAndPassword(email, Common.hashPassword(password)); 
 
         if (emp == null) {
             request.setAttribute("error", "Invalid email or password!");
@@ -60,9 +61,7 @@ public class LoginStaffServlet extends HttpServlet {
             return;
         }
 
-        // Đăng nhập thành công
         request.getSession().setAttribute("employee", emp);
-        // Remember me
         if (remember != null && remember.equals("on")) {
             Cookie cookie = new Cookie("employee_email", email);
             cookie.setMaxAge(1 * 24 * 60 * 60); 

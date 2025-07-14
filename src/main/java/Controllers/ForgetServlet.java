@@ -23,6 +23,7 @@ import jakarta.servlet.http.HttpServletResponse;
  */
 @WebServlet(name = "ForgetServlet", urlPatterns = {"/forget"})
 public class ForgetServlet extends HttpServlet {
+
     // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
     /**
      * Handles the HTTP <code>GET</code> method.
@@ -73,7 +74,7 @@ public class ForgetServlet extends HttpServlet {
                 // Tạo code random 6 số
                 String code = String.valueOf((int) ((Math.random() * 900000) + 100000));
                 java.time.LocalDateTime expiredAt = java.time.LocalDateTime.now().plusMinutes(5);
-                boolean saved = dao.insertCode(emp.getId(), code, expiredAt);
+                boolean saved = dao.insertCodeEmployee(emp.getId(), code, expiredAt);
 
                 if (!saved) {
                     response.getWriter().write("{\"success\":false,\"message\":\"System error, please try again!\"}");
@@ -91,8 +92,49 @@ public class ForgetServlet extends HttpServlet {
                 }
                 break;
             }
+
+            case "checkCode": {
+                String email = request.getParameter("email");
+                String code = request.getParameter("code");
+
+                response.setContentType("application/json;charset=UTF-8");
+                PrintWriter out = response.getWriter();
+
+                if (email == null || code == null || email.trim().isEmpty() || code.trim().isEmpty()) {
+                    out.write("{\"success\":false,\"message\":\"Missing parameters.\"}");
+                    return;
+                }
+
+                // Check Employee
+                Employee emp = dao.findByEmail(email.trim());
+                if (emp != null) {
+                    boolean valid = dao.checkVerifyCodeEmployee(emp.getId(), code.trim());
+                    if (valid) {
+                        out.write("{\"success\":true}");
+                    } else {
+                        out.write("{\"success\":false,\"message\":\"Verification code is invalid or expired.\"}");
+                    }
+                    return;
+                }
+
+                // Check Customer (nếu không phải employee)
+                Customer cus = dao.findCustomerByEmail(email.trim());
+                if (cus != null) {
+                    boolean valid = dao.checkVerifyCodeCustomer(cus.getId(), code.trim());
+                    if (valid) {
+                        out.write("{\"success\":true}");
+                    } else {
+                        out.write("{\"success\":false,\"message\":\"Verification code is invalid or expired.\"}");
+                    }
+                    return;
+                }
+
+                out.write("{\"success\":false,\"message\":\"Email not found.\"}");
+                return;
+            }
+
             case "verifyCode": {
-                // Ví dụ xử lý xác nhận code + đổi mật khẩu (cần bạn triển khai)
+
                 String email = request.getParameter("email");
                 String code = request.getParameter("code");
                 String newPassword = request.getParameter("newPassword");
@@ -110,17 +152,16 @@ public class ForgetServlet extends HttpServlet {
                     return;
                 }
 
-                boolean validCode = dao.checkVerifyCode(emp.getId(), code.trim());
+                boolean validCode = dao.checkVerifyCodeEmployee(emp.getId(), code.trim());
                 if (!validCode) {
                     response.getWriter().write("{\"success\":false,\"message\":\"Invalid or expired code.\"}");
                     return;
                 }
 
-              
-                boolean updated =dao.confirmResetPassword(emp.getId(), newPassword.trim());
+                boolean updated = dao.confirmResetPassword(emp.getId(), newPassword.trim());
 
                 if (updated) {
-                    dao.markCodeAsUsed(emp.getId(), code.trim());
+                    dao.markCodeAsUsedEmployee(emp.getId(), code.trim());
                     response.getWriter().write("{\"success\":true,\"message\":\"Password changed successfully.\"}");
                 } else {
                     response.getWriter().write("{\"success\":false,\"message\":\"Failed to update password.\"}");

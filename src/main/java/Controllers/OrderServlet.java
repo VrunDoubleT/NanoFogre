@@ -21,13 +21,13 @@ import jakarta.servlet.http.HttpServletResponse;
 @WebServlet(name = "OrderViewServlet", urlPatterns = {"/order/view"})
 public class OrderServlet extends HttpServlet {
 
-    private static final int DEFAULT_LIMIT = 5; // Default limit for pagination
+    private static final int DEFAULT_LIMIT = 5;
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
-        int limit = 5; // Default limit for pagination
+        int limit = 5;
         OrderDAO orderDao = new OrderDAO();
         String type = request.getParameter("type") != null ? request.getParameter("type") : "orders";
 
@@ -60,6 +60,11 @@ public class OrderServlet extends HttpServlet {
                 OrderDAO dao = new OrderDAO();
 
                 Order o = dao.getOrderById(orderId);
+                if (o == null) {
+                    response.sendError(HttpServletResponse.SC_NOT_FOUND, "Order #" + orderId + " not found");
+                    return;
+
+                }
 
                 List<OrderDetails> details = dao.getOrderDetailsByOrderId(orderId);
 
@@ -70,7 +75,6 @@ public class OrderServlet extends HttpServlet {
                         "/WEB-INF/employees/templates/order/orderDetailTeamplate.jsp"
                 ).forward(request, response);
                 break;
-
         }
     }
 
@@ -91,7 +95,7 @@ public class OrderServlet extends HttpServlet {
                 message = ok ? "Status updated" : "Update failed";
                 break;
         }
-       
+
         JsonObject result = new JsonObject();
         result.addProperty("isSuccess", ok);
         result.addProperty("message", message);

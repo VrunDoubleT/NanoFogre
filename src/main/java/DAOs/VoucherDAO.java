@@ -231,4 +231,28 @@ public class VoucherDAO extends DB.DBContext {
         return list;
     }
 
+    public boolean isAvailable(Voucher v, int userId) {
+        if (v == null || !v.isIsActive()) {
+            return false;
+        }
+        LocalDateTime now = LocalDateTime.now();
+        return !now.isBefore(v.getValidFrom()) && !now.isAfter(v.getValidTo());
+    }
+
+    /**
+     * Tính discount áp vào subtotal
+     */
+    public double calcDiscount(Voucher v, double subtotal) {
+        double discount = 0;
+        if ("percentage".equalsIgnoreCase(v.getType())) {
+            discount = subtotal * (v.getValue() / 100.0);
+            if (v.getMaxValue() > 0 && discount > v.getMaxValue()) {
+                discount = v.getMaxValue();
+            }
+        } else {
+            discount = v.getValue();
+        }
+        // không để discount vượt quá subtotal
+        return Math.min(discount, subtotal);
+    }
 }

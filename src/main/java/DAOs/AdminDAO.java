@@ -15,7 +15,7 @@ import java.sql.SQLException;
  */
 public class AdminDAO extends DB.DBContext {
 
-    //Login Admin
+
     public Employee getAdminByEmailAndPassword(String email, String password) {
         Employee emp = null;
         String sql = "SELECT e.*, r.roleName "
@@ -46,7 +46,8 @@ public class AdminDAO extends DB.DBContext {
         }
         return emp;
     }
-    //LOgin Staff
+
+    
     public Employee getStaffByEmailAndPassword(String email, String password) {
         Employee emp = null;
         String sql = "SELECT e.*, r.roleName "

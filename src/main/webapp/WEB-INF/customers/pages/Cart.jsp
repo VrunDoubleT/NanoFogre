@@ -3,11 +3,6 @@
     Created on : Jul 3, 2025, 4:21:17 PM
     Author     : iphon
 --%>
-<%-- 
-    Document   : Cart
-    Created on : Jul 3, 2025, 4:21:17 PM
-    Author     : iphon
---%>
 
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
@@ -186,7 +181,9 @@
                 opacity: 0.6;
                 pointer-events: none;
             }
-
+body.modal-open {
+  overflow: hidden;
+}
             /* Modal Styles */
             .modal-overlay {
                 position: fixed;
@@ -418,6 +415,8 @@
                                         </div>
                                     </div>
                                 </c:forEach>
+
+
                             </div>
 
                             <!-- Summary -->
@@ -432,53 +431,21 @@
                                         <span>Subtotal:</span>
                                         <span class="font-bold text-green-600" id="subtotal">0 ₫</span>
                                     </div>
-                                    <div class="flex justify-between">
-                                        <span>Tax (10%):</span>
-                                        <span class="font-bold text-green-600" id="vat">0 ₫</span>
-                                    </div>
                                 </div>
                                 <div class="flex justify-between text-lg font-bold border-t border-gray-200 pt-4 mt-4 mb-5 text-gray-900">
                                     <span>Total:</span>
                                     <span class="text-2xl font-extrabold bg-gradient-to-r from-purple-500 to-pink-500 bg-clip-text text-transparent" id="grandTotal">0 ₫</span>
                                 </div>
-                                <!--voucher-->
-                                <div class="flex flex-col items-center mb-2 gap-3">
-                                    <div class="w-full flex gap-2">
-                                        <input id="voucherInput" type="text"
-                                               class="bg-white border border-gray-300 text-gray-800 text-sm rounded-lg focus:ring-purple-500 focus:border-purple-500 block w-full p-2.5 text-center"
-                                               placeholder="Enter voucher code...">
-                                        <button id="applyVoucherBtn"
-                                                class="bg-gradient-to-r from-green-500 to-green-600 text-white font-bold px-6 py-2 rounded-lg hover:brightness-110 transition"
-                                                onclick="applyVoucher()">
-                                            Apply
-                                        </button>
-                                    </div>
-
-                                    <c:if test="${not empty availableVouchers}">
-                                        <div class="mt-3 w-full">
-                                            <label class="block text-sm text-gray-500">Available vouchers:</label>
-                                            <div class="flex flex-wrap gap-2">
-                                                <c:forEach var="v" items="${availableVouchers}">
-                                                    <button type="button"
-                                                            class="voucher-suggestion px-3 py-1 rounded bg-purple-100 hover:bg-purple-200 text-purple-700 text-sm font-semibold shadow border border-purple-300 transition"
-                                                            data-code="${v.code}"
-                                                            onclick="selectVoucher('${v.code}')"
-                                                            title="${v.description}">
-                                                        ${v.code}
-                                                    </button>
-                                                </c:forEach>
-                                            </div>
-                                        </div>
-                                    </c:if>
-                                </div>
-
-
-                                <div id="voucherMessage" class="text-sm mt-2 min-h-[32px] text-center font-medium rounded-lg"></div>
 
 
 
-                                <button class="checkout-btn w-full mt-6 py-3 rounded-xl bg-gradient-to-r from-purple-500 to-pink-500 font-bold text-lg text-white shadow-lg hover:scale-105 transition-transform duration-300">
-                                    Proceed to Checkout
+
+
+                                <button
+                                    id="purchaseBtn"
+                                    type="button"
+                                    class="checkout-btn w-full mt-6 py-3 rounded-xl bg-gradient-to-r from-purple-500 to-pink-500 font-bold text-lg text-white shadow-lg hover:scale-105 transition-transform duration-300">
+                                    Purchase
                                 </button>
                             </div>
                         </div>
@@ -514,8 +481,19 @@
             </div>
         </div>
 
+        <!--        purchase-->
+        <div id="purchaseModal" class="modal-overlay">
+            <div class="modal-content p-6">
+                <div id="purchaseModalContent">
+
+                </div>
+            </div>
+        </div>
+
+
         <!-- JavaScript -->
         <script>
+
             const baseUrl = '${cartUrl}';
             let isProcessing = false;
 
@@ -675,12 +653,10 @@
                             .then(response => {
                                 if (!response.ok)
                                     throw new Error('Network response was not ok');
-                                //  slide-out vs Tailwind:
                                 const cartItemEl = document.getElementById(`cart-item-${index}`);
                                 if (cartItemEl) {
                                     cartItemEl.classList.add('transition-all', 'duration-300', 'ease-in-out');
                                     cartItemEl.classList.add('translate-x-full', 'opacity-0');
-                                    // animation, reload or redirect
                                     setTimeout(() => window.location.href = baseUrl, 500);
                                 } else {
                                     // fallback
@@ -703,7 +679,6 @@
                 });
             }
 
-            // persist checkbox state in localStorage
             function saveChecked() {
                 const checked = Array.from(document.querySelectorAll('.item-checkbox'))
                         .filter(ch => ch.checked)
@@ -734,32 +709,13 @@
                 });
 
                 const vat = Math.round(subtotal * 0.1);
-                let total = subtotal + vat;
+                let total = subtotal;
 
-                // Delete old voucher
-                const discountEl = document.getElementById('voucherDiscountRow');
-                if (discountEl)
-                    discountEl.remove();
 
-                if (voucherDiscount > 0) {
-                    const discountLine = `
-            <div id="voucherDiscountRow" class="summary-row flex justify-between text-green-400 font-bold">
-                <span>Voucher Discount:</span>
-                <span>- ${voucherDiscount.toLocaleString('vi-VN')} ₫</span>
-            </div>
-        `;
-                    const totalRow = document.getElementById('grandTotalRow');
-                    if (totalRow)
-                        totalRow.insertAdjacentHTML('beforebegin', discountLine);
-
-                    total -= voucherDiscount;
-                    if (total < 0)
-                        total = 0;
-                }
 
                 document.getElementById('itemCount').textContent = itemCount;
                 document.getElementById('subtotal').textContent = subtotal.toLocaleString('vi-VN') + ' ₫';
-                document.getElementById('vat').textContent = vat.toLocaleString('vi-VN') + ' ₫';
+
                 document.getElementById('grandTotal').textContent = total.toLocaleString('vi-VN') + ' ₫';
 
                 // toggle nút checkout
@@ -777,6 +733,10 @@
             function showRelatedProducts(productId, brandId, categoryId) {
                 const modal = document.getElementById('relatedProductsModal');
                 const content = document.getElementById('relatedProductsContent');
+
+                // 1) Thêm body.modal-open để khóa scroll
+                document.body.classList.add('modal-open');
+
                 modal.classList.add('active');
                 content.innerHTML = `
         <div class="flex justify-center items-center py-12">
@@ -809,13 +769,17 @@
             }
 
 
-// Đóng modal
-            function closeRelatedProducts() {
-                document.getElementById('relatedProductsModal').classList.remove('active');
-                setTimeout(() => window.location.reload());
-            }
+   function closeRelatedProducts() {
+  const modal = document.getElementById('relatedProductsModal');
 
-// Đóng khi click nền tối
+  // 2) Loại bỏ class để khôi phục scroll
+  document.body.classList.remove('modal-open');
+
+  modal.classList.remove('active');
+  // nếu bạn reload trang, scroll vẫn bị khóa cho đến khi reload xong
+  // nhưng nếu chỉ đóng modal, bạn đã khôi phục overflow
+}
+
             document.getElementById('relatedProductsModal').addEventListener('click', function (e) {
                 if (e.target === this)
                     closeRelatedProducts();
@@ -985,6 +949,23 @@
                     });
                 });
                 recalc();
+            });
+            //----------Purchase-----------------//
+            document.getElementById('purchaseBtn').addEventListener('click', () => {
+                const checked = Array.from(document.querySelectorAll('.item-checkbox'))
+                        .filter(ch => ch.checked)
+                        .map(ch => ch.dataset.id);
+                if (!checked.length) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'No items selected',
+                        text: 'Please select at least one item to purchase.'
+                    });
+                    return;
+                }
+                const param = encodeURIComponent(JSON.stringify(checked));
+
+                window.location.href = '<%= request.getContextPath()%>/checkout?cartIds=' + param;
             });
 
         </script>

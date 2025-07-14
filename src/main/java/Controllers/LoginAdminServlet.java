@@ -6,6 +6,7 @@ package Controllers;
 
 import DAOs.AdminDAO;
 import Models.Employee;
+import Utils.Common;
 import java.io.IOException;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -13,6 +14,10 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -51,21 +56,21 @@ public class LoginAdminServlet extends HttpServlet {
         String password = request.getParameter("password");
         String remember = request.getParameter("remember");
 
+        String hashedPassword = Common.hashPassword(password);
+        
         AdminDAO ad = new AdminDAO();
-        Employee emp = ad.getAdminByEmailAndPassword(email, password); 
-
+        Employee emp = ad.getAdminByEmailAndPassword(email, hashedPassword);
+        
         if (emp == null) {
             request.setAttribute("error", "Invalid email or password!");
             request.getRequestDispatcher("/WEB-INF/employees/admins/adminLogin.jsp").forward(request, response);
             return;
         }
 
-        // Đăng nhập thành công
         request.getSession().setAttribute("employee", emp);
-        // Remember me
         if (remember != null && remember.equals("on")) {
             Cookie cookie = new Cookie("employee_email", email);
-            cookie.setMaxAge(1 * 24 * 60 * 60); // 7 days
+            cookie.setMaxAge(1 * 24 * 60 * 60);
             response.addCookie(cookie);
         }
         response.sendRedirect(request.getContextPath() + "/admin/dashboard");

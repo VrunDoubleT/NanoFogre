@@ -49,14 +49,17 @@ public class OrderDAO extends DBContext {
                 + "  ps.[paymentStatusName] AS paymentStatusName, "
                 + "  os.[statusName]        AS orderStatusName, "
                 + "  v.[voucherCode]        AS voucherCode, "
+                + "v.[type]        AS voucherType, "
+                + "v.[value]       AS voucherValue,  "
+                + "v.[maxValue]    AS voucherMaxValue , "
                 + "  a.[addressDetails]     AS shippingAddress "
-                + "FROM [DBNanoForge].[dbo].[Orders]        o "
-                + "JOIN [DBNanoForgeV2].[dbo].[Customers]   c  ON o.[customerId]      = c.[customerId] "
-                + "LEFT JOIN [DBNanoForge].[dbo].[PaymentMethods] pm ON o.[paymentMethodId] = pm.[paymentMethodId] "
-                + "LEFT JOIN [DBNanoForge].[dbo].[PaymentStatus]  ps ON o.[paymentStatusId] = ps.[paymentStatusId] "
-                + "LEFT JOIN [DBNanoForge].[dbo].[OrderStatus]    os ON o.[statusId]        = os.[statusId] "
-                + "LEFT JOIN [DBNanoForge].[dbo].[Vouchers]       v  ON o.[voucherId]       = v.[voucherId] "
-                + "LEFT JOIN [DBNanoForge].[dbo].[Address]        a  ON o.[addressId]       = a.[addressId] "
+                + "FROM .[Orders]        o "
+                + "JOIN [Customers]   c  ON o.[customerId]      = c.[customerId] "
+                + "LEFT JOIN [PaymentMethods] pm ON o.[paymentMethodId] = pm.[paymentMethodId] "
+                + "LEFT JOIN [PaymentStatus]  ps ON o.[paymentStatusId] = ps.[paymentStatusId] "
+                + "LEFT JOIN [OrderStatus]    os ON o.[statusId]        = os.[statusId] "
+                + "LEFT JOIN [Vouchers]       v  ON o.[voucherId]       = v.[voucherId] "
+                + "LEFT JOIN [Address]        a  ON o.[addressId]       = a.[addressId] "
                 + "WHERE o.[orderId] = ?";
 
         try ( ResultSet rs = execSelectQuery(sql, new Object[]{orderId})) {
@@ -68,47 +71,43 @@ public class OrderDAO extends DBContext {
                 o.setCreatedAt(rs.getTimestamp("createdAt").toLocalDateTime());
                 o.setUpdatedAt(rs.getTimestamp("updatedAt").toLocalDateTime());
 
-                // employee
                 Employee emp = new Employee();
                 emp.setId(rs.getInt("employeeId"));
                 o.setEmployee(emp);
 
-                // customer
                 Customer cust = new Customer();
                 cust.setId(rs.getInt("customerId"));
                 cust.setName(rs.getString("customerName"));
                 cust.setPhone(rs.getString("customerPhone"));
-                // Lấy avatar
+
                 String avatar = rs.getString("customerAvatar");
                 cust.setAvatar(avatar);
                 o.setCustomer(cust);
                 System.out.println(rs.getString("customerAvatar"));
 
-                // payment method
                 PaymentMethod pm = new PaymentMethod();
                 pm.setId(rs.getInt("paymentMethodId"));
                 pm.setName(rs.getString("paymentMethodName"));
                 o.setPaymentMethod(pm);
 
-                // payment status
                 PaymentStatus psObj = new PaymentStatus();
                 psObj.setId(rs.getInt("paymentStatusId"));
                 psObj.setName(rs.getString("paymentStatusName"));
                 o.setPaymentStatus(psObj);
 
-                // order status
                 OrderStatus osObj = new OrderStatus();
                 osObj.setId(rs.getInt("statusId"));
                 osObj.setName(rs.getString("orderStatusName"));
                 o.setOrderStatus(osObj);
 
-                // voucher
                 Voucher v = new Voucher();
                 v.setId(rs.getInt("voucherId"));
                 v.setCode(rs.getString("voucherCode"));
+                v.setType(rs.getString("voucherType"));
+                v.setValue(rs.getDouble("voucherValue"));
+                v.setMaxValue(rs.getDouble("voucherMaxValue"));
                 o.setVoucher(v);
 
-                // address
                 Address a = new Address();
                 a.setId(rs.getInt("addressId"));
                 a.setFullAddress(rs.getString("shippingAddress"));
@@ -165,7 +164,6 @@ public class OrderDAO extends DBContext {
 
     public List<Order> getOrders() {
         List<Order> list = new ArrayList<>();
-
         String sql
                 = "SELECT TOP (1000) "
                 + "  o.[orderId], o.[employeeId], o.[customerId], o.[totalAmount], o.[shippingFee], "
@@ -178,12 +176,12 @@ public class OrderDAO extends DBContext {
                 + "  v.[voucherCode]        AS voucherCode, "
                 + "  a.[addressDetails]     AS shippingAddress "
                 + "FROM [DBNanoForge].[dbo].[Orders] o "
-                + "LEFT JOIN [DBNanoForge].[dbo].[Customers]      c  ON o.[customerId]      = c.[customerId] "
-                + "LEFT JOIN [DBNanoForge].[dbo].[PaymentMethods] pm ON o.[paymentMethodId] = pm.[paymentMethodId] "
-                + "LEFT JOIN [DBNanoForge].[dbo].[PaymentStatus]  ps ON o.[paymentStatusId] = ps.[paymentStatusId] "
-                + "LEFT JOIN [DBNanoForge].[dbo].[OrderStatus]    os ON o.[statusId]         = os.[statusId] "
-                + "LEFT JOIN [DBNanoForge].[dbo].[Vouchers]       v  ON o.[voucherId]        = v.[voucherId] "
-                + "LEFT JOIN [DBNanoForge].[dbo].[Address]        a  ON o.[addressId]        = a.[addressId] "
+                + "LEFT JOIN [Customers]      c  ON o.[customerId]      = c.[customerId] "
+                + "LEFT JOIN [PaymentMethods] pm ON o.[paymentMethodId] = pm.[paymentMethodId] "
+                + "LEFT JOIN [PaymentStatus]  ps ON o.[paymentStatusId] = ps.[paymentStatusId] "
+                + "LEFT JOIN [dbo].[OrderStatus]    os ON o.[statusId]         = os.[statusId] "
+                + "LEFT JOIN [Vouchers]       v  ON o.[voucherId]        = v.[voucherId] "
+                + "LEFT JOIN [Address]        a  ON o.[addressId]        = a.[addressId] "
                 + "ORDER BY o.[orderId] DESC";
 
         try ( ResultSet rs = execSelectQuery(sql)) {
@@ -241,7 +239,6 @@ public class OrderDAO extends DBContext {
     public List<Order> getOrders(int page, int limit) {
         List<Order> list = new ArrayList<>();
         int offset = (page - 1) * limit;
-
         String sql
                 = "SELECT "
                 + "  o.[orderId], o.[employeeId], o.[customerId], o.[totalAmount], o.[shippingFee], "
@@ -253,13 +250,13 @@ public class OrderDAO extends DBContext {
                 + "  os.[statusName]        AS orderStatusName, "
                 + "  v.[voucherCode]        AS voucherCode, "
                 + "  a.[addressDetails]     AS shippingAddress "
-                + "FROM [DBNanoForge].[dbo].[Orders] o "
-                + "LEFT JOIN [DBNanoForge].[dbo].[Customers]      c  ON o.[customerId]      = c.[customerId] "
-                + "LEFT JOIN [DBNanoForge].[dbo].[PaymentMethods] pm ON o.[paymentMethodId] = pm.[paymentMethodId] "
-                + "LEFT JOIN [DBNanoForge].[dbo].[PaymentStatus]  ps ON o.[paymentStatusId] = ps.[paymentStatusId] "
-                + "LEFT JOIN [DBNanoForge].[dbo].[OrderStatus]    os ON o.[statusId]         = os.[statusId] "
-                + "LEFT JOIN [DBNanoForge].[dbo].[Vouchers]       v  ON o.[voucherId]        = v.[voucherId] "
-                + "LEFT JOIN [DBNanoForge].[dbo].[Address]        a  ON o.[addressId]        = a.[addressId] "
+                + "FROM [Orders] o "
+                + "LEFT JOIN [Customers]      c  ON o.[customerId]      = c.[customerId] "
+                + "LEFT JOIN [PaymentMethods] pm ON o.[paymentMethodId] = pm.[paymentMethodId] "
+                + "LEFT JOIN [PaymentStatus]  ps ON o.[paymentStatusId] = ps.[paymentStatusId] "
+                + "LEFT JOIN [OrderStatus]    os ON o.[statusId]         = os.[statusId] "
+                + "LEFT JOIN [Vouchers]       v  ON o.[voucherId]        = v.[voucherId] "
+                + "LEFT JOIN [Address]        a  ON o.[addressId]        = a.[addressId] "
                 + "ORDER BY o.[orderId] DESC "
                 + "OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
 
@@ -319,7 +316,7 @@ public class OrderDAO extends DBContext {
      * Count total orders in database.
      */
     public int countOrders() {
-        String sql = "SELECT COUNT(*) AS total FROM [DBNanoForge].[dbo].[Orders]";
+        String sql = "SELECT COUNT(*) AS total FROM [Orders]";
         try ( ResultSet rs = execSelectQuery(sql)) {
             if (rs.next()) {
                 return rs.getInt("total");
@@ -330,31 +327,72 @@ public class OrderDAO extends DBContext {
         return 0;
     }
 
-    ///////////// 
-    /**
-     * Cập nhật trạng thái đơn hàng bằng statusName (ví dụ 'Processing',
-     * 'Delivered'…). Tự động JOIN sang bảng OrderStatus để lấy statusId tương
-     * ứng.
-     *
-     * @param orderId id của đơn cần cập nhật
-     * @param statusName tên trạng thái mới
-     * @return true nếu update thành công
-     */
     public boolean updateOrderStatus(int orderId, String statusName) {
-        String sql
-                = "UPDATE o\n"
-                + "SET o.statusId = s.statusId\n"
-                + "FROM [DBNanoForge].[dbo].[Orders] o\n"
-                + "  INNER JOIN [DBNanoForge].[dbo].[OrderStatus] s\n"
-                + "    ON s.statusName = ?\n"
+        String sql = "UPDATE o\n"
+                + "SET o.statusId = s.statusId,\n"
+                + "    o.paymentStatusId = CASE s.statusName\n"
+                + "        WHEN 'Pending' THEN 1\n"
+                + "        WHEN 'Processing' THEN 1\n"
+                + "        WHEN 'Shipped' THEN 1\n"
+                + "        WHEN 'Delivered' THEN 2\n"
+                + "        WHEN 'Cancelled' THEN 3\n"
+                + "        ELSE o.paymentStatusId\n"
+                + "    END,\n"
+                + "    o.updatedAt = GETDATE()\n"
+                + "FROM Orders o\n"
+                + "INNER JOIN OrderStatus s ON s.statusName = ?\n"
                 + "WHERE o.orderId = ?";
         try {
-            // execQuery từ DBContext trả về số dòng bị ảnh hưởng
             int rows = execQuery(sql, new Object[]{statusName, orderId});
             return rows > 0;
         } catch (SQLException e) {
             e.printStackTrace();
             return false;
+        }
+    }
+
+    public boolean decreaseProductStock(int productId, int quantity) {
+        String sql = "UPDATE Products SET productQuantity = productQuantity - ? WHERE productId = ?";
+
+        try {
+            Object[] params = new Object[]{quantity, productId};
+            return execQuery(sql, params) > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public boolean insertOrderDetail(int orderId, int productId, int quantity, double price) {
+        String sql = "INSERT INTO OrderDetails (orderId, productId, detailQuantity, detailPrice) VALUES (?, ?, ?, ?)";
+        try {
+            Object[] params = new Object[]{orderId, productId, quantity, price};
+            return execQuery(sql, params) > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public int insertOrder(Order order) {
+        String sql = "INSERT INTO Orders "
+                + "(employeeId, customerId, totalAmount, shippingFee, "
+                + "paymentMethodId, paymentStatusId, statusId, voucherId, addressId, createdAt) "
+                + "VALUES (2, ?, ?, ?, ?, 1, 1, ?, ?, GETDATE())";
+
+        try {
+            Object[] params = new Object[]{
+                order.getCustomer().getId(),
+                order.getTotalAmount(),
+                order.getShippingFee(),
+                order.getPaymentMethod().getId(),
+                order.getVoucher() != null ? order.getVoucher().getId() : null,
+                order.getAddress().getId()
+            };
+            return execQueryReturnId(sql, params);
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return -1;
         }
     }
 
