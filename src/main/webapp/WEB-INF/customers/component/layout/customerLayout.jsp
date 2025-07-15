@@ -15,7 +15,11 @@
     <body>
         <%@ include file="../../../common/loading.jsp" %>
         <%@ include file="../../common/header.jsp" %>
-
+        <div id="modal" class="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50 hidden">
+            <div id="modalContent" class="bg-white max-h-[90%] rounded-2xl overflow-y-auto">
+                <!-- Load content -->
+            </div>
+        </div>
         <div class="bg-gray-100 w-full flex justify-center mt-6">
             <div class="container max-w-[1200px] w-full px-4 sm:px-6 lg:px-8">
                 <div class="flex">
@@ -38,6 +42,18 @@
                 const num = Number(input);
                 return isNaN(num) || num < min ? min : num;
             }
+
+            const openModal = (modal) => {
+                modal.classList.remove("hidden");
+                modal.classList.add("flex");
+                document.body.classList.add('overflow-hidden');
+            };
+
+            const closeModal = () => {
+                document.getElementById("modal").classList.remove("flex");
+                document.body.classList.remove("overflow-hidden");
+                document.getElementById("modal").classList.add("hidden");
+            };
 
             function loadSidebar() {
                 fetch('/customer/self?type=sidebar')
@@ -65,33 +81,27 @@
             }
 
             function loadContent(path, push, params = []) {
-    const rootUrl = '/customer/self?type=' + path;
-    let paramUrl = '';
-    if (params.length > 0) {
-        paramUrl = params.map(obj => `&${obj.name}=${obj.value}`).join('');
-    }
+                const rootUrl = '/customer/self?type=' + path;
+                let paramUrl = '';
+                if (params.length > 0) {
+                    paramUrl = params.map(obj => `&${obj.name}=${obj.value}`).join('');
+                }
 
-    fetch(rootUrl + paramUrl)
-        .then(res => res.text())
-        .then(html => {
-            const container = document.getElementById('main-content');
-            container.innerHTML = html;   // GÁN HTML MỚI vào vùng #main-content
-            lucide.createIcons();
-            initCustomerForm();           // Gọi hàm khởi tạo form nếu cần
-
-            // ---- THÊM ĐOẠN NÀY: ----
-            if (path === 'order' && typeof initCustomerOrdersPage === 'function') {
-                initCustomerOrdersPage(); // Gọi lại hàm khởi tạo cho trang orders
+                fetch(rootUrl + paramUrl)
+                        .then(res => res.text())
+                        .then(html => {
+                            const container = document.getElementById('main-content');
+                            container.innerHTML = html;
+                            lucide.createIcons();
+                            if (typeof initCustomerForm === 'function')
+                                initCustomerForm();
+                            if (typeof initCreateAddressButton === 'function')
+                                initCreateAddressButton();
+                            if (push) {
+                                history.pushState({page: path}, '', '/account?view=' + path);
+                            }
+                        });
             }
-            // ------------------------
-
-            if (push) {
-                history.pushState({page: path}, '', '/account?view=' + path);
-            }
-        });
-}
-
-
 
             const updateActiveSidebar = (page) => {
                 document.querySelectorAll(".nav-link").forEach((element) => {
@@ -113,11 +123,21 @@
                     });
                 });
 
+                document.getElementById("modal").onclick = () => {
+                    document.getElementById("modal").classList.remove("flex");
+                    document.body.classList.remove("overflow-hidden");
+                    document.getElementById("modal").classList.add("hidden");
+                };
+
+                document.getElementById("modalContent").addEventListener("click", function (event) {
+                    event.stopPropagation();
+                });
+
                 const params = new URLSearchParams(window.location.search);
                 const viewPage = params.get('view') || 'profile';
                 updateActiveSidebar(viewPage);
                 loadContent(viewPage, false);
-            }
+            };
 
             window.onpopstate = function (e) {
                 if (e.state && e.state.page) {
@@ -126,7 +146,7 @@
                 }
             };
         </script>
-        <script src="/js/customer.js"></script>
+        <script src="/js/customerAccount.js"></script>
         <script src="/js/loading.js"></script>
         <script src="/js/customerOrders.js"></script>
     </body>

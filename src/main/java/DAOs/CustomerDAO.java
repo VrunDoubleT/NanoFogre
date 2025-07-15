@@ -231,9 +231,9 @@ public class CustomerDAO extends DB.DBContext {
         return null;
     }
 
-    public boolean updateCustomer(int customerId, String name, String email, String phone, String avatarUrl) {
-        String query = "UPDATE Customers SET customerName = ?, customerEmail = ?, customerPhone = ?, customerAvatar = ? WHERE customerId = ?";
-        Object[] params = {name, email, phone, avatarUrl, customerId};
+    public boolean updateCustomer(int customerId, String name, String phone, String avatarUrl) {
+        String query = "UPDATE Customers SET customerName = ?, customerPhone = ?, customerAvatar = ? WHERE customerId = ?";
+        Object[] params = {name, phone, avatarUrl, customerId};
 
         try {
             int updated = execQuery(query, params);
@@ -242,19 +242,6 @@ public class CustomerDAO extends DB.DBContext {
             e.printStackTrace();
             return false;
         }
-    }
-
-    public boolean isEmailExistsExceptOwn(String email, int id) {
-        String query = "SELECT COUNT(*) FROM Customers WHERE customerEmail = ? AND customerId != ?";
-        Object[] params = {email, id};
-        try ( ResultSet rs = execSelectQuery(query, params)) {
-            if (rs.next()) {
-                return rs.getInt(1) > 0;
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return false;
     }
 
 // Kiểm tra email đã tồn tại chưa
@@ -354,6 +341,7 @@ public class CustomerDAO extends DB.DBContext {
             while (rs.next()) {
                 Address address = new Address();
                 address.setId(rs.getInt("addressId"));
+                address.setName(rs.getString("addressName"));
                 address.setRecipientName(rs.getString("recipientName"));
                 address.setDetails(rs.getString("addressDetails"));
                 address.setPhone(rs.getString("addressPhone"));
@@ -367,14 +355,13 @@ public class CustomerDAO extends DB.DBContext {
         return addresses;
     }
 
-    public boolean updateAddress(int addressId, String recipientName, String addressDetails, String addressPhone, boolean isDefault, int customerId) throws SQLException {
+    public boolean updateAddress(int addressId, String addressName, String recipientName, String addressDetails, String addressPhone, boolean isDefault, int customerId) throws SQLException {
         if (isDefault) {
             String resetDefault = "UPDATE Address SET isDefault = 0 WHERE customerId = ?";
             execQuery(resetDefault, new Object[]{customerId});
         }
-
-        String query = "UPDATE Address SET recipientName = ?, addressDetails = ?, addressPhone = ?, isDefault = ? WHERE addressId = ?";
-        Object[] params = {recipientName, addressDetails, addressPhone, isDefault, addressId};
+        String query = "UPDATE Address SET addressName = ?, recipientName = ?, addressDetails = ?, addressPhone = ?, isDefault = ? WHERE addressId = ?";
+        Object[] params = {addressName, recipientName, addressDetails, addressPhone, isDefault, addressId};
 
         try {
             int updated = execQuery(query, params);
@@ -384,4 +371,39 @@ public class CustomerDAO extends DB.DBContext {
             return false;
         }
     }
+
+    public boolean addAddress(String addressName, String recipientName, String addressDetails,
+            String addressPhone, boolean isDefault, int customerId) throws SQLException {
+        if (isDefault) {
+            String resetDefault = "UPDATE Address SET isDefault = 0 WHERE customerId = ?";
+            execQuery(resetDefault, new Object[]{customerId});
+        }
+        String query = "INSERT INTO Address (addressName, recipientName, addressDetails, addressPhone, isDefault, customerId) "
+                + "VALUES (?, ?, ?, ?, ?, ?)";
+
+        Object[] params = {
+            addressName,
+            recipientName,
+            addressDetails,
+            addressPhone,
+            isDefault,
+            customerId
+        };
+
+        int rows = execQuery(query, params);
+        return rows > 0;
+    }
+
+    public boolean deleteAddressById(int addressId) {
+        String query = "DELETE FROM Address WHERE addressId = ?";
+        Object[] params = {addressId};
+        try {
+            int rowsAffected = execQuery(query, params);
+            return rowsAffected > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
 }
