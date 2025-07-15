@@ -59,7 +59,7 @@ public class ProductDAO extends DB.DBContext {
         if (categoryId > 0) {
             query += " AND p.categoryId = " + categoryId + "\n";
         }
-        query += "ORDER BY p.productId \n"
+        query += "ORDER BY p.productId desc \n"
                 + "OFFSET " + row + " ROWS FETCH NEXT " + limit + " ROWS ONLY;";
         try ( ResultSet rs = execSelectQuery(query)) {
             while (rs.next()) {

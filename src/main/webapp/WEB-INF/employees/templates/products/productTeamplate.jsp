@@ -14,6 +14,11 @@
     <c:when test="${not empty products}">
         <c:forEach var="product" items="${products}">
             <tr>
+                <td class="px-4 py-4 whitespace-nowrap">
+                    <div class="text-lg font-semibold text-gray-900">
+                        ${product.productId}
+                    </div>
+                </td>
                 <!-- Image + Info -->
                 <td class="px-6 py-4 whitespace-nowrap">
                     <div class="flex items-center">
