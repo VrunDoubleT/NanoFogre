@@ -97,6 +97,19 @@
                 animation: scroll 20s linear infinite;
             }
 
+            .scroll-animation-review {
+                animation: scroll 16s linear infinite;
+                animation-play-state: running;
+            }
+
+            .scroll-animation-review:hover {
+                animation-play-state: paused;
+            }
+
+            .paused:hover{
+                animation-play-state: paused;
+            }
+
             .brand-item {
                 transition: all 0.3s ease;
             }
@@ -347,13 +360,47 @@
                         </div>
                     </section>
                 </div>
+
+                <div class="h-auto mt-8">
+                    <div class="w-full px-[20%] flex flex-col items-center mb-10">
+                        <h2 class="text-center text-4xl font-bold leading-tight">Discover why users love the models from NanoForge</h2>
+                        <span class="text-center text-gray-500 text-lg font-medium">What our users have to say about NanoForge's models</span>
+                    </div>
+                    <div class="relative h-full overflow-hidden rounded-lg"> 
+                        <div class="flex h-full space-x-4 scroll-animation-review">
+                            <c:forEach var="review" items="${reviews}">
+                                <div class="min-w-[250px] cursor-pointer max-w-sm border border-gray-200 rounded-2xl p-4 bg-white flex flex-col space-y-3">
+                                    <!-- Avatar + Name -->
+                                    <div class="flex items-center space-x-4">
+                                        <div class="w-14 h-14 rounded-full overflow-hidden">
+                                            <img class="w-full h-full object-cover" src="${review.customer.avatar}" alt="avatar"/>
+                                        </div>
+                                        <div>
+                                            <span class="font-semibold text-gray-800">${review.customer.name}</span><br/>
+                                            <div class="flex items-center">
+                                                <c:forEach var="i" begin="1" end="${review.star}">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-yellow-400 fill-current mr-1" viewBox="0 0 24 24"><path d="M12 .587l3.668 7.568 8.332 1.151-6.064 5.845 1.552 8.318L12 18.896l-7.488 4.573 1.552-8.318L0 9.306l8.332-1.151z"/></svg>
+                                                </c:forEach>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <p class="text-wrap text-gray-700 text-sm">${review.content}</p>
+                                    </div>
+                                </div>
+                            </c:forEach>
+                        </div>
+                    </div> 
+                </div> 
             </div>
         </div>
+    </div>
 
-        <jsp:include page="../common/footer.jsp" />
-        <script>
-            // Initialize Lucide icons
-            lucide.createIcons();
-        </script>
-    </body>
+
+    <jsp:include page="../common/footer.jsp" />
+    <script>
+        // Initialize Lucide icons
+        lucide.createIcons();
+    </script>
+</body>
 </html>

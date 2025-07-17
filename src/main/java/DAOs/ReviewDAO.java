@@ -163,6 +163,49 @@ public class ReviewDAO extends DBContext {
         return reviews;
     }
 
+    public List<Review> getTopFiveStarReviews(int limit) {
+        List<Review> reviews = new ArrayList<>();
+
+        String query = "SELECT * FROM Reviews r "
+                + "JOIN Customers c ON r.customerId = c.customerId "
+                + "WHERE r.star = 5 "
+                + "ORDER BY r.createdAt DESC "
+                + "OFFSET 0 ROWS FETCH NEXT ? ROWS ONLY";
+
+        Object[] params = {limit};
+
+        try ( ResultSet rs = execSelectQuery(query, params)) {
+            while (rs.next()) {
+                Review review = new Review();
+                review.setId(rs.getInt("reviewId"));
+                review.setProductId(rs.getInt("productId"));
+                review.setStar(rs.getInt("star"));
+                review.setContent(rs.getString("reviewContent"));
+                review.setCreatedAt(rs.getTimestamp("createdAt").toLocalDateTime());
+
+                Customer customer = new Customer(
+                        rs.getInt("customerId"),
+                        rs.getString("customerEmail"),
+                        rs.getString("customerPassword"),
+                        rs.getString("customerName"),
+                        rs.getString("customerAvatar"),
+                        rs.getString("customerPhone"),
+                        LocalDateTime.MAX,
+                        rs.getBoolean("isBlock")
+                );
+
+                review.setCustomer(customer);
+                review.setReplies(null);
+
+                reviews.add(review);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return reviews;
+    }
+
     public ReviewStats getReviewStatsByProductId(int productId) {
         ReviewStats stats = new ReviewStats();
         String sql = "SELECT \n"
