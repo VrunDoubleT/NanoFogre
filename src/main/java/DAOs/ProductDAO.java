@@ -229,6 +229,111 @@ public class ProductDAO extends DB.DBContext {
         return pros;
     }
 
+    public List<Product> getProductByKeyword(String keyword, int page, int limit) {
+        int row = (page - 1) * limit;
+        List<Product> pros = new ArrayList<>();
+
+        String query = "SELECT p.*, c.categoryName, b.brandName\n"
+                + "FROM Products p\n"
+                + "LEFT JOIN Categories c ON p.categoryId = c.categoryId\n"
+                + "LEFT JOIN Brands b ON p.brandId = b.brandId\n"
+                + "WHERE p._destroy = 0";
+
+        List<Object> paramList = new ArrayList<>();
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            query += " AND p.productTitle LIKE ?";
+            paramList.add("%" + keyword.trim() + "%");
+        }
+        query += "\nORDER BY p.productId ASC";
+        query += "\nOFFSET ? ROWS FETCH NEXT ? ROWS ONLY;";
+        paramList.add(row);
+        paramList.add(limit);
+
+        try ( ResultSet rs = execSelectQuery(query, paramList.toArray())) {
+            while (rs.next()) {
+                Product product = new Product();
+                int productId = rs.getInt("productId");
+                product.setProductId(productId);
+                product.setTitle(rs.getString("productTitle"));
+                product.setSlug(rs.getString("slug"));
+                product.setDescription(rs.getString("productDescription"));
+                product.setMaterial(rs.getString("material"));
+                product.setPrice(rs.getDouble("productPrice"));
+                product.setQuantity(rs.getInt("productQuantity"));
+                product.setDestroy(rs.getBoolean("_destroy"));
+                product.setIsActive(rs.getBoolean("isActive"));
+
+                Object brandIdObj = rs.getObject("brandId");
+                if (brandIdObj != null) {
+                    int brandId = (int) brandIdObj;
+                    String brandName = rs.getString("brandName");
+                    product.setBrand(new Brand(brandId, brandName, null));
+                } else {
+                    product.setBrand(null);
+                }
+
+                Object categoryIdObj = rs.getObject("categoryId");
+                if (categoryIdObj != null) {
+                    int categoryIdRs = (int) categoryIdObj;
+                    String categoryName = rs.getString("categoryName");
+                    product.setCategory(new Category(categoryIdRs, categoryName));
+                } else {
+                    product.setCategory(null);
+                }
+                Object[] params = {productId};
+                ResultSet urlsResult = execSelectQuery("SELECT * FROM ProductImages WHERE productId = ?", params);
+                List<String> urls = new ArrayList<>();
+                while (urlsResult.next()) {
+                    urls.add(urlsResult.getString("url"));
+                }
+                product.setUrls(urls);
+                String reviewStatsQuery = "SELECT COUNT(r.reviewId) AS totalReivew, AVG(CAST(r.star AS FLOAT)) AS averageStar\n"
+                        + "FROM Reviews r WHERE r.productId = ? GROUP BY r.productId";
+                ResultSet reviewStatsResult = execSelectQuery(reviewStatsQuery, params);
+                if (reviewStatsResult.next()) {
+                    product.setTotalReviews(reviewStatsResult.getInt("totalReivew"));
+                    product.setAverageStar(reviewStatsResult.getDouble("averageStar"));
+                }
+                ResultSet soldResult = execSelectQuery("SELECT SUM(od.detailQuantity) AS solt FROM OrderDetails od\n"
+                        + "WHERE od.productId = ? GROUP BY od.productId", params);
+                if (soldResult.next()) {
+                    product.setSold(soldResult.getInt("solt"));
+                }
+                List<ProductAttribute> pas = getAttributesByProductId(productId);
+                product.setAttributes(pas);
+                pros.add(product);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return pros;
+    }
+
+    public int countProductByKeyword(String keyword) {
+        int count = 0;
+
+        String query = "SELECT COUNT(*) AS total FROM Products p "
+                + "WHERE p._destroy = 0";
+
+        List<Object> paramList = new ArrayList<>();
+
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            query += " AND p.productTitle LIKE ?";
+            paramList.add("%" + keyword.trim() + "%");
+        }
+
+        try ( ResultSet rs = execSelectQuery(query, paramList.toArray())) {
+            if (rs.next()) {
+                count = rs.getInt("total");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return count;
+    }
+
     public int countProductByCategory(int categoryId, List<Integer> brandIds) {
         int total = 0;
 

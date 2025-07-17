@@ -44,7 +44,6 @@
                         <path stroke-linecap="round" stroke-linejoin="round"
                               d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-1.35 2.7A2 2 0 0 0 7.5 19h9a2 2 0 0 0 1.85-2.7L17 13M9 19a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm8 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0z"/>
                         </svg>
-                        <!-- luôn render span, ??t class="cart-badge" -->
                         <span class="cart-badge absolute top-0 right-0 translate-x-1/2 -translate-y-1/2
                               bg-red-600 text-white text-[0.625rem] leading-none
                               w-4 h-4 rounded-full flex items-center justify-center">

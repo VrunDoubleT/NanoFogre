@@ -1,10 +1,9 @@
 document.addEventListener("DOMContentLoaded", function () {
-    const input = document.querySelector('input[name="keyword"]');
-    let timer;
-    let suggestionBox;
-
-    if (input) {
-        const parent = input.closest('form'); // Lấy form làm parent, đảm bảo position:relative
+const input = document.querySelector('input[name="keyword"]');
+        let timer;
+        let suggestionBox;
+        if (input) {
+const parent = input.closest('form'); // Lấy form làm parent, đảm bảo position:relative
         parent.classList.add('relative'); // Đảm bảo form có position:relative
         suggestionBox = document.createElement("div");
         suggestionBox.className = `
@@ -15,32 +14,31 @@ document.addEventListener("DOMContentLoaded", function () {
               `.replace(/\s+/g, ' ');
         suggestionBox.style.display = "none";
         parent.appendChild(suggestionBox);
-
         input.addEventListener("input", function () {
-            const value = input.value.trim();
-            clearTimeout(timer);
-            if (value.length === 0) {
-                suggestionBox.style.display = "none";
+        const value = input.value.trim();
+                clearTimeout(timer);
+                if (value.length === 0) {
+        suggestionBox.style.display = "none";
                 suggestionBox.innerHTML = "";
                 return;
-            }
-            timer = setTimeout(() => {
-                fetch("/search-products?keyword=" + encodeURIComponent(value), {
-                    headers: {'X-Requested-With': 'XMLHttpRequest'}
-                })
-                        .then(res => res.json())
-                        .then(arr => {
-                            if (arr.length === 0) {
-                                suggestionBox.innerHTML = `<div class='px-4 py-2 text-gray-400'>No products found.</div>`;
-                            } else {
-                                suggestionBox.innerHTML = arr.map((item, idx) => `
+        }
+        timer = setTimeout(() => {
+        fetch("/searchproduct?type=items&keyword=" + encodeURIComponent(value), {
+        headers: {'X-Requested-With': 'XMLHttpRequest'}
+        })
+                .then(res => res.json())
+                .then(arr => {
+                if (arr.length === 0) {
+                suggestionBox.innerHTML = `<div class='px-4 py-2 text-gray-400'>No products found.</div>`;
+                } else {
+                suggestionBox.innerHTML = arr.map((item, idx) => `
                             <a href="/product/${item.slug}"
                                class="flex items-center gap-3 px-4 py-3
                                       ${idx < arr.length - 1 ? 'border-b border-gray-100' : ''}
                                       hover:bg-blue-50 focus:bg-blue-50 transition
                                       rounded-xl mx-2
                                ">
-                                <img src="${item.img || '/default.jpg'}"
+                                <img src="${item.urls[0] || '/default.jpg'}"
                                      class="w-12 h-12 object-cover rounded-xl border border-gray-200 shadow-sm bg-gray-50"
                                      alt="${item.title}" />
                                 <div class="flex-1 min-w-0">
@@ -49,33 +47,30 @@ document.addEventListener("DOMContentLoaded", function () {
                                 </div>
                             </a>
                         `).join('');
-                            }
-                            suggestionBox.style.display = "block";
-                        });
-            }, 200);
+                }
+                suggestionBox.style.display = "block";
+                });
+        }, 50);
         });
-
         function formatPrice(price) {
-            if (!price)
+        if (!price)
                 return '0';
-            return Number(price).toLocaleString('vi-VN');
+                return Number(price).toLocaleString('vi-VN');
         }
 
-        document.addEventListener("mousedown", function (e) {
-            if (!input.contains(e.target) && !suggestionBox.contains(e.target)) {
-                suggestionBox.style.display = "none";
-            }
-        });
-
-        input.addEventListener("focus", function () {
-            if (suggestionBox.innerHTML.trim() !== "") {
-                suggestionBox.style.display = "block";
-            }
-        });
-    }
+document.addEventListener("mousedown", function (e) {
+if (!input.contains(e.target) && !suggestionBox.contains(e.target)) {
+suggestionBox.style.display = "none";
+}
 });
-
-
+        input.addEventListener("focus", function () {
+        if (suggestionBox.innerHTML.trim() !== "") {
+        suggestionBox.style.display = "block";
+        }
+        });
+}
+}
+);
 
 // Button animation (không đổi)
 document.addEventListener("DOMContentLoaded", function () {
