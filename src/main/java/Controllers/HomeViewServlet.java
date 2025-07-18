@@ -1,10 +1,12 @@
+
 package Controllers;
 
+import DAOs.BrandDAO;
 import DAOs.CategoryDAO;
+import DAOs.HomeDAO;
+import Models.Brand;
 import Models.Category;
-import Utils.Converter;
-import Utils.JSP;
-import com.google.gson.JsonObject;
+import Models.Product;
 import java.io.IOException;
 import java.io.PrintWriter;
 import jakarta.servlet.ServletException;
@@ -18,39 +20,36 @@ import java.util.List;
  *
  * @author Tran Thanh Van - CE181019
  */
-@WebServlet(name = "HomeServlet", urlPatterns = {"/home"})
-public class HomeServlet extends HttpServlet {
-
-    /**
-     * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
-     * methods.
-     *
+@WebServlet(name="HomeViewServlet", urlPatterns={""})
+public class HomeViewServlet extends HttpServlet {
+   
+    /** 
+     * Processes requests for both HTTP <code>GET</code> and <code>POST</code> methods.
      * @param request servlet request
      * @param response servlet response
      * @throws ServletException if a servlet-specific error occurs
      * @throws IOException if an I/O error occurs
      */
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
+    throws ServletException, IOException {
         response.setContentType("text/html;charset=UTF-8");
-        try ( PrintWriter out = response.getWriter()) {
+        try (PrintWriter out = response.getWriter()) {
             /* TODO output your page here. You may use following sample code. */
             out.println("<!DOCTYPE html>");
             out.println("<html>");
             out.println("<head>");
-            out.println("<title>Servlet HomeServlet</title>");
+            out.println("<title>Servlet HomeViewServlet</title>");  
             out.println("</head>");
             out.println("<body>");
-            out.println("<h1>Servlet HomeServlet at " + request.getContextPath() + "</h1>");
+            out.println("<h1>Servlet HomeViewServlet at " + request.getContextPath () + "</h1>");
             out.println("</body>");
             out.println("</html>");
         }
-    }
+    } 
 
     // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
-    /**
+    /** 
      * Handles the HTTP <code>GET</code> method.
-     *
      * @param request servlet request
      * @param response servlet response
      * @throws ServletException if a servlet-specific error occurs
@@ -59,27 +58,22 @@ public class HomeServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        int limit = 10;
-        int page = Converter.parseOption(request.getParameter("page"), 1);
+        HomeDAO hDao = new HomeDAO();
         CategoryDAO cDao = new CategoryDAO();
-        List<Category> categories = cDao.getActiveCategories(page, limit);
-        int totalActiveCategories = cDao.countActiveCategories();
-        boolean isLastPage = (page * limit) >= totalActiveCategories;
-        request.setAttribute("categories", categories);
-        String html = JSP.renderJSPToString(request, response, "/WEB-INF/customers/component/home/categories.jsp");
+        BrandDAO bDao = new BrandDAO();
+        List<Product> topRated = hDao.getTopRatedProducts(8);
+        List<Product> topSelling = hDao.getTopSellingProducts(8);
+        List<Product> newest = hDao.getNewestProducts(8);
+        List<Brand> brands = bDao.getAllBrands();
+        request.setAttribute("topRatedProducts", topRated);
+        request.setAttribute("topSellingProducts", topSelling);
+        request.setAttribute("newestProducts", newest);
+        request.setAttribute("brands", brands);
+        request.getRequestDispatcher("/WEB-INF/customers/pages/homePage.jsp").forward(request, response);
+    } 
 
-        response.setContentType("application/json");
-        response.setCharacterEncoding("UTF-8");
-        JsonObject json = new JsonObject();
-        json.addProperty("html", html);
-        json.addProperty("isLastPage", isLastPage);
-
-        response.getWriter().write(json.toString());
-    }
-
-    /**
+    /** 
      * Handles the HTTP <code>POST</code> method.
-     *
      * @param request servlet request
      * @param response servlet response
      * @throws ServletException if a servlet-specific error occurs
@@ -87,13 +81,12 @@ public class HomeServlet extends HttpServlet {
      */
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
+    throws ServletException, IOException {
         processRequest(request, response);
     }
 
-    /**
+    /** 
      * Returns a short description of the servlet.
-     *
      * @return a String containing servlet description
      */
     @Override

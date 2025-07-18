@@ -59,6 +59,42 @@ public class CategoryDAO extends DB.DBContext {
         return categories;
     }
 
+    public List<Category> getActiveCategories(int page, int limit) {
+        int row = (page - 1) * limit;
+        List<Category> categories = new ArrayList<>();
+
+        String query = "SELECT * FROM Categories c "
+                + "WHERE c.isActive = 1 "
+                + "ORDER BY c.categoryId "
+                + "OFFSET " + row + " ROWS FETCH NEXT " + limit + " ROWS ONLY";
+
+        try ( ResultSet rs = execSelectQuery(query)) {
+            while (rs.next()) {
+                Category category = new Category();
+                category.setId(rs.getInt("categoryId"));
+                category.setName(rs.getString("categoryName"));
+                category.setAvatar(rs.getString("image"));
+                categories.add(category);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return categories;
+    }
+
+    public int countActiveCategories() {
+        String query = "SELECT COUNT(*) AS total FROM Categories WHERE isActive = 1";
+        try ( ResultSet rs = execSelectQuery(query)) {
+            if (rs.next()) {
+                return rs.getInt("total");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return 0;
+    }
+
     public int countCategory() {
         String query = "SELECT COUNT(*) FROM Categories";
         try ( ResultSet rs = execSelectQuery(query)) {
