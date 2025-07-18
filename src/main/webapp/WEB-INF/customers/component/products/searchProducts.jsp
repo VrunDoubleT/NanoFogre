@@ -28,7 +28,7 @@
                         </div>
                         <div class="flex items-center justify-between">
                             <div class="text-2xl font-bold bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent">
-                                <fmt:formatNumber value="${p.price}" type="number" groupingUsed="true"/>₫
+                                <fmt:formatNumber value="${p.price}" type="number" groupingUsed="true"/>đ
                             </div>
                             <div class="text-sm text-gray-500 bg-gray-100 px-3 py-1 rounded-full">
                                 Stock: ${p.quantity}
