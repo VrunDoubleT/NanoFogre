@@ -11,6 +11,7 @@ import Models.Employee;
 import Models.Order;
 import Models.OrderDetails;
 import Models.OrderStatus;
+import Models.OrderStatusHistory;
 import Models.PaymentMethod;
 import Models.PaymentStatus;
 import Models.Product;
@@ -124,26 +125,42 @@ public class OrderDAO extends DBContext {
      */
     public List<OrderDetails> getOrderDetailsByOrderId(int orderId) {
         List<OrderDetails> list = new ArrayList<>();
+
         String sql
-                = "SELECT od.orderDetailId, od.orderId, "
-                + "       od.detailPrice    AS detailPrice, "
-                + "       od.detailQuantity AS detailQuantity, "
-                + "       p.productId, "
-                + "       p.productTitle    AS productTitle, "
-                + "(SELECT TOP 1 url FROM ProductImages WHERE productId = p.productId) AS imageUrl "
-                + "  FROM OrderDetails od "
-                + "  JOIN Products p ON od.productId = p.productId "
-                + " WHERE od.orderId = ?";
+                = "SELECT "
+                + "    od.orderDetailId, "
+                + "    od.orderId, "
+                + "    od.detailPrice       AS detailPrice, "
+                + "    od.detailQuantity    AS detailQuantity, "
+                + "    p.productId, "
+                + "    p.productTitle       AS productTitle, "
+                + "    a.addressId, "
+                + "    a.addressName        AS addressName, "
+                + "    a.recipientName      AS addressRecipient, "
+                + "    a.addressDetails            AS addressDetails, "
+                + "    a.addressPhone              AS addressPhone, "
+                + "    ( "
+                + "        SELECT TOP 1 url "
+                + "        FROM ProductImages "
+                + "        WHERE productId = p.productId "
+                + "    ) AS imageUrl "
+                + "FROM OrderDetails od "
+                + "JOIN Products p  ON od.productId = p.productId "
+                + "JOIN Orders o    ON od.orderId   = o.orderId "
+                + "JOIN Address a   ON o.addressId  = a.addressId "
+                + "WHERE od.orderId = ?";
+
         try ( ResultSet rs = execSelectQuery(sql, new Object[]{orderId})) {
             while (rs.next()) {
                 OrderDetails d = new OrderDetails();
                 d.setId(rs.getInt("orderDetailId"));
                 d.setOrderId(rs.getInt("orderId"));
+                d.setPrice(rs.getDouble("detailPrice"));
+                d.setQuantity(rs.getInt("detailQuantity"));
 
                 Product prod = new Product();
                 prod.setProductId(rs.getInt("productId"));
                 prod.setTitle(rs.getString("productTitle"));
-
                 List<String> urls = new ArrayList<>();
                 String imageUrl = rs.getString("imageUrl");
                 if (imageUrl != null && !imageUrl.isEmpty()) {
@@ -152,8 +169,14 @@ public class OrderDAO extends DBContext {
                 prod.setUrls(urls);
                 d.setProduct(prod);
 
-                d.setPrice(rs.getDouble("detailPrice"));
-                d.setQuantity(rs.getInt("detailQuantity"));
+                Address ad = new Address();
+                ad.setId(rs.getInt("addressId"));
+                ad.setName(rs.getString("addressName"));
+                ad.setRecipientName(rs.getString("addressRecipient"));
+                ad.setDetails(rs.getString("addressDetails"));
+                ad.setPhone(rs.getString("addressPhone"));
+                d.setAddress(ad);
+
                 list.add(d);
             }
         } catch (SQLException e) {
@@ -326,6 +349,99 @@ public class OrderDAO extends DBContext {
         }
         return 0;
     }
+////order history
+
+    public boolean insertOrderStatusHistory(int orderId, String statusName, String statusNote, int updatedBy) {
+        int statusId = -1;
+        String sqlStatus = "SELECT statusId FROM OrderStatus WHERE statusName = ?";
+        try ( ResultSet rs = execSelectQuery(sqlStatus, new Object[]{statusName})) {
+            if (rs.next()) {
+                statusId = rs.getInt("statusId");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+        if (statusId == -1) {
+            return false;
+        }
+
+        String sqlInsert = "INSERT INTO OrderStatusHistory (orderId, statusId, statusNote, updatedAt, updatedBy) "
+                + "VALUES (?, ?, ?, GETDATE(), ?)";
+        try {
+            int rows = execQuery(sqlInsert, new Object[]{orderId, statusId, statusNote, updatedBy});
+            return rows > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public boolean updateOrderStatusHistory(int orderId, String statusName, String statusNote, int updatedBy) {
+        int statusId = -1;
+        int historyId = -1;
+
+        String sqlStatus = "SELECT statusId FROM OrderStatus WHERE statusName = ?";
+        try ( ResultSet rs = execSelectQuery(sqlStatus, new Object[]{statusName})) {
+            if (rs.next()) {
+                statusId = rs.getInt("statusId");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+        if (statusId == -1) {
+            return false;
+        }
+
+        String sqlCheck = "SELECT historyId FROM OrderStatusHistory WHERE orderId = ? AND statusId = ?";
+        try ( ResultSet rs = execSelectQuery(sqlCheck, new Object[]{orderId, statusId})) {
+            if (rs.next()) {
+                historyId = rs.getInt("historyId");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+        if (historyId == -1) {
+            return false;
+        }
+
+        String sqlUpdate = "UPDATE OrderStatusHistory SET statusNote = ?, updatedAt = GETDATE(), updatedBy = ? "
+                + "WHERE historyId = ?";
+        try {
+            int rows = execQuery(sqlUpdate, new Object[]{statusNote, updatedBy, historyId});
+            return rows > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public boolean isExistOrderStatusHistory(int orderId, String statusName) {
+        int statusId = -1;
+
+        String sqlStatus = "SELECT statusId FROM OrderStatus WHERE statusName = ?";
+        try ( ResultSet rs = execSelectQuery(sqlStatus, new Object[]{statusName})) {
+            if (rs.next()) {
+                statusId = rs.getInt("statusId");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+        if (statusId == -1) {
+            return false;
+        }
+
+        String sqlCheck = "SELECT 1 FROM OrderStatusHistory WHERE orderId = ? AND statusId = ?";
+        try ( ResultSet rs = execSelectQuery(sqlCheck, new Object[]{orderId, statusId})) {
+            return rs.next();
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
 
     public boolean updateOrderStatus(int orderId, String statusName) {
         String sql = "UPDATE o\n"
@@ -394,6 +510,33 @@ public class OrderDAO extends DBContext {
             e.printStackTrace();
             return -1;
         }
+    }
+
+    public List<OrderStatusHistory> getOrderStatusHistory(int orderId) {
+        List<OrderStatusHistory> list = new ArrayList<>();
+        String sql = "SELECT h.historyId, h.orderId, h.statusId, s.statusName, h.statusNote, h.updatedAt, h.updatedBy, e.employeeName "
+                + "FROM OrderStatusHistory h "
+                + "JOIN OrderStatus s ON h.statusId = s.statusId "
+                + "LEFT JOIN Employees e ON h.updatedBy = e.employeeId "
+                + "WHERE h.orderId = ? "
+                + "ORDER BY h.updatedAt ASC";
+        try ( ResultSet rs = execSelectQuery(sql, new Object[]{orderId})) {
+            while (rs.next()) {
+                OrderStatusHistory his = new OrderStatusHistory();
+                his.setHistoryId(rs.getInt("historyId"));
+                his.setOrderId(rs.getInt("orderId"));
+                his.setStatusId(rs.getInt("statusId"));
+                his.setStatusName(rs.getString("statusName"));
+                his.setStatusNote(rs.getString("statusNote"));
+                his.setUpdatedAt(rs.getTimestamp("updatedAt").toLocalDateTime());
+                his.setUpdatedBy(rs.getInt("updatedBy"));
+                his.setUpdaterName(rs.getString("employeeName")); // bạn thêm thuộc tính này vào model nếu chưa có
+                list.add(his);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return list;
     }
 
 }

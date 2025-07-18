@@ -574,8 +574,6 @@
             </div>
         </div>
 
-        <!-- Add attributeProduct-->
-
     </div>
 
 </div>

@@ -4,21 +4,17 @@
  */
 package Controllers;
 
-import DAOs.AddressDAO;
 import DAOs.CartDAO;
-import DAOs.CustomerDAO;
-import DAOs.OrderDAO;
+import DAOs.ProductDAO;
 import DAOs.VoucherDAO;
 import Models.Address;
 import Models.Cart;
 import Models.Customer;
-import Models.Order;
-import Models.OrderDetails;
 import Models.Product;
 import Models.Voucher;
 import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
-import com.sun.org.apache.bcel.internal.generic.AALOAD;
 import java.io.IOException;
 import java.util.List;
 import jakarta.servlet.ServletException;
@@ -42,89 +38,29 @@ public class CartServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
-//        HttpSession session = request.getSession(false);
-//        Customer customer = (session != null) ? (Customer) session.getAttribute("customer") : null;
-//        if (customer == null) {
-//            response.sendRedirect(request.getContextPath() + "/auth?action=login");
-//            return;
-//        }
-//        int customerId = customer.getId();
-//
-//        // Lấy type
-//        String type = request.getParameter("type");
-//
-//        int page = 1;
-//        int limit = 3; // mỗi trang 3 sản phẩm
-//        try {
-//            String pageStr = request.getParameter("page");
-//            if (pageStr != null) {
-//                page = Integer.parseInt(pageStr);
-//            }
-//        } catch (Exception ignore) {
-//        }
-//
-//        CartDAO dao = new CartDAO();
-//
-//        List<Cart> cartItems = dao.getCartItemsByUserId(customerId, page, limit);
-//        int totalItems = dao.countCartItems(customerId);
-//        int totalPages = (int) Math.ceil((double) totalItems / limit);
-//
-//        int from = (page - 1) * limit + 1;
-//int to = Math.min(page * limit, totalItems);
-//request.setAttribute("from", from);
-//request.setAttribute("to", to);
-//
-//        
-//// ==== THÊM PHẦN NÀY ====
-//        int maxPagesToShow = 5;
-//        int half = maxPagesToShow / 2;
-//        int startPage = Math.max(1, page - half);
-//        int endPage = Math.min(totalPages, page + half);
-//        if (endPage - startPage + 1 < maxPagesToShow) {
-//            if (startPage == 1) {
-//                endPage = Math.min(totalPages, startPage + maxPagesToShow - 1);
-//            } else if (endPage == totalPages) {
-//                startPage = Math.max(1, endPage - maxPagesToShow + 1);
-//            }
-//        }
-//        request.setAttribute("startPage", startPage);
-//        request.setAttribute("endPage", endPage);
-//// ==== HẾT PHẦN NÀY ====
-//
-//// Các thuộc tính khác
-//        request.setAttribute("cartItems", cartItems);
-//        request.setAttribute("currentPage", page);
-//        request.setAttribute("limit", limit);
-//        request.setAttribute("totalItems", totalItems);
-//        request.setAttribute("totalPages", totalPages);
-//
-//        request.getRequestDispatcher("/WEB-INF/customers/pages/Cart.jsp").forward(request, response);
-
-
         HttpSession session = request.getSession(false);
         Customer customer = (session != null) ? (Customer) session.getAttribute("customer") : null;
         if (customer == null) {
-            // Nếu chưa login thì chuyển hướng về login hoặc trả về cart rỗng
+
             response.sendRedirect(request.getContextPath() + "/auth?action=login");
             return;
         }
         int customerId = customer.getId();
 
         CartDAO dao = new CartDAO();
-        // 1) Cập nhật tổng số lượng vào session mỗi lần GET
+
         int totalQty = dao.getTotalQuantity(customerId);
         session.setAttribute("cartQuantity", totalQty);
         List<Cart> cartItems = dao.getCartItemsByUserId(customerId);
         request.setAttribute("cartItems", cartItems);
         VoucherDAO voucherDAO = new VoucherDAO();
         List<Voucher> availableVouchers = voucherDAO.getAvailableVouchersForUser(customerId);
-        System.out.println("Có " + (availableVouchers == null ? "null" : availableVouchers.size()) + " voucher");
+
         request.setAttribute("availableVouchers", availableVouchers);
         request.getRequestDispatcher("/WEB-INF/customers/pages/Cart.jsp")
                 .forward(request, response);
-    
-    }
 
+    }
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
@@ -134,13 +70,14 @@ public class CartServlet extends HttpServlet {
         HttpSession session = request.getSession(false);
         Customer customer = (session != null) ? (Customer) session.getAttribute("customer") : null;
         if (customer == null) {
-            // Nếu chưa login thì chuyển hướng về login hoặc trả về cart rỗng
+
             response.sendRedirect(request.getContextPath() + "/auth?action=login");
             return;
         }
         int customerId = customer.getId();
 
         switch (action) {
+
             case "add":
                 response.setContentType("application/json;charset=UTF-8");
                 try ( PrintWriter out = response.getWriter()) {
@@ -174,23 +111,117 @@ public class CartServlet extends HttpServlet {
                 }
                 return;
 
-            case "update":
-                int cartId = Integer.parseInt(request.getParameter("cartId"));
-                int qtyU = Integer.parseInt(request.getParameter("quantity"));
-                if (qtyU <= 0) { // Basic validation
-                    response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Quantity must be positive.");
+            case "update": {
+                response.setContentType("application/json;charset=UTF-8");
+                JsonObject json = new JsonObject();
+
+        
+                int cartId;
+                try {
+                    cartId = Integer.parseInt(request.getParameter("cartId"));
+                } catch (Exception ex) {
+                    cartId = -1;
+                }
+                int requestedQty;
+                try {
+                    requestedQty = Integer.parseInt(request.getParameter("quantity"));
+                } catch (Exception ex) {
+                    requestedQty = 1;
+                }
+
+                if (cartId <= 0) {
+                    json.addProperty("success", false);
+                    json.addProperty("message", "Invalid cartId.");
+                    try ( PrintWriter out = response.getWriter()) {
+                        out.write(json.toString());
+                    }
                     return;
                 }
-                dao.updateCartItemQuantity(cartId, qtyU);
-                break;
 
-            case "remove":
-                int cartR = Integer.parseInt(request.getParameter("cartId"));
-                dao.removeCartItem(cartR);
+                Cart item = dao.getCartItemById(cartId);
+                if (item == null || item.getCustomerId() != customerId) {
+                    json.addProperty("success", false);
+                    json.addProperty("message", "Cart item not found.");
+                    try ( PrintWriter out = response.getWriter()) {
+                        out.write(json.toString());
+                    }
+                    return;
+                }
+
+                Product prod = item.getProduct();
+                int stock = (prod != null) ? prod.getQuantity() : requestedQty;
+                if (stock < 0) {
+                    stock = 0;
+                }
+
+                int min = 1;
+                int newQty = Math.max(min, Math.min(requestedQty, stock));
+
+                boolean ok = dao.updateCartItemQuantity(cartId, newQty);
 
                 int totalQty = dao.getTotalQuantity(customerId);
-                session.setAttribute("cartQuantity", totalQty);
-                break;
+                request.getSession().setAttribute("cartQuantity", totalQty);
+
+                json.addProperty("success", ok);
+                json.addProperty("cartId", cartId);
+                json.addProperty("quantity", newQty);
+                json.addProperty("maxQuantity", stock);
+                json.addProperty("cartQuantity", totalQty);
+                if (newQty != requestedQty) {
+                    json.addProperty("message", "Quantity adjusted to available stock (" + stock + ").");
+                }
+
+                try ( PrintWriter out = response.getWriter()) {
+                    out.write(json.toString());
+                }
+                return;
+            }
+
+            case "remove": {
+                response.setContentType("application/json;charset=UTF-8");
+                JsonObject json = new JsonObject();
+
+                int cartId;
+                try {
+                    cartId = Integer.parseInt(request.getParameter("cartId"));
+                } catch (Exception ex) {
+                    cartId = -1;
+                }
+
+                if (cartId <= 0) {
+                    json.addProperty("success", false);
+                    json.addProperty("message", "Invalid cartId.");
+                    try ( PrintWriter out = response.getWriter()) {
+                        out.write(json.toString());
+                    }
+                    return;
+                }
+
+                Cart item = dao.getCartItemById(cartId);
+                if (item == null || item.getCustomerId() != customerId) {
+                    json.addProperty("success", false);
+                    json.addProperty("message", "Cart item not found.");
+                    try ( PrintWriter out = response.getWriter()) {
+                        out.write(json.toString());
+                    }
+                    return;
+                }
+
+                boolean ok = dao.removeCartItem(cartId);
+
+                int totalQty = dao.getTotalQuantity(customerId);
+                request.getSession().setAttribute("cartQuantity", totalQty);
+
+                json.addProperty("success", ok);
+                json.addProperty("cartId", cartId);
+                json.addProperty("cartQuantity", totalQty);
+                json.addProperty("message", ok ? "Item removed." : "Failed to remove item.");
+
+                try ( PrintWriter out = response.getWriter()) {
+                    out.write(json.toString());
+                }
+                return;
+            }
 
             case "related":
                 int excludeId = Integer.parseInt(request.getParameter("productId"));
@@ -209,62 +240,6 @@ public class CartServlet extends HttpServlet {
 
                 request.getRequestDispatcher("/WEB-INF/customers/pages/RelatedProductsFragment.jsp")
                         .forward(request, response);
-                return;
-
-            case "voucher":
-                VoucherDAO voucherDAO = new VoucherDAO();
-                String code = request.getParameter("code");
-                String subtotalParam = request.getParameter("subtotal");
-                double subtotal = 0;
-                try {
-                    subtotal = Double.parseDouble(subtotalParam);
-                } catch (Exception ex) {
-                }
-
-                Voucher voucher = voucherDAO.findByCode(code);
-
-                response.setContentType("application/json;charset=UTF-8");
-                PrintWriter out = response.getWriter();
-                if (voucher == null || !voucher.isIsActive() || voucher.isDestroy()) {
-                    out.print("{\"valid\":false, \"message\":\"Voucher does not exist or has been locked.\"}");
-                    return;
-                }
-
-                LocalDateTime now = LocalDateTime.now();
-                if (now.isBefore(voucher.getValidFrom()) || now.isAfter(voucher.getValidTo())) {
-                    out.print("{\"valid\":false, \"message\":\"Voucher is expired or not yet valid.\"}");
-                    return;
-                }
-
-                if (subtotal < voucher.getMinValue()) {
-                    out.print("{\"valid\":false, \"message\":\"Order value does not meet the minimum requirement.\"}");
-                    return;
-                }
-
-                double discount = 0;
-                String discountText = "";
-                if ("percent".equalsIgnoreCase(voucher.getType()) || "percentage".equalsIgnoreCase(voucher.getType())) {
-                    discount = subtotal * voucher.getValue() / 100.0;
-                    if (discount > voucher.getMaxValue()) {
-                        discount = voucher.getMaxValue();
-                    }
-                    discountText = "-" + String.format("%,.0f", discount) + "₫ (" + voucher.getValue() + "% off)";
-                } else if ("fixed".equalsIgnoreCase(voucher.getType())) {
-                    discount = voucher.getValue();
-                    if (discount > voucher.getMaxValue()) {
-                        discount = voucher.getMaxValue();
-                    }
-                    discountText = "-" + String.format("%,.0f", discount) + "₫";
-                }
-
-                out.print("{"
-                        + "\"valid\":true,"
-                        + "\"type\":\"" + voucher.getType() + "\","
-                        + "\"discountAmount\":" + (int) discount + ","
-                        + "\"discountText\":\"" + discountText + "\","
-                        + "\"description\":\"" + voucher.getDescription() + "\","
-                        + "\"code\":\"" + voucher.getCode() + "\""
-                        + "}");
                 return;
 
             case "purchase":
@@ -298,83 +273,34 @@ public class CartServlet extends HttpServlet {
                     vouchers = voucherDAOs.findByCode(voucherCode.trim());
                 }
 
-                // Lấy địa chỉ mặc định
                 Address address = dao.getDefaultAddressByCustomerId(c.getId());
-                System.out.println(address);
-                // Nếu số điện thoại customer null, lấy từ địa chỉ (nếu có)
+
                 if ((c.getPhone() == null || c.getPhone().trim().isEmpty())
                         && address != null && address.getPhone() != null && !address.getPhone().trim().isEmpty()) {
                     c.setPhone(address.getPhone());
                 }
 
-                // Lấy danh sách voucher khả dụng cho khách hàng
                 List<Voucher> availableVouchers = voucherDAOs.getAvailableVouchersForUser(c.getId());
 
                 request.setAttribute("address", address);
                 request.setAttribute("customer", c);
                 request.setAttribute("selectedItems", selectedItems);
                 request.setAttribute("voucher", vouchers);
-                request.setAttribute("availableVouchers", availableVouchers);  // <-- thêm vouchers list
+                request.setAttribute("availableVouchers", availableVouchers);
                 request.setAttribute("cartIdsJson", cartIdsJson);
 
                 request.getRequestDispatcher("/WEB-INF/customers/pages/Purchase.jsp").forward(request, response);
                 return;
 
-//            case "updateCustomerInfo":
-//                response.setContentType("application/json;charset=UTF-8");
-//                try ( PrintWriter outs = response.getWriter()) {
-//                    // 1) Lấy dữ liệu từ form
-//                    String recipientName = request.getParameter("recipientName");
-//                    String addressName = request.getParameter("addressName");
-//                    String addressDetails = request.getParameter("address");
-//                    String addressPhone = request.getParameter("phone");
-//
-//                    // 2) Validate bắt buộc
-//                    if (recipientName == null || recipientName.trim().isEmpty()
-//                            || addressName == null || addressName.trim().isEmpty()
-//                            || addressDetails == null || addressDetails.trim().isEmpty()
-//                            || addressPhone == null || addressPhone.trim().isEmpty()) {
-//
-//                        outs.print("{\"success\":false,\"message\":\"All fields are required.\"}");
-//                        return;
-//                    }
-//
-//                    int custId = customer.getId();
-//                    CartDAO cartDAO = new CartDAO();
-//
-//                    // 3) Upsert address (chi tiết, tên, điện thoại, người nhận)
-//                    boolean ok = cartDAO.upsertDefaultAddressByCustomerId(
-//                            custId,
-//                            addressDetails,
-//                            addressName,
-//                            addressPhone,
-//                            recipientName
-//                    );
-//
-//                    // 4) Trả về kết quả
-//                    if (ok) {
-//                        outs.print("{\"success\":true,\"message\":\"Information updated successfully.\"}");
-//                    } else {
-//                        outs.print("{\"success\":false,\"message\":\"Failed to update information.\"}");
-//                    }
-//                } catch (Exception e) {
-//                    e.printStackTrace();
-//                    try ( PrintWriter outs = response.getWriter()) {
-//                        String msg = e.getMessage().replace("\"", "\\\"");
-//                        outs.print("{\"success\":false,\"message\":\"" + msg + "\"}");
-//                    }
-//                }
-//                return;
             case "updateCustomerInfo":
                 response.setContentType("application/json;charset=UTF-8");
                 try ( PrintWriter outs = response.getWriter()) {
-                    // 1) Lấy params
 
                     String addressDetails = request.getParameter("address");
                     String addressName = request.getParameter("addressName");
                     String addressPhone = request.getParameter("phone");
                     String recipientName = request.getParameter("recipientName");
-                    // 2) Validate
+
                     if (recipientName == null || recipientName.trim().isEmpty()
                             || addressName == null || addressName.trim().isEmpty()
                             || addressDetails == null || addressDetails.trim().isEmpty()
@@ -390,10 +316,9 @@ public class CartServlet extends HttpServlet {
                     System.out.println("addressDetails = " + addressDetails);
                     System.out.println("addressPhone = " + addressPhone);
                     System.out.println("customerId = " + custId);
-                    // 3) Kiểm tra có default address chưa
+
                     boolean hasDefault = daos.hasDefaultAddress(custId);
 
-                    // 4) Gọi insert hoặc update
                     boolean ok;
                     if (hasDefault) {
                         ok = daos.updateDefaultAddress(customerId, addressDetails, addressName, addressPhone, recipientName);
@@ -407,7 +332,6 @@ public class CartServlet extends HttpServlet {
                         );
                     }
 
-                    // 5) Trả JSON kết quả
                     if (ok) {
                         outs.print("{\"success\":true,\"message\":\"Information updated successfully.\"}");
                     } else {

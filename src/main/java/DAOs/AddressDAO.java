@@ -42,11 +42,15 @@ public class AddressDAO extends DB.DBContext {
     }
 
     public int insert(Address a) throws SQLException {
-        String sql = "INSERT INTO Address(addressName, recipientName, addressDetails, addressPhone, customerId, isDefault) "
-                + "VALUES(?,?,?,?,?,0)";
-        return execQuery(sql, new Object[]{
-            a.getName(), a.getRecipientName(), a.getDetails(), a.getPhone(), a.getCustomerId()
-        });
+        String sql = "INSERT INTO Address(addressName, recipientName, addressDetails, addressPhone, customerId, isDefault) VALUES (?, ?, ?, ?, ?, 0)";
+        Object[] params = {
+            a.getName(),
+            a.getRecipientName(),
+            a.getDetails(),
+            a.getPhone(),
+            a.getCustomerId()
+        };
+        return execQueryReturnId(sql, params);
     }
 
     public boolean update(Address a) throws SQLException {

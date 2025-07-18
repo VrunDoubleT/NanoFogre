@@ -5,6 +5,7 @@
 --%>
 
 <%@page import="Utils.CurrencyFormatter"%>
+<%@ page contentType="text/html;charset=UTF-8" %>
 <%@ page import="Models.Order" %>
 <%@ page import="java.util.List" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
@@ -20,13 +21,12 @@
 
 <% for (Order order : orders) {%>
 <tr data-order-id="<%= order.getId()%>" class="hover:bg-gray-50 transition-colors duration-200">
-    <!-- Order ID with enhanced styling -->
-    <!-- Order ID -->
+
     <td class="px-4 py-4 whitespace-nowrap text-center ">
         <span class="font-bold text-lg text-gray-900 ">#<%= order.getId()%></span>
     </td>
 
-    <!-- Customer Name with avatar placeholder -->
+
     <td class="px-4 py-5 whitespace-nowrap">
         <div class="flex items-center justify-center">
             <div class="text-md font-medium text-gray-900">
@@ -37,8 +37,8 @@
 
     <!-- Total Amount -->
     <td class="px-3 py-3 whitespace-nowrap text-gray-700 text-center">
-       
-        <span class="text-md font-semibold text-green-600 text-md"><%= CurrencyFormatter.formatVietNamCurrency(order.getTotalAmount())%>VND</span>
+
+        <span class="text-md font-semibold text-green-600 text-md"><%= CurrencyFormatter.formatVietNamCurrency(order.getTotalAmount())%>đ</span>
     </td>
 
     <!-- Payment Method -->

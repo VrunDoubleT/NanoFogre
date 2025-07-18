@@ -14,9 +14,6 @@ import java.time.LocalDateTime;
 public class ForgetDAO extends DB.DBContext {
 
     // ======= EMPLOYEE =======
-    /**
-     * Kiểm tra mã (chưa xác thực, chưa hết hạn) trong bảng VerifyCodeEmployees
-     */
     public boolean checkVerifyCodeEmployee(int employeeId, String code) {
         String sql = ""
                 + "SELECT COUNT(*) AS count "
@@ -40,9 +37,6 @@ public class ForgetDAO extends DB.DBContext {
         return false;
     }
 
-    /**
-     * Đánh dấu mã của Employee đã được dùng (isVerified = 1)
-     */
     public boolean markCodeAsUsedEmployee(int employeeId, String code) {
         String sql = ""
                 + "UPDATE VerifyCodeEmployees "
@@ -57,9 +51,6 @@ public class ForgetDAO extends DB.DBContext {
         return false;
     }
 
-    /**
-     * Chèn một mã xác thực mới cho Employee
-     */
     public boolean insertCodeEmployee(int employeeId, String code, LocalDateTime expiredAt) {
         String sql = ""
                 + "INSERT INTO VerifyCodeEmployees "
@@ -80,9 +71,6 @@ public class ForgetDAO extends DB.DBContext {
         return false;
     }
 
-    /**
-     * Cập nhật mật khẩu mới tạm thời cho Employee (trước khi confirm)
-     */
     public boolean updateNewPasswordByEmail(String email, String newPassword) {
         String sql = ""
                 + "UPDATE Employees "
@@ -97,10 +85,6 @@ public class ForgetDAO extends DB.DBContext {
         return false;
     }
 
-    /**
-     * Xác nhận reset mật khẩu: ghi mật khẩu mới vào trường chính và xóa trường
-     * tạm
-     */
     public boolean confirmResetPassword(int employeeId, String newPassword) {
         String sql = ""
                 + "UPDATE Employees "
@@ -115,9 +99,6 @@ public class ForgetDAO extends DB.DBContext {
         return false;
     }
 
-    /**
-     * Tìm Employee theo email (để lấy employeeId khi bắt đầu reset)
-     */
     public Employee findByEmail(String email) {
         String sql = ""
                 + "SELECT * FROM Employees "
@@ -136,10 +117,6 @@ public class ForgetDAO extends DB.DBContext {
     }
 
     // ======= CUSTOMER =======
-    /**
-     * Kiểm tra mã (chưa xác thực, chưa hết hạn) trong bảng VerifyCodes với
-     * userType = 0
-     */
     public boolean checkVerifyCodeCustomer(int customerId, String code) {
         String sql = ""
                 + "SELECT COUNT(*) AS count "
@@ -164,9 +141,6 @@ public class ForgetDAO extends DB.DBContext {
         return false;
     }
 
-    /**
-     * Đánh dấu mã của Customer đã được dùng
-     */
     public boolean markCodeAsUsedCustomer(int customerId, String code) {
         String sql = ""
                 + "UPDATE VerifyCodes "
@@ -181,9 +155,6 @@ public class ForgetDAO extends DB.DBContext {
         return false;
     }
 
-    /**
-     * Chèn mã xác thực mới cho Customer
-     */
     public boolean insertCodeCustomer(int customerId, String code, LocalDateTime expiredAt) {
         String sql = ""
                 + "INSERT INTO VerifyCodes "
@@ -204,9 +175,6 @@ public class ForgetDAO extends DB.DBContext {
         return false;
     }
 
-    /**
-     * Tìm Customer theo email
-     */
     public Customer findCustomerByEmail(String email) {
         String sql = ""
                 + "SELECT * FROM Customers "
@@ -228,9 +196,6 @@ public class ForgetDAO extends DB.DBContext {
         return null;
     }
 
-    /**
-     * Cập nhật mật khẩu mới tạm thời cho Customer
-     */
     public boolean updateNewPasswordByEmailCustomer(String email, String newPassword) {
         String sql = ""
                 + "UPDATE Customers "
@@ -245,9 +210,6 @@ public class ForgetDAO extends DB.DBContext {
         return false;
     }
 
-    /**
-     * Xác nhận reset mật khẩu cho Customer
-     */
     public boolean confirmResetPasswordCustomer(int customerId, String newPassword) {
         String sql = ""
                 + "UPDATE Customers "

@@ -30,10 +30,9 @@ public class LogoutAdminStaffServlet extends HttpServlet {
             Object employee = session.getAttribute("employee");
 
             if (employee != null) {
-                // Ép kiểu để lấy role
+             
                 Models.Employee emp = (Models.Employee) employee;
-
-                // Kiểm tra role để quyết định redirect
+          
                 if (emp.getRole().getName().equals("Administrator")) {
                     redirectPath = "/admin/auth/login";
                 } else {

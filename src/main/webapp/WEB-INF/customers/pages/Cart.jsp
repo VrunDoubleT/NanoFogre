@@ -16,7 +16,7 @@
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Cart - NanoForge</title>
-        <!-- Tailwind CSS -->
+      
         <script src="https://cdn.tailwindcss.com"></script>
         <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
         <%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>
@@ -181,9 +181,9 @@
                 opacity: 0.6;
                 pointer-events: none;
             }
-body.modal-open {
-  overflow: hidden;
-}
+            body.modal-open {
+                overflow: hidden;
+            }
             /* Modal Styles */
             .modal-overlay {
                 position: fixed;
@@ -302,6 +302,36 @@ body.modal-open {
             .voucher-suggestion:focus {
                 box-shadow: 0 0 0 2px #c4b5fd;
             }
+
+            .out-of-stock {
+                position: relative;
+
+                opacity: 0.6;
+                pointer-events: none;
+            }
+            .out-of-stock button,
+            .out-of-stock .related-btn,
+            .out-of-stock .remove-btn {
+                pointer-events: auto !important;
+                opacity: 10;
+            }
+
+            .out-of-stock::after {
+
+                position: absolute;
+                top: 8px;
+                right: 8px;
+                background: #e53e3e;
+                color: white;
+                font-size: 0.75rem;
+                font-weight: bold;
+                padding: 4px 8px;
+                border-radius: 4px;
+                text-transform: uppercase;
+                pointer-events: none;
+                box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+            }
+
         </style>
     </head>
 
@@ -323,7 +353,6 @@ body.modal-open {
                     <c:when test="${not empty cartItems}">
                         <c:set var="totalCart" value="${fn:length(cartItems)}" />
 
-                        <!-- Thẻ thông báo số lượng sản phẩm -->
                         <div class="bg-white rounded-2xl p-6 mb-8 border-l-4 border-purple-500 shadow-md">
                             <div class="flex items-center gap-4">
                                 <div class="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center">
@@ -332,8 +361,8 @@ body.modal-open {
                                     </svg>
                                 </div>
                                 <div>
-                                    <p class="font-semibold text-gray-700">
-                                        You have <span class="text-purple-600 font-bold">${totalCart}</span> item(s) in your cart.
+                                    <p class="font-semibold text-gray-700" >
+                                        You have <span id="cartLineCount" class="text-purple-600 font-bold">${totalCart}</span> item(s) in your cart.
                                     </p>
                                 </div>
                             </div>
@@ -343,30 +372,34 @@ body.modal-open {
                             <!-- Cart Items -->
                             <div class="lg:col-span-2 space-y-6">
                                 <c:forEach var="item" items="${cartItems}" varStatus="status">
-                                    <!-- Card sản phẩm -->
-                                    <div class="product-card flex flex-col sm:flex-row items-center bg-white rounded-2xl p-5 shadow-lg gap-6 transition-all duration-300 hover:shadow-xl hover:ring-2 hover:ring-purple-400 group">
+
+                                    <div class="product-card  flex flex-col sm:flex-row items-center bg-white rounded-2xl p-5 shadow-lg gap-6 transition-all duration-300 hover:shadow-xl hover:ring-2 hover:ring-purple-400 group"
+                                         id="cart-item-${item.cartId}">
                                         <!-- Checkbox -->
-                                        <input type="checkbox"
-                                               class="item-checkbox accent-purple-500 w-5 h-5 mt-1 mr-0 cursor-pointer"
-                                               data-index="${status.index}"
-                                               data-id="${item.cartId}"
-                                               onchange="handleCheckboxChange(this)">
-                                        <!-- Image -->
-                                        <img src="${not empty item.product.urls ? item.product.urls[0] : 'default.png'}"
-                                             alt="${item.product.title}" class="w-[146px] h-auto object-cover rounded-lg border-2 border-gray-200" />
+                                        <input 
+                                            type="checkbox"
+                                            class="item-checkbox accent-purple-500 w-5 h-5 mt-1 mr-0 cursor-pointer
+                                            <c:if test='${item.product.quantity == 0}'> opacity-50 cursor-not-allowed</c:if>'"
+                                            data-index="${status.index}"
+                                            data-id="${item.cartId}"
+                                            <c:if test='${item.product.quantity <=0}'>disabled</c:if>
+                                                >
+                                            <!-- Image -->
+                                            <img src="${not empty item.product.urls ? item.product.urls[0] : 'default.png'}"
+                                             alt="${item.product.title}" class="w-[146px] ${item.product.quantity <= 0 ? 'out-of-stock' : ''} h-auto object-cover rounded-lg border-2 border-gray-200" />
                                         <!-- Info -->
-                                        <div class="flex-1 ml-0 sm:ml-6 w-full">
+                                        <div class="flex-1 ml-0 sm:ml-6 w-full ${item.product.quantity <= 0 ? 'out-of-stock' : ''}">
                                             <h2 class="font-bold text-lg text-gray-800 leading-tight line-clamp-2 hover:text-purple-600 transition-colors cursor-pointer">${item.product.title}</h2>
                                             <div class="flex items-center flex-wrap gap-2 mt-2 text-sm">
-                                                <span class="px-2 py-1 rounded-full bg-green-100 text-green-800 font-semibold"
-                                                      <c:if test="${item.product.quantity == 0}">style="display:none;"</c:if>>
-                                                          In Stock
-                                                      </span>
-                                                      <span class="px-2 py-1 rounded-full bg-red-100 text-red-800 font-semibold"
-                                                      <c:if test="${item.product.quantity > 0}">style="display:none;"</c:if>>
-                                                          Out of Stock
-                                                      </span>
-                                                      <span class="px-2 py-1 rounded-full bg-blue-100 text-blue-800">${item.product.brand.name}</span>
+                                                <c:choose>
+                                                    <c:when test="${item.product.quantity > 0}">
+                                                        <span class="px-2 py-1 rounded-full bg-green-100 text-green-800 font-semibold">In Stock</span>
+                                                    </c:when>
+                                                    <c:otherwise>
+                                                        <span class="px-2 py-1 rounded-full bg-red-100 text-red-800 font-semibold">Out of Stock</span>
+                                                    </c:otherwise>
+                                                </c:choose>
+                                                <span class="px-2 py-1 rounded-full bg-blue-100 text-blue-800">${item.product.brand.name}</span>
                                                 <span class="px-2 py-1 rounded-full bg-pink-100 text-pink-800">${item.product.category.name}</span>
                                                 <c:if test="${item.product.averageStar > 0}">
                                                     <span class="flex items-center gap-1 text-yellow-500 font-bold">
@@ -377,37 +410,45 @@ body.modal-open {
                                                     </span>
                                                 </c:if>
                                             </div>
+
                                             <p class="text-gray-500 mt-2">
                                                 Price:
                                                 <span class="font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
                                                     ${CurrencyFormatter.formatVietNamCurrency(item.product.price)}đ
                                                 </span>
                                             </p>
-                                            <div class="flex items-center gap-3 mt-3">
+
+                                            <div class="flex items-center gap-3 mt-3"
+                                                 id="qty-group-${item.cartId}"
+                                                 data-min="1"
+                                                 data-max="${item.product.quantity}">
+
                                                 <button type="button"
                                                         class="w-8 h-8 rounded-full bg-gray-200 text-gray-800 flex items-center justify-center font-bold hover:bg-gray-300 transition disabled:opacity-50 disabled:cursor-not-allowed"
-                                                        onclick="updateQuantity(${status.index}, -1)"
-                                                        id="decrease-${status.index}"
-                                                        <c:if test="${item.quantity <= 1 || item.product.quantity == 0}">disabled</c:if>>
-                                                            –
-                                                        </button>
-                                                        <span id="qty-${status.index}" class="w-8 text-center font-bold text-gray-900">${item.quantity}</span>
+                                                        onclick="updateQuantity(${item.cartId}, -1)"
+                                                        id="decrease-${item.cartId}"
+                                                        ${item.quantity <= 1 || item.product.quantity <=0 ? "disabled" : ""}
+
+                                                        >–</button>
+
+
+                                                <span id="qty-${item.cartId}" class="w-8 text-center font-bold text-gray-900">${item.quantity}</span>
+
                                                 <button type="button"
                                                         class="w-8 h-8 rounded-full bg-gray-200 text-gray-800 flex items-center justify-center font-bold hover:bg-gray-300 transition disabled:opacity-50 disabled:cursor-not-allowed"
-                                                        onclick="updateQuantity(${status.index}, 1)"
-                                                        id="increase-${status.index}"
-                                                        <c:if test="${item.product.quantity == 0}">disabled</c:if>>
-                                                            +
-                                                        </button>
-                                                </div>
+                                                        onclick="updateQuantity(${item.cartId}, 1)"
+                                                        id="increase-${item.cartId}"
+                                                        ${item.quantity >= item.product.quantity ? "disabled" : ""}>+</button>
+
                                             </div>
-                                            <!-- Price & Action -->
-                                            <div class="flex flex-col items-end gap-2 w-full sm:w-40 text-right sm:text-left mt-4 sm:mt-0">
-                                                <div id="total-${status.index}"
+                                        </div>
+                                        <!-- Price & Action -->
+                                        <div class="flex flex-col items-end gap-2 w-full sm:w-40 text-right sm:text-left mt-4 sm:mt-0">
+                                            <div id="lineTotal-${item.cartId}"
                                                  class="text-2xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
                                                 ${CurrencyFormatter.formatVietNamCurrency(item.product.price * item.quantity)}đ
                                             </div>
-                                            <button class="remove-btn w-full bg-gradient-to-r from-red-500 to-pink-600 text-white py-1.5 rounded-lg font-semibold mt-2 hover:scale-105 transition" onclick="removeItem(${status.index})" id="remove-${status.index}">🗑 Remove</button>
+                                            <button type="button" class="remove-btn  w-full py-1.5 rounded-md text-white bg-gradient-to-r from-rose-500 to-rose-600 hover:from-rose-600 hover:to-rose-700 text-sm" onclick="removeFromCart(${item.cartId})">🗑 Remove</button>
                                             <button class="related-btn w-full bg-gradient-to-r from-blue-500 to-purple-500 text-white py-1.5 rounded-lg font-semibold hover:scale-105 transition"
                                                     onclick="showRelatedProducts(${item.product.productId}, ${item.product.brand.id}, ${item.product.category.id})">
                                                 🔍 Related
@@ -436,10 +477,6 @@ body.modal-open {
                                     <span>Total:</span>
                                     <span class="text-2xl font-extrabold bg-gradient-to-r from-purple-500 to-pink-500 bg-clip-text text-transparent" id="grandTotal">0 ₫</span>
                                 </div>
-
-
-
-
 
                                 <button
                                     id="purchaseBtn"
@@ -495,255 +532,307 @@ body.modal-open {
         <script>
 
             const baseUrl = '${cartUrl}';
-            let isProcessing = false;
-
             const cartItems = [];
-            <c:forEach var="item" items="${cartItems}" varStatus="status">
+            <c:forEach var="item" items="${cartItems}">
             cartItems.push({
                 id: ${item.cartId},
                 productId: ${item.product.productId},
                 price: ${item.product.price},
                 quantity: ${item.quantity},
                 stock: ${item.product.quantity},
-                title: "${item.product.title}"
+                title: "${fn:escapeXml(item.product.title)}"
             });
             </c:forEach>
 
 
-            // loading state
-            function setLoading(index, isLoading) {
-                const cartItem = document.getElementById(`cart-item-${index}`);
-                const decreaseBtn = document.getElementById(`decrease-${index}`);
-                const increaseBtn = document.getElementById(`increase-${index}`);
-                const removeBtn = document.getElementById(`remove-${index}`);
-
-                if (cartItem) {
-                    if (isLoading) {
-                        cartItem.classList.add('loading');
-                    } else {
-                        cartItem.classList.remove('loading');
-                    }
-                }
-
-                if (decreaseBtn) {
-                    decreaseBtn.disabled = isLoading;
-                }
-
-                if (increaseBtn) {
-                    increaseBtn.disabled = isLoading;
-                }
-
-                if (removeBtn) {
-                    removeBtn.disabled = isLoading;
-                }
+            function formatCurrencyVND(amount) {
+                return amount.toLocaleString('vi-VN') + ' ₫';
             }
 
-            //  update quantity vs improved UX
-            function updateQuantity(index, delta) {
-                if (isProcessing)
+             //* check button quantity
+            function syncQtyButtons(cartId, qty, min, max) {
+                const decBtn = document.getElementById("decrease-" + cartId);
+                const incBtn = document.getElementById("increase-" + cartId);
+                if (!decBtn || !incBtn)
+                    return;
+                const outOfStock = max === 0;
+                decBtn.disabled = outOfStock || qty <= min;
+                incBtn.disabled = outOfStock || qty >= max;
+            }
+
+
+    
+            //*  Update total money
+            function updateLineTotal(cartId, qty) {
+                const el = document.getElementById('lineTotal-' + cartId);
+                const item = cartItems.find(it => String(it.id) === String(cartId));
+                if (!el || !item)
+                    return;
+                el.textContent = (item.price * qty).toLocaleString('vi-VN') + ' ₫';
+            }
+
+
+            //*  Update quattiy
+            function updateQuantity(cartId, delta) {
+                cartId = String(cartId);
+
+                const group = document.getElementById('qty-group-' + cartId);
+                const qtyEl = document.getElementById('qty-' + cartId);
+                if (!group || !qtyEl)
                     return;
 
-                const item = cartItems[index];
-                // in product íntock don't can change
-                if (item.stock === 0)
+                const min = parseInt(group.dataset.min, 10) || 1;
+                const max = parseInt(group.dataset.max, 10);
+                const maxVal = Number.isNaN(max) ? Infinity : max;
+                const current = parseInt(qtyEl.textContent, 10) || 0;
+
+                let newQty = current + delta;
+                if (newQty < min)
+                    newQty = min;
+                if (newQty > maxVal)
+                    newQty = maxVal;
+
+                if (newQty === current) {
+                    syncQtyButtons(cartId, current, min, maxVal);
                     return;
-                const newQuantity = Math.max(1, item.quantity + delta);
-                if (newQuantity === item.quantity)
-                    return;
+                }
 
-                isProcessing = true;
-                setLoading(index, true);
-
-                const oldQuantity = item.quantity;
-
-                fetch(baseUrl, {
+                fetch('/cart?action=update', {
                     method: 'POST',
                     headers: {'Content-Type': 'application/x-www-form-urlencoded'},
                     body: new URLSearchParams({
                         action: 'update',
-                        cartId: item.id,
-                        quantity: newQuantity
+                        cartId: cartId,
+                        quantity: newQty
                     }).toString()
                 })
                         .then(response => {
                             if (!response.ok)
-                                throw new Error('Update Successs');
-                            updateUIQuantity(index, newQuantity);
+                                throw new Error('Update failed: ' + response.status);
+                            return response.json();
+                        })
+                        .then(data => {
+                            console.log('[updateQuantity resp]', data);
+
+                            const confirmedQty = parseInt(data.quantity, 10);
+                            const serverMax = data.maxQuantity != null ? parseInt(data.maxQuantity, 10) : maxVal;
+
+                            // Update DOM
+                            qtyEl.textContent = confirmedQty;
+                            group.dataset.max = serverMax;
+                            syncQtyButtons(cartId, confirmedQty, min, serverMax);
+
+                            // Update global cartItems
+                            const found = cartItems.find(it => String(it.id) === cartId);
+                            if (found) {
+                                found.quantity = confirmedQty;
+                                found.stock = serverMax;
+                                updateLineTotal(cartId, confirmedQty);
+                            }
+
                             recalc();
-                            window.location.href = baseUrl;
+                            if (data.message && window.Swal) {
+                                Swal.fire({
+                                    icon: 'info',
+                                    title: 'Notification',
+                                    text: data.message,
+                                    customClass: {popup: 'bg-gray-800 text-white rounded-lg'}
+                                });
+                            }
                         })
                         .catch(error => {
                             console.error('Update failed:', error);
-                            updateUIQuantity(index, newQuantity);
-                            recalc(); // cập nhật Order Summary
-
-                        })
-                        .finally(() => {
-                            isProcessing = false;
-                            setLoading(index, false);
+                            if (window.Swal)
+                                Swal.fire('Lỗi', 'Quantity not updated', 'error');
                         });
             }
 
-            // update UI quantity
-            function updateUIQuantity(index, quantity) {
-                const qtyEl = document.getElementById(`qty-${index}`);
-                const totalEl = document.getElementById(`total-${index}`);
-
-                if (cartItems[index]) {
-                    cartItems[index].quantity = quantity;
-                }
-
-                if (qtyEl) {
-                    qtyEl.textContent = quantity;
-                }
-
-                if (totalEl) {
-                    const total = quantity * cartItems[index].price;
-                    totalEl.textContent = total.toLocaleString('vi-VN') + ' ₫';
+             //*  REMOVE  cart
+            function removeFromCart(cartId) {
+                cartId = Number(cartId);
+                const found = cartItems.find(it => it.id === cartId);
+                const title = found ? found.title : '';
+                if (window.Swal) {
+                    Swal.fire({
+                        title: 'Remove item?',
+                        text: title ? `Remove "${title}" from your cart?` : 'Remove this item from your cart?',
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonText: 'Yes, remove',
+                        cancelButtonText: 'Cancel',
+                        customClass: {popup: 'bg-gray-800 text-white rounded-lg'}
+                    }).then(result => {
+                        if (result.isConfirmed) {
+                            doRemoveCartItem(cartId);
+                        }
+                    });
+                } else {
+                    if (confirm('Remove this item from your cart?')) {
+                        doRemoveCartItem(cartId);
+                    }
                 }
             }
 
-            //  remove item với confirmation
-            const toast = Swal.mixin({
-                buttonsStyling: false,
-                customClass: {
-                    popup: 'bg-gray-800 text-white rounded-lg p-6',
-                    title: 'text-2xl font-semibold',
-                    content: 'mt-2 text-gray-300',
-                    // cho nút Cancel bình thường
-                    cancelButton: 'bg-gray-600 hover:bg-gray-700 focus:ring-gray-500 text-white font-medium px-4 py-2 rounded mr-4',
-                    // cho nút Confirm thêm margin-left để dãn cách
-                    confirmButton: 'bg-red-600 hover:bg-red-700 focus:ring-red-500 text-white font-medium px-4 py-2 rounded mr-4'
-                }
-            });
 
-            function removeItem(index) {
-                if (isProcessing)
-                    return;
-                if (index < 0 || index >= cartItems.length) {
-                    console.error('Invalid cart item index:', index);
-                    return;
-                }
-                const item = cartItems[index];
+            // * request remove server.
+            function doRemoveCartItem(cartId) {
+                setRemoveLoading(cartId, true);
+                fetch('/cart?action=remove', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+                    body: new URLSearchParams({
+                        action: 'remove',
+                        cartId: cartId
+                    })
+                })
+                        .then(resp => {
+                            if (!resp.ok)
+                                throw new Error('Remove failed');
+                            return resp.json();
+                        })
+                        .then(data => {
+                            if (!data.success) {
+                                throw new Error(data.message || 'Remove failed');
+                            }
+                            const row = document.getElementById('cart-item-' + cartId);
+                            if (row)
+                                row.remove();
+                            const idx = cartItems.findIndex(it => it.id === cartId);
+                            if (idx > -1)
+                                cartItems.splice(idx, 1);
+                            if (typeof recalc === 'function')
+                                recalc();
+                            updateCartLineCount()
+                            if (window.Swal) {
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'Removed',
+                                    text: data.message || 'Item removed from cart.',
+                                    timer: 1200,
+                                    showConfirmButton: false,
+                                    customClass: {popup: 'bg-gray-800 text-white rounded-lg'}
+                                });
+                            }
+                        })
+                        .catch(err => {
+                            console.error('Error removing item:', err);
+                            if (window.Swal) {
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Error',
+                                    text: err.message || 'Failed to remove item. Please try again.',
+                                    customClass: {popup: 'bg-gray-800 text-white rounded-lg'}
+                                });
+                            }
+                        })
 
-                toast.fire({
-                    title: 'Remove "' + item.title + '"?',
-                    text: "This item will be permanently removed from your cart.",
-                    icon: 'warning',
-                    showCancelButton: true,
-                    confirmButtonText: 'Yes, delete it',
-                    cancelButtonText: 'Cancel',
-                    reverseButtons: false,
-                    focusCancel: true
-                }).then((result) => {
-                    if (!result.isConfirmed)
+            }
+
+
+            function setRemoveLoading(cartId, isLoading) {
+                const row = document.getElementById('cart-item-' + cartId);
+                if (row)
+                    row.classList.toggle('loading', isLoading);
+                ['decrease-', 'increase-', 'remove-'].forEach(prefix => {
+                    const btn = document.getElementById(prefix + cartId);
+                    if (btn)
+                        btn.disabled = isLoading;
+                });
+            }
+
+
+
+             //* update "You have X item(s) in your cart."
+            function updateCartLineCount() {
+                const el = document.getElementById('cartLineCount');
+                if (!el)
+                    return;
+                el.textContent = cartItems.length;
+            }
+
+
+
+            // recalc summary and toggle checkout button
+            function recalc() {
+                let itemCount = 0;
+                let subtotal = 0;
+                document.querySelectorAll('.item-checkbox').forEach(ch => {
+                    if (!ch.checked)
                         return;
 
-                    isProcessing = true;
-                    setLoading(index, true);
-
-                    fetch(baseUrl, {
-                        method: 'POST',
-                        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-                        body: new URLSearchParams({
-                            action: 'remove',
-                            cartId: item.id
-                        }).toString()
-                    })
-                            .then(response => {
-                                if (!response.ok)
-                                    throw new Error('Network response was not ok');
-                                const cartItemEl = document.getElementById(`cart-item-${index}`);
-                                if (cartItemEl) {
-                                    cartItemEl.classList.add('transition-all', 'duration-300', 'ease-in-out');
-                                    cartItemEl.classList.add('translate-x-full', 'opacity-0');
-                                    setTimeout(() => window.location.href = baseUrl, 500);
-                                } else {
-                                    // fallback
-                                    window.location.href = baseUrl;
-                                }
-                            })
-                            .catch(err => {
-                                console.error('Error removing item:', err);
-                                toast.fire({
-                                    icon: 'error',
-                                    title: 'Oops...',
-                                    text: 'Failed to remove item. Please try again.',
-                                    confirmButtonText: 'OK'
-                                });
-                                setLoading(index, false);
-                            })
-                            .finally(() => {
-                                isProcessing = false;
-                            });
+                    const cartId = Number(ch.dataset.id);     
+                    const item = cartItems.find(it => it.id === cartId);
+                    if (!item) {
+                        console.warn('[recalc] No cartItem found for id', cartId);
+                        return;
+                    }
+                    itemCount += item.quantity;
+                    subtotal += item.quantity * item.price;
                 });
+
+                const total = subtotal;
+                document.getElementById('itemCount').textContent = itemCount;
+                document.getElementById('subtotal').textContent = subtotal.toLocaleString('vi-VN') + ' ₫';
+                document.getElementById('grandTotal').textContent = total.toLocaleString('vi-VN') + ' ₫';
+
+                const btn = document.getElementById('purchaseBtn');
+                if (btn) {
+                    btn.disabled = itemCount === 0;
+                    btn.classList.toggle('disabled', itemCount === 0);
+                }
+
+                console.log('[recalc] itemCount=', itemCount, 'subtotal=', subtotal);
             }
 
             function saveChecked() {
                 const checked = Array.from(document.querySelectorAll('.item-checkbox'))
                         .filter(ch => ch.checked)
-                        .map(ch => ch.getAttribute('data-id'));
+                        .map(ch => ch.dataset.id); 
                 localStorage.setItem('cart_checked', JSON.stringify(checked));
             }
 
             function restoreChecked() {
-                const data = localStorage.getItem('cart_checked');
-                if (!data)
+                const raw = localStorage.getItem('cart_checked');
+                if (!raw)
                     return;
-                const checked = JSON.parse(data);
-                document.querySelectorAll('.item-checkbox').forEach(ch => {
-                    ch.checked = checked.includes(ch.getAttribute('data-id'));
-                });
-            }
-
-            // recalc summary and toggle checkout button
-            function recalc() {
-                let itemCount = 0, subtotal = 0;
-
-                document.querySelectorAll('.item-checkbox').forEach((ch, idx) => {
-                    if (ch.checked) {
-                        const item = cartItems[idx];
-                        itemCount += item.quantity;
-                        subtotal += item.quantity * item.price;
-                    }
-                });
-
-                const vat = Math.round(subtotal * 0.1);
-                let total = subtotal;
-
-
-
-                document.getElementById('itemCount').textContent = itemCount;
-                document.getElementById('subtotal').textContent = subtotal.toLocaleString('vi-VN') + ' ₫';
-
-                document.getElementById('grandTotal').textContent = total.toLocaleString('vi-VN') + ' ₫';
-
-                // toggle nút checkout
-                const btn = document.querySelector('.checkout-btn');
-                if (itemCount > 0) {
-                    btn.disabled = false;
-                    btn.classList.remove('disabled');
-                } else {
-                    btn.disabled = true;
-                    btn.classList.add('disabled');
+                let arr;
+                try {
+                    arr = JSON.parse(raw);
+                } catch (e) {
+                    return;
                 }
+                document.querySelectorAll('.item-checkbox').forEach(ch => {
+                    ch.checked = arr.includes(ch.dataset.id);
+                });
             }
-////------------Show Related Product-------------/////////////////////
-// Show Related Products Modal + Fetch
+
+            function removeCheckedCartId(cartId) {
+                const key = 'cart_checked';
+                const raw = localStorage.getItem(key);
+                if (!raw)
+                    return;
+                let arr;
+                try {
+                    arr = JSON.parse(raw);
+                } catch (e) {
+                    arr = [];
+                }
+                const filtered = arr.filter(id => String(id) !== String(cartId));
+                localStorage.setItem(key, JSON.stringify(filtered));
+            }
+            
+            ////------------Show Related Product-------------/////////////////////
             function showRelatedProducts(productId, brandId, categoryId) {
                 const modal = document.getElementById('relatedProductsModal');
                 const content = document.getElementById('relatedProductsContent');
-
-                // 1) Thêm body.modal-open để khóa scroll
                 document.body.classList.add('modal-open');
-
                 modal.classList.add('active');
                 content.innerHTML = `
-        <div class="flex justify-center items-center py-12">
+                            <div class="flex justify-center items-center py-12">
             <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-500"></div>
-            <span class="ml-3 text-gray-400">Loading related products...</span>
-        </div>
-    `;
+                <span class="ml-3 text-gray-400">Loading related products...</span>
+                </div>
+                            `;
                 fetch('/cart', {
                     method: 'POST',
                     headers: {'Content-Type': 'application/x-www-form-urlencoded'},
@@ -760,39 +849,33 @@ body.modal-open {
                         })
                         .catch(() => {
                             content.innerHTML = `
-            <div class="text-center py-12">
-                <div class="text-6xl opacity-30 mb-4">⚠️</div>
-                <h3 class="text-xl text-red-400 mb-2">Error loading related products</h3>
-            </div>
-        `;
+        <div class="text-center py-12">
+            <div class="text-6xl opacity-30 mb-4">⚠️</div>
+            <h3 class="text-xl text-red-400 mb-2">Error loading related products</h3>
+        </div>
+                            `;
                         });
             }
 
 
-   function closeRelatedProducts() {
-  const modal = document.getElementById('relatedProductsModal');
-
-  // 2) Loại bỏ class để khôi phục scroll
-  document.body.classList.remove('modal-open');
-
-  modal.classList.remove('active');
-  // nếu bạn reload trang, scroll vẫn bị khóa cho đến khi reload xong
-  // nhưng nếu chỉ đóng modal, bạn đã khôi phục overflow
-}
+            function closeRelatedProducts() {
+                const modal = document.getElementById('relatedProductsModal');
+                document.body.classList.remove('modal-open');
+                modal.classList.remove('active');
+            }
 
             document.getElementById('relatedProductsModal').addEventListener('click', function (e) {
                 if (e.target === this)
                     closeRelatedProducts();
             });
-////-----------------Add Cart-------------///////
-            const cartProductIdSet = new Set(cartItems.map(item => item.productId));
 
+            ////-----------------Add Cart-------------///////
+            const cartProductIdSet = new Set(cartItems.map(item => item.productId));
             function addToCart(productId) {
                 const button = event.target;
                 const originalText = button.textContent;
                 button.textContent = 'Adding...';
                 button.disabled = true;
-
                 if (cartProductIdSet.has(productId)) {
                     Swal.fire({
                         icon: 'info',
@@ -830,7 +913,6 @@ body.modal-open {
                                     showConfirmButton: false,
                                     customClass: {popup: 'bg-gray-800 text-white rounded-lg'}
                                 });
-
                             } else {
                                 throw new Error(data.message || 'Failed to add to cart');
                             }
@@ -853,7 +935,7 @@ body.modal-open {
                 return new Intl.NumberFormat('vi-VN').format(amount);
             }
 
-            // Close modal when clicking outside
+
             document.getElementById('relatedProductsModal').addEventListener('click', function (e) {
                 if (e.target === this) {
                     closeRelatedProducts();
@@ -861,83 +943,12 @@ body.modal-open {
                 }
             });
 
-            // Close modal on Escape key
             document.addEventListener('keydown', function (e) {
                 if (e.key === 'Escape') {
                     closeRelatedProducts();
                     setTimeout(() => window.location.reload());
                 }
             });
-
-
-            /////////-----------voucher-----------////////////////
-            let currentVoucher = null;
-            let voucherDiscount = 0; // Unit:  VNĐ
-            function selectVoucher(code) {
-                document.getElementById('voucherInput').value = code;
-                document.getElementById('voucherInput').focus();
-
-            }
-
-            function applyVoucher() {
-                const code = document.getElementById('voucherInput').value.trim();
-                if (!code) {
-                    showVoucherMessage("Please enter a voucher code.", "red");
-                    return;
-                }
-
-                let subtotal = 0;
-                document.querySelectorAll('.item-checkbox').forEach((ch, idx) => {
-                    if (ch.checked) {
-                        const item = cartItems[idx];
-                        subtotal += item.quantity * item.price;
-                    }
-                });
-
-                fetch(baseUrl, {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-                    body: new URLSearchParams({
-                        action: 'voucher',
-                        code: code,
-                        subtotal: subtotal
-                    })
-                })
-                        .then(res => res.json())
-                        .then(data => {
-                            console.log('Voucher API response:', data);
-                            if (data.valid) {
-                                voucherDiscount = data.discountAmount;
-                                showVoucherMessage("🎉 Voucher applied: " + data.description, "green");
-                            } else {
-                                voucherDiscount = 0;
-                                showVoucherMessage("❌ " + data.message, "red");
-                            }
-                            recalc();
-                        })
-                        .catch(() => {
-                            showVoucherMessage("❌ Error applying voucher. Try again!", "red");
-                        });
-            }
-
-            function showVoucherMessage(msg, color) {
-                const el = document.getElementById('voucherMessage');
-                el.textContent = msg;
-                // Reset
-                el.className = 'text-sm mt-2 min-h-[32px] text-center font-medium rounded-lg px-3 py-2 transition-all';
-                // Xác định màu nền + màu chữ phù hợp
-                if (color === "red") {
-                    el.classList.add("bg-red-100", "text-red-700", "border", "border-red-300");
-                } else if (color === "green") {
-                    el.classList.add("bg-green-100", "text-green-700", "border", "border-green-300");
-                } else if (color === "yellow") {
-                    el.classList.add("bg-yellow-100", "text-yellow-800", "border", "border-yellow-300");
-                } else {
-                    el.classList.add("bg-gray-100", "text-gray-700", "border", "border-gray-300");
-                }
-            }
-
-
 
 
             document.addEventListener('DOMContentLoaded', () => {
@@ -948,6 +959,7 @@ body.modal-open {
                         recalc();
                     });
                 });
+                updateCartLineCount();
                 recalc();
             });
             //----------Purchase-----------------//
@@ -964,7 +976,6 @@ body.modal-open {
                     return;
                 }
                 const param = encodeURIComponent(JSON.stringify(checked));
-
                 window.location.href = '<%= request.getContextPath()%>/checkout?cartIds=' + param;
             });
 

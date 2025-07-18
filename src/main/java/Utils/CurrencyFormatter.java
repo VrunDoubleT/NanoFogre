@@ -17,7 +17,7 @@ public class CurrencyFormatter {
         } else if (amount >= 1_000) {
             return String.format("%.2fK", amount / 1_000);
         } else {
-            return String.format("%.0f", amount); // giữ nguyên không làm tròn lẻ
+            return String.format("%.0f", amount); 
         }
     }
 

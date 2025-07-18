@@ -43,7 +43,7 @@ public class CartDAO extends DB.DBContext {
                 + "LEFT JOIN Categories cat ON p.categoryId = cat.categoryId "
                 + "WHERE c.customerId = ? "
                 + "ORDER BY c.cartId DESC "
-                + "OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";   // <-- thêm dòng này để phân trang
+                + "OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
 
         int offset = (page - 1) * limit;
         Object[] params = {customerId, offset, limit};
@@ -139,14 +139,12 @@ public class CartDAO extends DB.DBContext {
                 cart.setCustomerId(rs.getInt("customerId"));
                 cart.setQuantity(rs.getInt("cartQuantity"));
 
-                // Map Product
                 Product product = new Product();
                 product.setProductId(rs.getInt("productId"));
                 product.setTitle(rs.getString("productTitle"));
                 product.setPrice(rs.getDouble("productPrice"));
                 product.setQuantity(rs.getInt("productQuantity"));
 
-                // Map image(s)
                 List<String> urls = new ArrayList<>();
                 String imgUrl = rs.getString("imageUrl");
                 if (imgUrl != null && !imgUrl.isEmpty()) {
@@ -176,6 +174,7 @@ public class CartDAO extends DB.DBContext {
 
         return list;
     }
+
     public boolean addOrUpdateCartItem(int customerId, int productId, int quantity) {
         try {
 
@@ -222,15 +221,36 @@ public class CartDAO extends DB.DBContext {
     }
 
     public boolean updateCartItemQuantity(int cartId, int quantity) {
+        String sql
+                = "UPDATE Carts "
+                + "SET cartQuantity = ? "
+                + "WHERE cartId = ? "
+                + "AND ? <= (SELECT p.productQuantity "
+                + "          FROM Products p JOIN Carts c2 ON p.productId = c2.productId "
+                + "          WHERE c2.cartId = ?)";
         try {
-            String sql = "UPDATE Carts SET cartQuantity = ? WHERE cartId = ?";
-            Object[] params = {quantity, cartId};
-
+            Object[] params = {quantity, cartId, quantity, cartId};
             return execQuery(sql, params) > 0;
         } catch (Exception e) {
             e.printStackTrace();
             return false;
         }
+    }
+
+    public int insertCartItemReturningId(int customerId, int productId, int qty) throws SQLException {
+        String sql = "INSERT INTO Carts (customerId, productId, cartQuantity) VALUES (?, ?, ?);";
+        try ( Connection cn = getConnection();  PreparedStatement ps = cn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+            ps.setInt(1, customerId);
+            ps.setInt(2, productId);
+            ps.setInt(3, qty);
+            ps.executeUpdate();
+            try ( ResultSet rs = ps.getGeneratedKeys()) {
+                if (rs.next()) {
+                    return rs.getInt(1);
+                }
+            }
+        }
+        return -1;
     }
 
     public boolean removeCartItem(int cartId) {
@@ -248,44 +268,43 @@ public class CartDAO extends DB.DBContext {
     public List<Product> getRelatedProducts(int excludeProductId, int brandId, int categoryId) {
         List<Product> list = new ArrayList<>();
 
-String sql
-    = "SELECT p.productId, p.productTitle, p.productPrice, p.productQuantity, "
-    + "       pi.url AS imageUrl "
-    + "FROM Products p "
-    + "JOIN ( "
-    + "    SELECT productId, url "
-    + "    FROM ( "
-    + "        SELECT productId, url, "
-    + "               ROW_NUMBER() OVER (PARTITION BY productId ORDER BY imageId) AS rn "
-    + "        FROM ProductImages "
-    + "    ) t "
-    + "    WHERE rn = 1 "
-    + ") pi ON pi.productId = p.productId "
-    + "WHERE p.productId <> ? "
-    + "  AND p.brandId = ? "
-    + "UNION "
-    + "SELECT p.productId, p.productTitle, p.productPrice, p.productQuantity, pi.url AS imageUrl "
-    + "FROM Products p "
-    + "JOIN ( "
-    + "    SELECT productId, url "
-    + "    FROM ( "
-    + "        SELECT productId, url, "
-    + "               ROW_NUMBER() OVER (PARTITION BY productId ORDER BY imageId) AS rn "
-    + "        FROM ProductImages "
-    + "    ) t "
-    + "    WHERE rn = 1 "
-    + ") pi ON pi.productId = p.productId "
-    + "WHERE p.productId <> ? "
-    + "  AND p.categoryId = ? "
-    + "ORDER BY productId DESC";
-    
-Object[] params = {
-    excludeProductId,
-    brandId,
-    excludeProductId,
-    categoryId
-};
+        String sql
+                = "SELECT p.productId, p.productTitle, p.productPrice, p.productQuantity, "
+                + "       pi.url AS imageUrl "
+                + "FROM Products p "
+                + "JOIN ( "
+                + "    SELECT productId, url "
+                + "    FROM ( "
+                + "        SELECT productId, url, "
+                + "               ROW_NUMBER() OVER (PARTITION BY productId ORDER BY imageId) AS rn "
+                + "        FROM ProductImages "
+                + "    ) t "
+                + "    WHERE rn = 1 "
+                + ") pi ON pi.productId = p.productId "
+                + "WHERE p.productId <> ? "
+                + "  AND p.brandId = ? "
+                + "UNION "
+                + "SELECT p.productId, p.productTitle, p.productPrice, p.productQuantity, pi.url AS imageUrl "
+                + "FROM Products p "
+                + "JOIN ( "
+                + "    SELECT productId, url "
+                + "    FROM ( "
+                + "        SELECT productId, url, "
+                + "               ROW_NUMBER() OVER (PARTITION BY productId ORDER BY imageId) AS rn "
+                + "        FROM ProductImages "
+                + "    ) t "
+                + "    WHERE rn = 1 "
+                + ") pi ON pi.productId = p.productId "
+                + "WHERE p.productId <> ? "
+                + "  AND p.categoryId = ? "
+                + "ORDER BY productId DESC";
 
+        Object[] params = {
+            excludeProductId,
+            brandId,
+            excludeProductId,
+            categoryId
+        };
 
         try ( ResultSet rs = execSelectQuery(sql, params)) {
             while (rs.next()) {
@@ -393,7 +412,6 @@ Object[] params = {
                     category.setId(rs.getInt("categoryId"));
                     product.setCategory(category);
 
-                    // lấy imageUrl vào List<String>
                     List<String> urls = new ArrayList<>();
                     String imageUrl = rs.getString("imageUrl");
                     if (imageUrl != null && !imageUrl.isEmpty()) {
@@ -425,7 +443,6 @@ Object[] params = {
                 addr.setIsDefault(rs.getBoolean("isDefault"));
                 addr.setCustomerId(rs.getInt("customerId"));
 
-                // Tạo fullAddress nếu chưa có sẵn
                 String fullAddr = addr.getName() + ", " + addr.getDetails();
                 addr.setFullAddress(fullAddr);
 
@@ -443,7 +460,6 @@ Object[] params = {
             return carts;
         }
 
-        // 1) Xây placeholder
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < cartIds.size(); i++) {
             sb.append("?");
@@ -453,7 +469,6 @@ Object[] params = {
         }
         String placeholders = sb.toString();
 
-        // 2) SQL với sub-query lấy TOP 1 url
         String sql
                 = "SELECT c.cartId, c.cartQuantity, c.customerId, c.productId,  "
                 + "       p.productTitle, p.productPrice, p.productQuantity,    "
@@ -464,7 +479,6 @@ Object[] params = {
                 + "  JOIN Products p ON c.productId = p.productId           "
                 + " WHERE c.cartId IN (" + placeholders + ")";
 
-        // 3) Chuyển List<Integer> thành mảng Object[] để truyền cho execSelectQuery
         Object[] params = cartIds.toArray(new Object[0]);
 
         try ( ResultSet rs = execSelectQuery(sql, params)) {
@@ -497,10 +511,6 @@ Object[] params = {
         return carts;
     }
 
-    ////
-    /**
-     * Kiểm tra xem customer đã có default address chưa
-     */
     public boolean hasDefaultAddress(int customerId) throws SQLException {
         String sql = "SELECT 1 FROM Address WHERE customerId = ? AND isDefault = 1";
         Object[] params = {customerId};
@@ -537,9 +547,6 @@ Object[] params = {
         return rows > 0;
     }
 
-    /**
-     * Cập nhật hoặc chèn default Address từ form
-     */
     public boolean updateCustomerInfo(int customerId,
             String addressName,
             String recipientName,
@@ -557,9 +564,6 @@ Object[] params = {
         }
     }
 
-    /**
-     * Tính subtotal từ JSON của cartIds
-     */
     public double calculateSubtotalFromJson(String cartIdsJson) {
         Gson gson = new Gson();
         Type listType = new TypeToken<List<Integer>>() {
@@ -607,12 +611,10 @@ Object[] params = {
         ResultSet rs = null;
         boolean success = false;
         try {
-            // Kiểm tra cartIdsJson
             if (cartIdsJson == null || cartIdsJson.trim().isEmpty() || cartIdsJson.equals("[]")) {
                 throw new Exception("CartIds is empty, nothing to order.");
             }
 
-            // Parse cartIds using Gson (same as in your servlet)
             List<Integer> cartIds = new ArrayList<>();
             try {
                 Gson gson = new Gson();
@@ -627,13 +629,11 @@ Object[] params = {
                 throw new Exception("No valid cart item id to process.");
             }
 
-            // Lấy các mục cart theo id
             List<Cart> selectedCarts = getCartItemById(cartIds);
             if (selectedCarts == null || selectedCarts.isEmpty()) {
                 throw new Exception("Could not find cart items for selected cart ids.");
             }
 
-            // Tổng tiền
             double subtotal = 0;
             for (Cart cart : selectedCarts) {
                 subtotal += cart.getQuantity() * cart.getProduct().getPrice();
@@ -662,13 +662,11 @@ Object[] params = {
                 totalAmount = 0;
             }
 
-            // Lấy địa chỉ mặc định
             Address address = getDefaultAddressByCustomerId(customerId);
             if (address == null) {
                 throw new Exception("No default delivery address for customer. Please add/select an address.");
             }
 
-            // Kiểm tra tồn kho từng sản phẩm trước khi bắt đầu transaction
             for (Cart cart : selectedCarts) {
                 int stock = cart.getProduct().getQuantity();
                 if (cart.getQuantity() > stock) {
@@ -676,18 +674,17 @@ Object[] params = {
                 }
             }
 
-            int paymentMethodId = 1;   // 1: COD
-            int paymentStatusId = 1;   // 1: Chưa thanh toán
-            int statusId = 1;          // 1: Chờ xác nhận
+            int paymentMethodId = 1;
+            int paymentStatusId = 1;
+            int statusId = 1;
             double shippingFee = 0;
 
             conn = getConnection();
             conn.setAutoCommit(false);
 
-            // 1. Tạo đơn hàng mới
             String sqlOrder = "INSERT INTO Orders (employeeId, customerId, totalAmount, shippingFee, paymentMethodId, paymentStatusId, statusId, voucherId, addressId, createdAt, updatedAt) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, GETDATE(), GETDATE())";
             psOrder = conn.prepareStatement(sqlOrder, Statement.RETURN_GENERATED_KEYS);
-            psOrder.setNull(1, Types.INTEGER); // Không có employeeId tại thời điểm này
+            psOrder.setNull(1, Types.INTEGER);
             psOrder.setInt(2, customerId);
             psOrder.setBigDecimal(3, BigDecimal.valueOf(totalAmount));
             psOrder.setBigDecimal(4, BigDecimal.valueOf(shippingFee));
@@ -711,7 +708,6 @@ Object[] params = {
                 throw new SQLException("Cannot get orderId after insert.");
             }
 
-            // 2. Tạo OrderDetails và giảm tồn kho
             String sqlDetail = "INSERT INTO OrderDetails (orderId, productId, quantity, price, createdAt, updatedAt) VALUES (?, ?, ?, ?, GETDATE(), GETDATE())";
             String sqlUpdateProduct = "UPDATE Products SET productQuantity = productQuantity - ? WHERE productId = ? AND productQuantity >= ?";
             psOrderDetail = conn.prepareStatement(sqlDetail);
@@ -722,7 +718,6 @@ Object[] params = {
                 int qty = cart.getQuantity();
                 double price = cart.getProduct().getPrice();
 
-                // Giảm tồn kho trước (kiểm tra đủ hàng)
                 psUpdateProduct.setInt(1, qty);
                 psUpdateProduct.setInt(2, productId);
                 psUpdateProduct.setInt(3, qty);
@@ -731,7 +726,6 @@ Object[] params = {
                     throw new SQLException("Insufficient stock for productId: " + productId + " (" + cart.getProduct().getTitle() + ")");
                 }
 
-                // Ghi order detail
                 psOrderDetail.setInt(1, orderId);
                 psOrderDetail.setInt(2, productId);
                 psOrderDetail.setInt(3, qty);
@@ -740,7 +734,6 @@ Object[] params = {
             }
             psOrderDetail.executeBatch();
 
-            // 3. Xóa các mục trong Cart đã mua
             String sqlRemove = "DELETE FROM Cart WHERE id = ?";
             psRemoveCart = conn.prepareStatement(sqlRemove);
             for (Cart cart : selectedCarts) {
@@ -758,7 +751,7 @@ Object[] params = {
                 conn.rollback();
             } catch (SQLException ignore) {
             }
-            throw ex; // Ném ra ngoài để servlet bắt và trả về message cụ thể
+            throw ex;
         } finally {
             try {
                 if (rs != null) {

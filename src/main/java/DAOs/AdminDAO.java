@@ -15,7 +15,6 @@ import java.sql.SQLException;
  */
 public class AdminDAO extends DB.DBContext {
 
-
     public Employee getAdminByEmailAndPassword(String email, String password) {
         Employee emp = null;
         String sql = "SELECT e.*, r.roleName "
@@ -35,7 +34,6 @@ public class AdminDAO extends DB.DBContext {
                 emp.setPassword(rs.getString("employeePassword"));
                 emp.setName(rs.getString("employeeName"));
                 emp.setAvatar(rs.getString("employeeAvatar"));
-                // Set Role (có thể lấy cả name)
                 emp.setRole(new Role(rs.getInt("roleId"), rs.getString("roleName")));
                 emp.setIsBlock(rs.getBoolean("isBlock"));
                 emp.setCreatedAt(rs.getTimestamp("createdAt").toLocalDateTime());
@@ -47,7 +45,6 @@ public class AdminDAO extends DB.DBContext {
         return emp;
     }
 
-    
     public Employee getStaffByEmailAndPassword(String email, String password) {
         Employee emp = null;
         String sql = "SELECT e.*, r.roleName "
@@ -57,7 +54,7 @@ public class AdminDAO extends DB.DBContext {
                 + "AND e.employeePassword = ? "
                 + "AND e.isBlock = 0 "
                 + "AND e._destroy = 0 "
-                + "AND e.roleId = 2"; 
+                + "AND e.roleId = 2";
 
         try ( ResultSet rs = execSelectQuery(sql, new Object[]{email, password})) {
             if (rs.next()) {
@@ -67,7 +64,6 @@ public class AdminDAO extends DB.DBContext {
                 emp.setPassword(rs.getString("employeePassword"));
                 emp.setName(rs.getString("employeeName"));
                 emp.setAvatar(rs.getString("employeeAvatar"));
-                // Set Role (có thể lấy cả name)
                 emp.setRole(new Role(rs.getInt("roleId"), rs.getString("roleName")));
                 emp.setIsBlock(rs.getBoolean("isBlock"));
                 emp.setCreatedAt(rs.getTimestamp("createdAt").toLocalDateTime());

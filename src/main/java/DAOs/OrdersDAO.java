@@ -20,36 +20,36 @@ import Models.Voucher;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
+
 /**
  *
  * @author Modern 15
  */
 public class OrdersDAO {
+
     private DBContext db = new DBContext();
 
-    // 1. Lấy danh sách đơn hàng của customer (nếu cần)
     public List<Order> getOrdersByCustomer(int customerId) throws SQLException {
-        // Có thể implement tương tự filterOrders, bỏ details = null hoặc load details nếu muốn
+
         return filterOrders(customerId, null, null);
     }
 
-    // 2. Lấy chi tiết 1 đơn hàng (đã load cả list OrderDetails)
     public Order getOrderDetail(int orderId, int customerId) throws SQLException {
         String sql = "SELECT o.*, e.employeeId, e.employeeName, "
-                   + "os.statusId, os.statusName, os.statusDescription, "
-                   + "pm.paymentMethodId, pm.paymentMethodName, "
-                   + "ps.paymentStatusId, ps.paymentStatusName, "
-                   + "v.voucherId, v.voucherCode, v.value, "
-                   + "a.addressId, a.recipientName, a.addressDetails, a.addressPhone "
-                   + "FROM Orders o "
-                   + "LEFT JOIN Employees e ON o.employeeId = e.employeeId "
-                   + "JOIN OrderStatus os ON o.statusId = os.statusId "
-                   + "JOIN PaymentMethods pm ON o.paymentMethodId = pm.paymentMethodId "
-                   + "JOIN PaymentStatus ps ON o.paymentStatusId = ps.paymentStatusId "
-                   + "LEFT JOIN Vouchers v ON o.voucherId = v.voucherId "
-                   + "JOIN Address a ON o.addressId = a.addressId "
-                   + "WHERE o.orderId = ? AND o.customerId = ?";
-        Object[] params = { orderId, customerId };
+                + "os.statusId, os.statusName, os.statusDescription, "
+                + "pm.paymentMethodId, pm.paymentMethodName, "
+                + "ps.paymentStatusId, ps.paymentStatusName, "
+                + "v.voucherId, v.voucherCode, v.value, "
+                + "a.addressId, a.recipientName, a.addressDetails, a.addressPhone "
+                + "FROM Orders o "
+                + "LEFT JOIN Employees e ON o.employeeId = e.employeeId "
+                + "JOIN OrderStatus os ON o.statusId = os.statusId "
+                + "JOIN PaymentMethods pm ON o.paymentMethodId = pm.paymentMethodId "
+                + "JOIN PaymentStatus ps ON o.paymentStatusId = ps.paymentStatusId "
+                + "LEFT JOIN Vouchers v ON o.voucherId = v.voucherId "
+                + "JOIN Address a ON o.addressId = a.addressId "
+                + "WHERE o.orderId = ? AND o.customerId = ?";
+        Object[] params = {orderId, customerId};
         ResultSet rs = db.execSelectQuery(sql, params);
         if (!rs.next()) {
             rs.getStatement().getConnection().close();
@@ -69,12 +69,6 @@ public class OrdersDAO {
         emp.setName(rs.getString("employeeName"));
         order.setEmployee(emp);
 
-        // Customer (chỉ chứa id)
-        // Bạn có thể bỏ nếu không cần
-        // Customer cust = new Customer();
-        // cust.setId(customerId);
-        // order.setCustomer(cust);
-
         // OrderStatus
         OrderStatus os = new OrderStatus();
         os.setId(rs.getInt("statusId"));
@@ -88,7 +82,7 @@ public class OrdersDAO {
         ps.setName(rs.getString("paymentStatusName"));
         order.setPaymentStatus(ps);
 
-        // Voucher (nếu có)
+        // Voucher 
         if (rs.getObject("voucherId") != null) {
             Voucher v = new Voucher();
             v.setId(rs.getInt("voucherId"));
@@ -104,23 +98,21 @@ public class OrdersDAO {
         addr.setPhone(rs.getString("addressPhone"));
         order.setAddress(addr);
 
-        // Details - SỬA: truyền thêm customerId
         order.setDetails(getOrderDetails(orderId, customerId));
 
         rs.getStatement().getConnection().close();
         return order;
     }
 
-    // 3. Lấy chi tiết các sản phẩm trong 1 đơn
     public List<OrderDetails> getOrderDetails(int orderId, int customerId) throws SQLException {
         List<OrderDetails> list = new ArrayList<>();
-        String sql =
-            "SELECT od.orderDetailId, od.detailQuantity, od.detailPrice, "
-          + "       p.productId, p.productTitle, "
-          + "       (SELECT TOP 1 pi.url FROM ProductImages pi WHERE pi.productId = p.productId) AS url "
-          + "  FROM OrderDetails od "
-          + "  JOIN Products p ON od.productId = p.productId "
-          + " WHERE od.orderId = ?";
+        String sql
+                = "SELECT od.orderDetailId, od.detailQuantity, od.detailPrice, "
+                + "       p.productId, p.productTitle, "
+                + "       (SELECT TOP 1 pi.url FROM ProductImages pi WHERE pi.productId = p.productId) AS url "
+                + "  FROM OrderDetails od "
+                + "  JOIN Products p ON od.productId = p.productId "
+                + " WHERE od.orderId = ?";
         ResultSet rs = db.execSelectQuery(sql, new Object[]{orderId});
         while (rs.next()) {
             OrderDetails d = new OrderDetails();
@@ -134,12 +126,13 @@ public class OrdersDAO {
             p.setTitle(rs.getString("productTitle"));
             List<String> urls = new ArrayList<>();
             String url = rs.getString("url");
-            if (url != null) urls.add(url);
+            if (url != null) {
+                urls.add(url);
+            }
             p.setUrls(urls);
 
             d.setProduct(p);
 
-            // Check reviewed: chỉ cần customerId, productId
             d.setReviewed(isProductReviewed(customerId, p.getProductId()));
 
             list.add(d);
@@ -148,28 +141,26 @@ public class OrdersDAO {
         return list;
     }
 
-    // 4. Hủy đơn hàng (nếu status IN (1,2))
     public boolean cancelOrder(int orderId, int customerId) throws SQLException {
         String sql = "UPDATE Orders SET statusId = 5 "
-                   + "WHERE orderId = ? AND customerId = ? AND statusId IN (1,2)";
-        Object[] params = { orderId, customerId };
+                + "WHERE orderId = ? AND customerId = ? AND statusId IN (1,2)";
+        Object[] params = {orderId, customerId};
         int updated = db.execQuery(sql, params);
         return updated > 0;
     }
 
-    // 5. Lọc đơn hàng theo status/search, load luôn address + details
     public List<Order> filterOrders(int customerId, Integer statusId, String search) throws SQLException {
         List<Order> orders = new ArrayList<>();
         StringBuilder sql = new StringBuilder(
-            "SELECT o.orderId, o.createdAt, o.totalAmount, o.shippingFee, "
-          + "       os.statusId, os.statusName, "
-          + "       ps.paymentStatusId, ps.paymentStatusName, "
-          + "       a.recipientName, a.addressDetails, a.addressPhone "
-          + "  FROM Orders o "
-          + "  JOIN OrderStatus os ON o.statusId = os.statusId "
-          + "  JOIN PaymentStatus ps ON o.paymentStatusId = ps.paymentStatusId "
-          + "  JOIN Address a ON o.addressId = a.addressId "
-          + " WHERE o.customerId = ? "
+                "SELECT o.orderId, o.createdAt, o.totalAmount, o.shippingFee, "
+                + "       os.statusId, os.statusName, "
+                + "       ps.paymentStatusId, ps.paymentStatusName, "
+                + "       a.recipientName, a.addressDetails, a.addressPhone "
+                + "  FROM Orders o "
+                + "  JOIN OrderStatus os ON o.statusId = os.statusId "
+                + "  JOIN PaymentStatus ps ON o.paymentStatusId = ps.paymentStatusId "
+                + "  JOIN Address a ON o.addressId = a.addressId "
+                + " WHERE o.customerId = ? "
         );
         List<Object> params = new ArrayList<>();
         params.add(customerId);
@@ -208,7 +199,6 @@ public class OrdersDAO {
             addr.setPhone(rs.getString("addressPhone"));
             order.setAddress(addr);
 
-            // Load chi tiết sản phẩm - SỬA: truyền customerId
             order.setDetails(getOrderDetails(order.getId(), customerId));
 
             orders.add(order);
@@ -217,7 +207,6 @@ public class OrdersDAO {
         return orders;
     }
 
-    // 6. Lấy tất cả trạng thái đơn
     public List<OrderStatus> getAllOrderStatus() throws SQLException {
         List<OrderStatus> list = new ArrayList<>();
         String sql = "SELECT * FROM OrderStatus";
@@ -233,12 +222,13 @@ public class OrdersDAO {
         return list;
     }
 
-    // Hàm kiểm tra sản phẩm đã được review chưa
     public boolean isProductReviewed(int customerId, int productId) throws SQLException {
         String sql = "SELECT COUNT(*) FROM Reviews WHERE customerId=? AND productId=?";
         ResultSet rs = db.execSelectQuery(sql, new Object[]{customerId, productId});
         boolean result = false;
-        if (rs.next()) result = rs.getInt(1) > 0;
+        if (rs.next()) {
+            result = rs.getInt(1) > 0;
+        }
         rs.getStatement().getConnection().close();
         return result;
     }
