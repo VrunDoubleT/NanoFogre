@@ -196,41 +196,6 @@ public class VoucherDAO extends DB.DBContext {
         return null;
     }
 
-    /**
-     * Lấy danh sách voucher còn hiệu lực cho user (chung cho tất cả user)
-     */
-    public List<Voucher> getAvailableVouchersForUser(int userId) {
-        List<Voucher> list = new ArrayList<>();
-        String sql = "SELECT * FROM Vouchers " // Thêm dấu cách sau FROM Vouchers
-                + "WHERE isActive = 1 AND _destroy = 0 "
-                + "AND validFrom <= ? AND validTo >= ? "
-                + "ORDER BY validTo ASC";
-        Object[] params = {
-            java.sql.Timestamp.valueOf(LocalDateTime.now()),
-            java.sql.Timestamp.valueOf(LocalDateTime.now())
-        };
-        try ( ResultSet rs = execSelectQuery(sql, params)) {
-            while (rs.next()) {
-                Voucher v = new Voucher();
-                v.setId(rs.getInt("voucherId"));
-                v.setCode(rs.getString("voucherCode"));
-                v.setDescription(rs.getString("voucherDescription")); // Đúng tên cột
-                v.setType(rs.getString("type"));
-                v.setValue(rs.getDouble("value"));
-                v.setMaxValue(rs.getDouble("maxValue"));
-                v.setMinValue(rs.getDouble("minValue"));
-                v.setValidFrom(rs.getTimestamp("validFrom").toLocalDateTime());
-                v.setValidTo(rs.getTimestamp("validTo").toLocalDateTime());
-                v.setIsActive(rs.getBoolean("isActive"));
-                v.setDestroy(rs.getBoolean("_destroy")); // hoặc isDestroy tùy DB
-                list.add(v);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return list;
-    }
-
     public boolean isAvailable(Voucher v, int userId) {
         if (v == null || !v.isIsActive()) {
             return false;
@@ -239,20 +204,110 @@ public class VoucherDAO extends DB.DBContext {
         return !now.isBefore(v.getValidFrom()) && !now.isAfter(v.getValidTo());
     }
 
-    /**
-     * Tính discount áp vào subtotal
-     */
-    public double calcDiscount(Voucher v, double subtotal) {
-        double discount = 0;
-        if ("percentage".equalsIgnoreCase(v.getType())) {
-            discount = subtotal * (v.getValue() / 100.0);
-            if (v.getMaxValue() > 0 && discount > v.getMaxValue()) {
-                discount = v.getMaxValue();
+    public void incrementVoucherUsage(int voucherId, int customerId) {
+        String checkSql = "SELECT usageCount FROM VoucherUserUsage WHERE voucherId = ? AND customerId = ?";
+        try ( ResultSet rs = execSelectQuery(checkSql, new Object[]{voucherId, customerId})) {
+            if (rs.next()) {
+                int currentUsage = rs.getInt("usageCount");
+                String updateSql = "UPDATE VoucherUserUsage SET usageCount = ? WHERE voucherId = ? AND customerId = ?";
+                execQuery(updateSql, new Object[]{currentUsage + 1, voucherId, customerId});
+            } else {
+                String insertSql = "INSERT INTO VoucherUserUsage (voucherId, customerId, usageCount) VALUES (?, ?, 1)";
+                execQuery(insertSql, new Object[]{voucherId, customerId});
             }
-        } else {
-            discount = v.getValue();
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
-        // không để discount vượt quá subtotal
+    }
+
+    public List<Voucher> getAvailableVouchersForUserByCategories(int userId, List<Integer> productCategoryIds) {
+        List<Voucher> availableVouchers = new ArrayList<>();
+        if (productCategoryIds == null || productCategoryIds.isEmpty()) {
+            return availableVouchers;
+        }
+
+        String categoryPlaceholders = String.join(",", java.util.Collections.nCopies(productCategoryIds.size(), "?"));
+
+        String sql
+                = "SELECT DISTINCT v.*, "
+                + "COALESCE(uvu.usageCount, 0) AS currentUsage, "
+                + "COALESCE(total.totalUsed, 0) AS totalUsed "
+                + "FROM Vouchers v "
+                + "LEFT JOIN VoucherCategories vc ON v.voucherId = vc.voucherId "
+                + "LEFT JOIN VoucherUserUsage uvu ON v.voucherId = uvu.voucherId AND uvu.customerId = ? "
+                + "LEFT JOIN ( "
+                + "    SELECT voucherId, SUM(usageCount) AS totalUsed "
+                + "    FROM VoucherUserUsage GROUP BY voucherId "
+                + ") total ON v.voucherId = total.voucherId "
+                + "WHERE v.isActive = 1 AND v._destroy = 0 "
+                + "AND v.validFrom <= ? AND v.validTo >= ? "
+                + "AND (vc.categoryId IN (" + categoryPlaceholders + ") OR vc.categoryId IS NULL) "
+                + "AND (v.userUsageLimit IS NULL OR COALESCE(uvu.usageCount, 0) < v.userUsageLimit) "
+                + "AND (v.totalUsageLimit IS NULL OR COALESCE(total.totalUsed, 0) < v.totalUsageLimit) "
+                + "ORDER BY v.validTo ASC";
+
+        List<Object> params = new ArrayList<>();
+        params.add(userId);
+        params.add(java.sql.Timestamp.valueOf(LocalDateTime.now()));
+        params.add(java.sql.Timestamp.valueOf(LocalDateTime.now()));
+        params.addAll(productCategoryIds);
+
+        try ( ResultSet rs = execSelectQuery(sql, params.toArray())) {
+            while (rs.next()) {
+                Voucher voucher = new Voucher();
+                voucher.setId(rs.getInt("voucherId"));
+                voucher.setCode(rs.getString("voucherCode"));
+                voucher.setDescription(rs.getString("voucherDescription"));
+                voucher.setType(rs.getString("type"));
+                voucher.setValue(rs.getDouble("value"));
+                voucher.setMaxValue(rs.getDouble("maxValue"));
+                voucher.setMinValue(rs.getDouble("minValue"));
+
+                Object totalUsageLimitObj = rs.getObject("totalUsageLimit");
+                if (totalUsageLimitObj != null) {
+                    voucher.setTotalUsageLimit(rs.getInt("totalUsageLimit"));
+                }
+                Object userUsageLimitObj = rs.getObject("userUsageLimit");
+                if (userUsageLimitObj != null) {
+                    voucher.setUserUsageLimit(rs.getInt("userUsageLimit"));
+                }
+
+                Timestamp validFrom = rs.getTimestamp("validFrom");
+                if (validFrom != null) {
+                    voucher.setValidFrom(validFrom.toLocalDateTime());
+                }
+                Timestamp validTo = rs.getTimestamp("validTo");
+                if (validTo != null) {
+                    voucher.setValidTo(validTo.toLocalDateTime());
+                }
+                voucher.setIsActive(rs.getBoolean("isActive"));
+                voucher.setDestroy(rs.getBoolean("_destroy"));
+                availableVouchers.add(voucher);
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return availableVouchers;
+    }
+
+    public double calcDiscount(Voucher voucher, double subtotal) {
+        if (voucher == null) {
+            return 0;
+        }
+
+        double discount = 0;
+        if ("PERCENTAGE".equalsIgnoreCase(voucher.getType())) {
+            discount = subtotal * (voucher.getValue() / 100.0);
+            if (voucher.getMaxValue() > 0 && discount > voucher.getMaxValue()) {
+                discount = voucher.getMaxValue();
+            }
+        } else if ("FIXED".equalsIgnoreCase(voucher.getType())) {
+            discount = voucher.getValue();
+        }
+
         return Math.min(discount, subtotal);
     }
+
 }

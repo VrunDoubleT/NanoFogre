@@ -16,7 +16,7 @@
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Cart - NanoForge</title>
-      
+
         <script src="https://cdn.tailwindcss.com"></script>
         <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
         <%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>
@@ -85,26 +85,6 @@
                 background: linear-gradient(135deg, #ff3838, #ff2f2f);
                 transform: translateY(-1px);
                 box-shadow: 0 4px 12px rgba(255, 71, 87, 0.4);
-            }
-
-            .related-btn {
-                background: linear-gradient(135deg, #10b981, #059669);
-                color: white;
-                border: none;
-                padding: 8px 16px;
-                border-radius: 8px;
-                cursor: pointer;
-                font-size: 14px;
-                font-weight: 500;
-                transition: all 0.2s ease;
-                margin-top: 8px;
-                margin-left: 8px;
-            }
-
-            .related-btn:hover {
-                background: linear-gradient(135deg, #059669, #047857);
-                transform: translateY(-1px);
-                box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
             }
 
             .checkbox-custom {
@@ -184,7 +164,7 @@
             body.modal-open {
                 overflow: hidden;
             }
-            /* Modal Styles */
+
             .modal-overlay {
                 position: fixed;
                 top: 0;
@@ -261,7 +241,6 @@
                 box-shadow: none;
             }
 
-            /* Scrollbar styling */
             .modal-content::-webkit-scrollbar {
                 width: 8px;
             }
@@ -371,94 +350,100 @@
                         <div class="grid lg:grid-cols-3 gap-8">
                             <!-- Cart Items -->
                             <div class="lg:col-span-2 space-y-6">
-                                <c:forEach var="item" items="${cartItems}" varStatus="status">
+                                <div id="cart-list">
+                                    <c:forEach var="item" items="${cartItems}" varStatus="status">
 
-                                    <div class="product-card  flex flex-col sm:flex-row items-center bg-white rounded-2xl p-5 shadow-lg gap-6 transition-all duration-300 hover:shadow-xl hover:ring-2 hover:ring-purple-400 group"
-                                         id="cart-item-${item.cartId}">
-                                        <!-- Checkbox -->
-                                        <input 
-                                            type="checkbox"
-                                            class="item-checkbox accent-purple-500 w-5 h-5 mt-1 mr-0 cursor-pointer
-                                            <c:if test='${item.product.quantity == 0}'> opacity-50 cursor-not-allowed</c:if>'"
-                                            data-index="${status.index}"
-                                            data-id="${item.cartId}"
-                                            <c:if test='${item.product.quantity <=0}'>disabled</c:if>
-                                                >
-                                            <!-- Image -->
-                                            <img src="${not empty item.product.urls ? item.product.urls[0] : 'default.png'}"
-                                             alt="${item.product.title}" class="w-[146px] ${item.product.quantity <= 0 ? 'out-of-stock' : ''} h-auto object-cover rounded-lg border-2 border-gray-200" />
-                                        <!-- Info -->
-                                        <div class="flex-1 ml-0 sm:ml-6 w-full ${item.product.quantity <= 0 ? 'out-of-stock' : ''}">
-                                            <h2 class="font-bold text-lg text-gray-800 leading-tight line-clamp-2 hover:text-purple-600 transition-colors cursor-pointer">${item.product.title}</h2>
-                                            <div class="flex items-center flex-wrap gap-2 mt-2 text-sm">
-                                                <c:choose>
-                                                    <c:when test="${item.product.quantity > 0}">
-                                                        <span class="px-2 py-1 rounded-full bg-green-100 text-green-800 font-semibold">In Stock</span>
-                                                    </c:when>
-                                                    <c:otherwise>
-                                                        <span class="px-2 py-1 rounded-full bg-red-100 text-red-800 font-semibold">Out of Stock</span>
-                                                    </c:otherwise>
-                                                </c:choose>
-                                                <span class="px-2 py-1 rounded-full bg-blue-100 text-blue-800">${item.product.brand.name}</span>
-                                                <span class="px-2 py-1 rounded-full bg-pink-100 text-pink-800">${item.product.category.name}</span>
-                                                <c:if test="${item.product.averageStar > 0}">
-                                                    <span class="flex items-center gap-1 text-yellow-500 font-bold">
-                                                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                                                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
-                                                        </svg>
-                                                        ${item.product.averageStar}
+                                        <div class="product-card cart-product flex flex-col sm:flex-row items-center bg-white rounded-2xl mt-[15px] p-5 shadow-lg gap-6 transition-all duration-300 hover:shadow-xl hover:ring-2 hover:ring-purple-400 group"
+                                             id="cart-item-${item.cartId}"
+                                             style="${status.index >= 5 ? 'display:none;' : ''}"
+                                             data-idx="${status.index}">
+                                            <!-- Checkbox -->
+                                            <input 
+                                                type="checkbox"
+                                                class="item-checkbox accent-purple-500 w-5 h-5 mt-1 mr-0 cursor-pointer
+                                                <c:if test='${item.product.quantity == 0}'> opacity-50 cursor-not-allowed</c:if>'"
+                                                data-index="${status.index}"
+                                                data-id="${item.cartId}"
+                                                <c:if test='${item.product.quantity <=0}'>disabled</c:if>
+                                                    >
+                                                <!-- Image -->
+                                                <img src="${not empty item.product.urls ? item.product.urls[0] : 'default.png'}"
+                                                 alt="${item.product.title}" class="w-[146px] ${item.product.quantity <= 0 ? 'out-of-stock' : ''} h-auto object-cover rounded-lg border-2 border-gray-200" />
+                                            <!-- Info -->
+                                            <div class="flex-1 ml-0 sm:ml-6 w-full ${item.product.quantity <= 0 ? 'out-of-stock' : ''}">
+                                                <h2 class="font-bold text-lg text-gray-800 leading-tight line-clamp-2 hover:text-purple-600 transition-colors cursor-pointer">${item.product.title}</h2>
+                                                <div class="flex items-center flex-wrap gap-2 mt-2 text-sm">
+                                                    <c:choose>
+                                                        <c:when test="${item.product.quantity > 0}">
+                                                            <span class="px-2 py-1 rounded-full bg-green-100 text-green-800 font-semibold">In Stock</span>
+                                                        </c:when>
+                                                        <c:otherwise>
+                                                            <span class="px-2 py-1 rounded-full bg-red-100 text-red-800 font-semibold">Out of Stock</span>
+                                                        </c:otherwise>
+                                                    </c:choose>
+                                                    <span class="px-2 py-1 rounded-full bg-blue-100 text-blue-800">${item.product.brand.name}</span>
+                                                    <span class="px-2 py-1 rounded-full bg-pink-100 text-pink-800">${item.product.category.name}</span>
+                                                    <c:if test="${item.product.averageStar > 0}">
+                                                        <span class="flex items-center gap-1 text-yellow-500 font-bold">
+                                                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                                                            </svg>
+                                                            ${item.product.averageStar}
+                                                        </span>
+                                                    </c:if>
+                                                </div>
+
+                                                <p class="text-gray-500 mt-2">
+                                                    Price:
+                                                    <span class="font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+                                                        ${CurrencyFormatter.formatVietNamCurrency(item.product.price)}đ
                                                     </span>
-                                                </c:if>
+                                                </p>
+
+                                                <div class="flex items-center gap-3 mt-3"
+                                                     id="qty-group-${item.cartId}"
+                                                     data-min="1"
+                                                     data-max="${item.product.quantity}">
+
+                                                    <button type="button"
+                                                            class="w-8 h-8 rounded-full bg-gray-200 text-gray-800 flex items-center justify-center font-bold hover:bg-gray-300 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                                                            onclick="updateQuantity(${item.cartId}, -1)"
+                                                            id="decrease-${item.cartId}"
+                                                            ${item.quantity <= 1 || item.product.quantity <=0 ? "disabled" : ""}
+
+                                                            >–</button>
+
+
+                                                    <span id="qty-${item.cartId}" class="w-8 text-center font-bold text-gray-900">${item.quantity}</span>
+
+                                                    <button type="button"
+                                                            class="w-8 h-8 rounded-full bg-gray-200 text-gray-800 flex items-center justify-center font-bold hover:bg-gray-300 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                                                            onclick="updateQuantity(${item.cartId}, 1)"
+                                                            id="increase-${item.cartId}"
+                                                            ${item.quantity >= item.product.quantity ? "disabled" : ""}>+</button>
+
+                                                </div>
                                             </div>
-
-                                            <p class="text-gray-500 mt-2">
-                                                Price:
-                                                <span class="font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
-                                                    ${CurrencyFormatter.formatVietNamCurrency(item.product.price)}đ
-                                                </span>
-                                            </p>
-
-                                            <div class="flex items-center gap-3 mt-3"
-                                                 id="qty-group-${item.cartId}"
-                                                 data-min="1"
-                                                 data-max="${item.product.quantity}">
-
-                                                <button type="button"
-                                                        class="w-8 h-8 rounded-full bg-gray-200 text-gray-800 flex items-center justify-center font-bold hover:bg-gray-300 transition disabled:opacity-50 disabled:cursor-not-allowed"
-                                                        onclick="updateQuantity(${item.cartId}, -1)"
-                                                        id="decrease-${item.cartId}"
-                                                        ${item.quantity <= 1 || item.product.quantity <=0 ? "disabled" : ""}
-
-                                                        >–</button>
-
-
-                                                <span id="qty-${item.cartId}" class="w-8 text-center font-bold text-gray-900">${item.quantity}</span>
-
-                                                <button type="button"
-                                                        class="w-8 h-8 rounded-full bg-gray-200 text-gray-800 flex items-center justify-center font-bold hover:bg-gray-300 transition disabled:opacity-50 disabled:cursor-not-allowed"
-                                                        onclick="updateQuantity(${item.cartId}, 1)"
-                                                        id="increase-${item.cartId}"
-                                                        ${item.quantity >= item.product.quantity ? "disabled" : ""}>+</button>
-
+                                            <!-- Price & Action -->
+                                            <div class="flex flex-col items-end gap-2 w-full sm:w-40 text-right sm:text-left mt-4 sm:mt-0">
+                                                <div id="lineTotal-${item.cartId}"
+                                                     class="text-2xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+                                                    ${CurrencyFormatter.formatVietNamCurrency(item.product.price * item.quantity)}đ
+                                                </div>
+                                                <button type="button" class="remove-btn  w-full py-1.5 rounded-md text-white bg-gradient-to-r from-rose-500 to-rose-600 hover:from-rose-600 hover:to-rose-700 text-sm" onclick="removeFromCart(${item.cartId})">🗑 Remove</button>
                                             </div>
                                         </div>
-                                        <!-- Price & Action -->
-                                        <div class="flex flex-col items-end gap-2 w-full sm:w-40 text-right sm:text-left mt-4 sm:mt-0">
-                                            <div id="lineTotal-${item.cartId}"
-                                                 class="text-2xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
-                                                ${CurrencyFormatter.formatVietNamCurrency(item.product.price * item.quantity)}đ
-                                            </div>
-                                            <button type="button" class="remove-btn  w-full py-1.5 rounded-md text-white bg-gradient-to-r from-rose-500 to-rose-600 hover:from-rose-600 hover:to-rose-700 text-sm" onclick="removeFromCart(${item.cartId})">🗑 Remove</button>
-                                            <button class="related-btn w-full bg-gradient-to-r from-blue-500 to-purple-500 text-white py-1.5 rounded-lg font-semibold hover:scale-105 transition"
-                                                    onclick="showRelatedProducts(${item.product.productId}, ${item.product.brand.id}, ${item.product.category.id})">
-                                                🔍 Related
-                                            </button>
-                                        </div>
+                                    </c:forEach>
+                                </div>
+                                <c:if test="${fn:length(cartItems) > 5}">
+                                    <div id="loadMoreDots" class="text-center my-8 hidden">
+                                        <span class="inline-block px-4 py-2 rounded-full bg-white border border-gray-200">
+                                            <img src="https://res.cloudinary.com/dd9jweqlv/image/upload/v1753013466/Ellipsis_1x-1.5s-200px-200px_qwtjaq.svg" alt="Loading..." style="width:60px; height:30px; display:inline-block;" />
+                                        </span>
                                     </div>
-                                </c:forEach>
-
-
+                                </c:if>
                             </div>
+
 
                             <!-- Summary -->
                             <div class="cart-summary bg-slate-50 border border-gray-200 rounded-2xl p-8 flex flex-col shadow-lg h-fit sticky top-24">
@@ -481,9 +466,12 @@
                                 <button
                                     id="purchaseBtn"
                                     type="button"
-                                    class="checkout-btn w-full mt-6 py-3 rounded-xl bg-gradient-to-r from-purple-500 to-pink-500 font-bold text-lg text-white shadow-lg hover:scale-105 transition-transform duration-300">
+                                    class="checkout-btn w-full mt-6 py-3 rounded-xl bg-gradient-to-r from-purple-500 to-pink-500 font-bold text-lg text-white shadow-lg hover:scale-105 transition-transform duration-300 opacity-50 cursor-not-allowed"
+                                    disabled
+                                    >
                                     Purchase
                                 </button>
+
                             </div>
                         </div>
                     </c:when>
@@ -501,22 +489,6 @@
 
         <jsp:include page="../common/footer.jsp" />
 
-        <!-- Related Products Modal -->
-        <div id="relatedProductsModal" class="modal-overlay">
-            <div class="modal-content p-6">
-                <div class="flex justify-between items-center mb-6">
-                    <h2 class="text-2xl font-bold text-white">Related Products</h2>
-                    <button onclick="closeRelatedProducts()" class="text-gray-400 hover:text-white text-2xl font-bold">×</button>
-                </div>
-                <div id="relatedProductsContent">
-                    <!-- Loading animation -->
-                    <div class="flex justify-center items-center py-12">
-                        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-500"></div>
-                        <span class="ml-3 text-gray-400">Loading related products...</span>
-                    </div>
-                </div>
-            </div>
-        </div>
 
         <!--        purchase-->
         <div id="purchaseModal" class="modal-overlay">
@@ -530,6 +502,57 @@
 
         <!-- JavaScript -->
         <script>
+
+            document.addEventListener('DOMContentLoaded', function () {
+                let loadedCount = 5;
+                const items = document.querySelectorAll('#cart-list .cart-product');
+                const totalCount = items.length;
+                const dots = document.getElementById('loadMoreDots');
+                for (let i = loadedCount; i < items.length; ++i) {
+                    items[i].style.display = 'none';
+                }
+
+                let dotsShown = false;
+                window.addEventListener('scroll', function () {
+                    if (!dots || dotsShown || loadedCount >= totalCount)
+                        return;
+                    const idxToCheck = Math.max(0, totalCount - 5);
+                    if (items[idxToCheck]) {
+                        const rect = items[idxToCheck].getBoundingClientRect();
+                        if (rect.top < window.innerHeight) {
+                            dots.classList.remove('hidden');
+                            dotsShown = true;
+                            setTimeout(() => {
+                                showMoreItems();
+                            }, 1000);
+                        }
+                    }
+                });
+
+                function showMoreItems() {
+                    let showCount = 0;
+                    for (let i = loadedCount; i < items.length && showCount < 5; ++i, ++showCount) {
+                        items[i].style.display = '';
+                    }
+                    loadedCount += showCount;
+                    dots.classList.add('hidden');
+                    dotsShown = false;
+                    if (loadedCount < totalCount) {
+                    } else {
+                        window.removeEventListener('scroll', arguments.callee, false);
+                    }
+                }
+
+                restoreChecked();
+                document.querySelectorAll('.item-checkbox').forEach(ch => {
+                    ch.addEventListener('change', () => {
+                        saveChecked();
+                        recalc();
+                    });
+                });
+                updateCartLineCount();
+                recalc();
+            });
 
             const baseUrl = '${cartUrl}';
             const cartItems = [];
@@ -549,7 +572,7 @@
                 return amount.toLocaleString('vi-VN') + ' ₫';
             }
 
-             //* check button quantity
+            //* check button quantity
             function syncQtyButtons(cartId, qty, min, max) {
                 const decBtn = document.getElementById("decrease-" + cartId);
                 const incBtn = document.getElementById("increase-" + cartId);
@@ -561,7 +584,7 @@
             }
 
 
-    
+
             //*  Update total money
             function updateLineTotal(cartId, qty) {
                 const el = document.getElementById('lineTotal-' + cartId);
@@ -647,7 +670,7 @@
                         });
             }
 
-             //*  REMOVE  cart
+            //*  REMOVE  cart
             function removeFromCart(cartId) {
                 cartId = Number(cartId);
                 const found = cartItems.find(it => it.id === cartId);
@@ -742,7 +765,7 @@
 
 
 
-             //* update "You have X item(s) in your cart."
+            //* update "You have X item(s) in your cart."
             function updateCartLineCount() {
                 const el = document.getElementById('cartLineCount');
                 if (!el)
@@ -760,7 +783,7 @@
                     if (!ch.checked)
                         return;
 
-                    const cartId = Number(ch.dataset.id);     
+                    const cartId = Number(ch.dataset.id);
                     const item = cartItems.find(it => it.id === cartId);
                     if (!item) {
                         console.warn('[recalc] No cartItem found for id', cartId);
@@ -777,19 +800,27 @@
 
                 const btn = document.getElementById('purchaseBtn');
                 if (btn) {
+
                     btn.disabled = itemCount === 0;
-                    btn.classList.toggle('disabled', itemCount === 0);
+                    btn.classList.toggle('opacity-50', itemCount === 0);
+                    btn.classList.toggle('cursor-not-allowed', itemCount === 0);
                 }
 
                 console.log('[recalc] itemCount=', itemCount, 'subtotal=', subtotal);
             }
 
+
+            const checked = Array.from(document.querySelectorAll('.item-checkbox'))
+                    .filter(ch => ch.checked && !ch.disabled)
+                    .map(ch => ch.dataset.id);
+
             function saveChecked() {
                 const checked = Array.from(document.querySelectorAll('.item-checkbox'))
-                        .filter(ch => ch.checked)
-                        .map(ch => ch.dataset.id); 
+                        .filter(ch => ch.checked && !ch.disabled)
+                        .map(ch => ch.dataset.id);
                 localStorage.setItem('cart_checked', JSON.stringify(checked));
             }
+
 
             function restoreChecked() {
                 const raw = localStorage.getItem('cart_checked');
@@ -801,10 +832,18 @@
                 } catch (e) {
                     return;
                 }
+
+
                 document.querySelectorAll('.item-checkbox').forEach(ch => {
-                    ch.checked = arr.includes(ch.dataset.id);
+
+                    if (!ch.disabled && arr.includes(ch.dataset.id)) {
+                        ch.checked = true;
+                    } else {
+                        ch.checked = false;
+                    }
                 });
             }
+
 
             function removeCheckedCartId(cartId) {
                 const key = 'cart_checked';
@@ -820,54 +859,6 @@
                 const filtered = arr.filter(id => String(id) !== String(cartId));
                 localStorage.setItem(key, JSON.stringify(filtered));
             }
-            
-            ////------------Show Related Product-------------/////////////////////
-            function showRelatedProducts(productId, brandId, categoryId) {
-                const modal = document.getElementById('relatedProductsModal');
-                const content = document.getElementById('relatedProductsContent');
-                document.body.classList.add('modal-open');
-                modal.classList.add('active');
-                content.innerHTML = `
-                            <div class="flex justify-center items-center py-12">
-            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-500"></div>
-                <span class="ml-3 text-gray-400">Loading related products...</span>
-                </div>
-                            `;
-                fetch('/cart', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-                    body: new URLSearchParams({
-                        action: 'related',
-                        productId: productId,
-                        brandId: brandId,
-                        categoryId: categoryId
-                    })
-                })
-                        .then(res => res.text())
-                        .then(html => {
-                            content.innerHTML = html;
-                        })
-                        .catch(() => {
-                            content.innerHTML = `
-        <div class="text-center py-12">
-            <div class="text-6xl opacity-30 mb-4">⚠️</div>
-            <h3 class="text-xl text-red-400 mb-2">Error loading related products</h3>
-        </div>
-                            `;
-                        });
-            }
-
-
-            function closeRelatedProducts() {
-                const modal = document.getElementById('relatedProductsModal');
-                document.body.classList.remove('modal-open');
-                modal.classList.remove('active');
-            }
-
-            document.getElementById('relatedProductsModal').addEventListener('click', function (e) {
-                if (e.target === this)
-                    closeRelatedProducts();
-            });
 
             ////-----------------Add Cart-------------///////
             const cartProductIdSet = new Set(cartItems.map(item => item.productId));
@@ -935,33 +926,6 @@
                 return new Intl.NumberFormat('vi-VN').format(amount);
             }
 
-
-            document.getElementById('relatedProductsModal').addEventListener('click', function (e) {
-                if (e.target === this) {
-                    closeRelatedProducts();
-                    setTimeout(() => window.location.reload());
-                }
-            });
-
-            document.addEventListener('keydown', function (e) {
-                if (e.key === 'Escape') {
-                    closeRelatedProducts();
-                    setTimeout(() => window.location.reload());
-                }
-            });
-
-
-            document.addEventListener('DOMContentLoaded', () => {
-                restoreChecked();
-                document.querySelectorAll('.item-checkbox').forEach(ch => {
-                    ch.addEventListener('change', () => {
-                        saveChecked();
-                        recalc();
-                    });
-                });
-                updateCartLineCount();
-                recalc();
-            });
             //----------Purchase-----------------//
             document.getElementById('purchaseBtn').addEventListener('click', () => {
                 const checked = Array.from(document.querySelectorAll('.item-checkbox'))

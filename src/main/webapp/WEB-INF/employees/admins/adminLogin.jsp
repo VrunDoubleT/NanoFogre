@@ -520,20 +520,6 @@
             </div>
 
             <form id="loginForm" method="post" action="${pageContext.request.contextPath}/admin/auth/login">
-                <% String error = (String) request.getAttribute("error");
-                    if (error != null) {%>
-                <div style="
-                     color: #b22222;
-                     background: rgba(178, 34, 34, 0.2);
-                     border-radius: 8px;
-                     padding: 12px 16px;
-                     margin-bottom: 18px;
-                     text-align: center;
-                     font-weight: 700;
-                     ">
-                    <%= error%>
-                </div>
-                <% }%>
 
                 <div class="form-group">
                     <label for="email">Enter your email</label>
@@ -542,7 +528,8 @@
 
                 <div class="form-group">
                     <label for="password">Enter your password</label>
-                    <input type="password" id="password" name="password" placeholder="Enter your password" required>
+                    <input type="password" id="password" name="password" placeholder="Enter your password" autocomplete="new-password" required>
+
                 </div>
 
                 <div class="form-options">
@@ -554,6 +541,7 @@
                 </div>
 
                 <button type="submit" class="login-btn">Log In</button>
+                <div id="error-message" style="color:#ff4d4f; margin-top:10px; text-align:center; min-height:22px;"></div>
             </form>
         </div>
 
@@ -614,34 +602,24 @@
         </div>
 
         <script>
-            // OTP input handler
-            document.querySelectorAll('.otp-input').forEach((input, idx, arr) => {
-                input.addEventListener('input', function (e) {
-                    this.value = this.value.replace(/[^0-9]/g, ''); 
-                    if (this.value.length === 1 && idx < arr.length - 1) {
-                        arr[idx + 1].focus();
-                    }
+            let wrongOTPCount = 0;
+            const MAX_WRONG_OTP = 3;
+            function disableOTPInputs() {
+                document.querySelectorAll('.otp-input').forEach(i => {
+                    i.disabled = true;
+                    i.classList.add('error');
                 });
-                input.addEventListener('keydown', function (e) {
-                    if (e.key === "Backspace" && !this.value && idx > 0) {
-                        arr[idx - 1].focus();
-                    }
-                    if (e.key.length === 1 && !/[0-9]/.test(e.key)) {
-                        e.preventDefault();
-                    }
+                document.getElementById('verify-code-btn').disabled = true;
+            }
+
+            function enableOTPInputs() {
+                document.querySelectorAll('.otp-input').forEach(i => {
+                    i.disabled = false;
+                    i.value = '';
+                    i.classList.remove('error');
                 });
-                input.addEventListener('paste', function (e) {
-                    e.preventDefault();
-                    const paste = (e.clipboardData || window.clipboardData).getData('text').replace(/\D/g, '').substring(0, 6);
-                    for (let i = 0; i < arr.length; i++) {
-                        arr[i].value = paste[i] || '';
-                    }
-                    if (paste.length === 6)
-                        arr[5].focus();
-                    else if (paste.length > 0)
-                        arr[paste.length - 1].focus();
-                });
-            });
+                document.getElementById('verify-code-btn').disabled = false;
+            }
 
             document.querySelectorAll('input').forEach(input => {
                 input.addEventListener('focus', function () {
@@ -676,24 +654,50 @@
             window.addEventListener("DOMContentLoaded", function () {
                 const email = getCookie("remember_email");
                 const pass = getCookie("remember_pass");
-                if (email && pass) {
+                if (email)
                     document.getElementById("email").value = email;
+                if (pass) {
                     document.getElementById("password").value = pass;
                     document.getElementById("remember").checked = true;
                 }
             });
 
-            document.getElementById("loginForm").addEventListener("submit", function () {
-                const email = document.getElementById("email").value;
-                const pass = document.getElementById("password").value;
+            document.getElementById("loginForm").addEventListener("submit", function (e) {
+                e.preventDefault();
+                const email = document.getElementById("email").value.trim();
+                const password = document.getElementById("password").value.trim();
                 const remember = document.getElementById("remember").checked;
-                if (remember) {
-                    setCookie("remember_email", email, 1);
-                    setCookie("remember_pass", pass, 1);
-                } else {
-                    setCookie("remember_email", "", -1);
-                    setCookie("remember_pass", "", -1);
-                }
+
+                const errorDiv = document.getElementById("error-message");
+                errorDiv.textContent = "";
+
+                let params = "email=" + encodeURIComponent(email) + "&password=" + encodeURIComponent(password);
+                if (remember)
+                    params += "&remember=on";
+
+                fetch('${pageContext.request.contextPath}/admin/auth/login', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+                    body: params
+                })
+                        .then(res => res.json())
+                        .then(data => {
+                            if (data.success) {
+                                if (remember) {
+                                    setCookie("remember_email", email, 1);
+                                    setCookie("remember_pass", password, 1);
+                                } else {
+                                    setCookie("remember_email", "", -1);
+                                    setCookie("remember_pass", "", -1);
+                                }
+                                window.location.href = '${pageContext.request.contextPath}/admin/dashboard';
+                            } else {
+                                errorDiv.textContent = data.message || "Invalid email or password!";
+                            }
+                        })
+                        .catch(() => {
+                            errorDiv.textContent = "Network error. Please try again!";
+                        });
             });
 
             function openForgotPopup() {
@@ -707,9 +711,11 @@
                 popup.classList.remove('active');
             }
 
+
             function resetForgotForm() {
+                wrongOTPCount = 0;
+                enableOTPInputs();
                 document.getElementById('forgot-email').value = '';
-                document.getElementById('forgot-code').value = '';
                 document.getElementById('new-password').value = '';
                 document.getElementById('forgot-error').textContent = '';
 
@@ -723,6 +729,53 @@
                 document.getElementById('verify-code-btn').disabled = false;
                 document.getElementById('send-code-btn').innerHTML = 'Send Verification Code';
                 document.getElementById('verify-code-btn').innerHTML = 'Change Password';
+            }
+
+            function checkOTPCode(code, callback) {
+                const email = document.getElementById('forgot-email').value.trim();
+                if (!email) {
+                    showError("Please enter your email address first.");
+                    return;
+                }
+
+                showInfo("Verifying code...");
+                fetch('${pageContext.request.contextPath}/forget', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+                    body: 'email=' + encodeURIComponent(email) +
+                            '&code=' + encodeURIComponent(code) +
+                            '&action=checkCode'
+                })
+                        .then(r => r.json())
+                        .then(data => {
+                            if (data.success) {
+                                wrongOTPCount = 0;
+                                showSuccess("Verification code is correct! Please enter your new password.");
+                                document.getElementById('new-password').focus();
+                                document.querySelectorAll('.otp-input').forEach(i => i.classList.remove('error'));
+                                verifiedOTP = true;
+                                document.getElementById('verify-code-btn').disabled = false;
+                                if (typeof callback === "function")
+                                    callback(true);
+                            } else {
+                                wrongOTPCount++;
+                                showError(data.message || "Verification code is invalid or expired.");
+                                document.querySelectorAll('.otp-input').forEach(i => i.classList.add('error'));
+                                verifiedOTP = false;
+                                document.getElementById('verify-code-btn').disabled = true;
+                                if (wrongOTPCount >= MAX_WRONG_OTP) {
+                                    showError("You have entered the wrong code too many times. Please request a new code.");
+                                    disableOTPInputs();
+                                }
+                                if (typeof callback === "function")
+                                    callback(false);
+                            }
+                        })
+                        .catch(() => {
+                            showError("Network error. Please try again.");
+                            if (typeof callback === "function")
+                                callback(false);
+                        });
             }
 
             function goBackToEmailStep() {
@@ -800,7 +853,7 @@
                             button.innerHTML = 'Send Verification Code';
                         });
             }
-            
+
             let verifiedOTP = false;
 
             document.querySelectorAll('.otp-input').forEach((input, idx, arr) => {
@@ -835,45 +888,6 @@
                         checkOTPCode(code);
                 });
             });
-
-            function checkOTPCode(code) {
-                const email = document.getElementById('forgot-email').value.trim();
-                if (!email) {
-                    showError("Please enter your email address first.");
-                    return;
-                }
-
-                showInfo("Verifying code...");
-                fetch('${pageContext.request.contextPath}/forget', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-                    body: 'email=' + encodeURIComponent(email) +
-                            '&code=' + encodeURIComponent(code) +
-                            '&action=checkCode'
-                })
-                        .then(r => r.json())
-                        .then(data => {
-                            if (data.success) {
-                                showSuccess("Verification code is correct! Please enter your new password.");
-                                verifiedOTP = true;
-                                document.getElementById('verify-code-btn').disabled = false;
-                                document.getElementById('new-password').focus();
-                                document.querySelectorAll('.otp-input').forEach(i => i.classList.remove('error'));
-                            } else {
-                                showError(data.message || "Verification code is invalid or expired.");
-                                verifiedOTP = false;
-                                document.getElementById('verify-code-btn').disabled = true;
-                                document.querySelectorAll('.otp-input').forEach(i => i.classList.add('error'));
-                            }
-                        })
-                        .catch(() => {
-                            showError("Network error. Please try again.");
-                            verifiedOTP = false;
-                            document.getElementById('verify-code-btn').disabled = true;
-                            document.querySelectorAll('.otp-input').forEach(i => i.classList.add('error'));
-                        });
-            }
-
 
             function verifyCodeAndChangePass() {
                 if (!verifiedOTP) {
@@ -924,14 +938,29 @@
             }
 
 
-
-
-            // Close popup when clicking outside
             document.getElementById('forgot-popup').addEventListener('click', function (e) {
                 if (e.target === this) {
                     closeForgotPopup();
                 }
             });
+
+            window.addEventListener("DOMContentLoaded", function () {
+
+                const email = getCookie("remember_email");
+                const pass = getCookie("remember_pass");
+                if (email) {
+                    document.getElementById("email").value = email;
+                }
+                if (pass && !error) {
+                    document.getElementById("password").value = pass;
+                    document.getElementById("remember").checked = true;
+                } else {
+                    document.getElementById("password").value = "";
+                    document.getElementById("remember").checked = false;
+                }
+            });
+
+
         </script>
     </body>
 </html>

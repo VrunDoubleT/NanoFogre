@@ -74,7 +74,7 @@ const loadOrderContentAndEvent = (page) => {
       ">
         <option value="Pending">Pending</option>
         <option value="Processing">Processing</option>
-        <option value="Shipped">Shipped</option>
+        <option value="Shipping">Shipping</option>
         <option value="Delivered">Delivered</option>
         <option value="Cancelled">Cancelled</option>
       </select>

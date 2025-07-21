@@ -54,9 +54,6 @@ public class CartServlet extends HttpServlet {
         List<Cart> cartItems = dao.getCartItemsByUserId(customerId);
         request.setAttribute("cartItems", cartItems);
         VoucherDAO voucherDAO = new VoucherDAO();
-        List<Voucher> availableVouchers = voucherDAO.getAvailableVouchersForUser(customerId);
-
-        request.setAttribute("availableVouchers", availableVouchers);
         request.getRequestDispatcher("/WEB-INF/customers/pages/Cart.jsp")
                 .forward(request, response);
 
@@ -223,25 +220,6 @@ public class CartServlet extends HttpServlet {
                 return;
             }
 
-            case "related":
-                int excludeId = Integer.parseInt(request.getParameter("productId"));
-                int brandId = Integer.parseInt(request.getParameter("brandId"));
-                int categoryId = Integer.parseInt(request.getParameter("categoryId"));
-
-                List<Product> related = dao.getRelatedProducts(excludeId, brandId, categoryId);
-                request.setAttribute("Items", related);
-
-                List<Cart> cartItems = dao.getCartItemsByUserId(customerId);
-                Set<Integer> cartProductIds = new HashSet<>();
-                for (Cart cart : cartItems) {
-                    cartProductIds.add(cart.getProduct().getProductId());
-                }
-                request.setAttribute("cartProductIds", cartProductIds);
-
-                request.getRequestDispatcher("/WEB-INF/customers/pages/RelatedProductsFragment.jsp")
-                        .forward(request, response);
-                return;
-
             case "purchase":
                 String cartIdsJson = request.getParameter("cartIds");
                 String voucherCode = request.getParameter("voucher");
@@ -280,13 +258,11 @@ public class CartServlet extends HttpServlet {
                     c.setPhone(address.getPhone());
                 }
 
-                List<Voucher> availableVouchers = voucherDAOs.getAvailableVouchersForUser(c.getId());
+          
 
                 request.setAttribute("address", address);
                 request.setAttribute("customer", c);
                 request.setAttribute("selectedItems", selectedItems);
-                request.setAttribute("voucher", vouchers);
-                request.setAttribute("availableVouchers", availableVouchers);
                 request.setAttribute("cartIdsJson", cartIdsJson);
 
                 request.getRequestDispatcher("/WEB-INF/customers/pages/Purchase.jsp").forward(request, response);

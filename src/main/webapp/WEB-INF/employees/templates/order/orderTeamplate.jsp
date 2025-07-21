@@ -94,7 +94,7 @@
         <% if (order.getOrderStatus() != null) {%>
         <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold border-2 <%="Delivered".equals(order.getOrderStatus().getName()) ? "bg-green-50 text-green-700 border-green-200"
                 : "Processing".equals(order.getOrderStatus().getName()) ? "bg-blue-50 text-blue-700 border-blue-200"
-                : "Shipped".equals(order.getOrderStatus().getName()) ? "bg-purple-50 text-purple-700 border-purple-200"
+                : "Shipping".equals(order.getOrderStatus().getName()) ? "bg-purple-50 text-purple-700 border-purple-200"
                 : "Cancelled".equals(order.getOrderStatus().getName()) ? "bg-red-50 text-red-700 border-red-200"
                 : "bg-gray-50 text-gray-700 border-gray-200"%>">
             <% if ("Delivered".equals(order.getOrderStatus().getName())) { %>
@@ -105,7 +105,7 @@
             <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
             <path fill-rule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clip-rule="evenodd"/>
             </svg>
-            <% } else if ("Shipped".equals(order.getOrderStatus().getName())) { %>
+            <% } else if ("Shipping".equals(order.getOrderStatus().getName())) { %>
             <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
             <path d="M8 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM15 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z"/>
             <path d="M3 4a1 1 0 00-1 1v10a1 1 0 001 1h1.05a2.5 2.5 0 014.9 0H10a1 1 0 001-1V5a1 1 0 00-1-1H3zM14 7a1 1 0 00-1 1v6.05A2.5 2.5 0 0115.95 16H17a1 1 0 001-1v-5a1 1 0 00-.293-.707L16 7.586A1 1 0 0015.414 7H14z"/>

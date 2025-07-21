@@ -91,19 +91,13 @@
                 transition: all 0.25s ease;
                 box-shadow: 0 4px 6px rgba(79, 70, 229, 0.4);
             }
-            .btn-primary:hover:not(.btn-disabled) {
-                transform: translateY(-3px);
-                box-shadow: 0 12px 20px rgba(79, 70, 229, 0.6);
-            }
+
             .btn-success {
                 background: linear-gradient(135deg, #10b981 0%, #059669 100%);
                 transition: all 0.25s ease;
                 box-shadow: 0 4px 6px rgba(16, 185, 129, 0.4);
             }
-            .btn-success:hover {
-                transform: translateY(-3px);
-                box-shadow: 0 12px 20px rgba(16, 185, 129, 0.6);
-            }
+
             .btn-disabled {
                 background: #9ca3af;
                 cursor: not-allowed;
@@ -150,10 +144,7 @@
                 border: 2px solid #e0e7ff;
                 transition: transform 0.3s ease;
             }
-            .product-image:hover {
-                transform: scale(1.05);
-                border-color: #7c3aed;
-            }
+
 
             .modal {
                 display: none;
@@ -268,9 +259,7 @@
                 background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
                 transition: left 0.5s ease;
             }
-            .btn-modern:hover::before {
-                left: 100%;
-            }
+
             .btn-primary-modern {
                 background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
                 box-shadow: 0 4px 15px rgba(102,126,234,0.4);
@@ -283,10 +272,6 @@
                 background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
                 box-shadow: 0 4px 15px rgba(17,153,142,0.4);
             }
-            .btn-success-modern:hover {
-                transform: translateY(-2px);
-                box-shadow: 0 8px 25px rgba(17,153,142,0.6);
-            }
 
 
             .modern-card {
@@ -294,11 +279,6 @@
                 transition: all 0.3s ease;
                 border: 1px solid rgba(255,255,255,0.1);
             }
-            .modern-card:hover {
-                transform: translateY(-5px);
-                box-shadow: 0 20px 40px rgba(0,0,0,0.15);
-            }
-
 
             .product-card {
                 background: linear-gradient(135deg, rgba(255,255,255,0.95), rgba(255,255,255,0.8));
@@ -306,11 +286,6 @@
                 border: 1px solid rgba(255,255,255,0.2);
                 transition: all 0.3s ease;
             }
-            .product-card:hover {
-                transform: scale(1.02);
-                box-shadow: 0 15px 35px rgba(0,0,0,0.1);
-            }
-
 
             .voucher-card {
                 background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -476,6 +451,7 @@
                                            value="<%= address.getId()%>"
                                            checked
                                            class="h-5 w-5 text-indigo-600 accent-indigo-500 mt-1" />
+
                                     <div>
                                         <p id="selectedAddressName" class="font-semibold text-gray-800 text-lg"><%= address.getName()%></p>
                                         <div class="text-sm text-gray-600 mt-1 space-y-1">
@@ -540,12 +516,10 @@
                                                  data-details="${fn:escapeXml(addr.details)}">
                                                 <div class="flex-1">
                                                     <div class="flex items-center gap-2 mb-2">
-                                                        <input type="radio"
-                                                               name="selectedAddress"
-                                                               value="${addr.id}"
-                                                               onclick="selectAddress(${addr.id})"
+                                                        <input type="radio" name="selectedAddress" value="${addr.id}"
                                                                class="text-indigo-600 h-5 w-5 cursor-pointer"
                                                                ${addr.equals(address) ? 'checked' : ''} />
+
                                                         <span class="font-medium text-gray-900">${fn:escapeXml(addr.name)}</span>
                                                         <c:if test="${addr.equals(address)}">
                                                             <span class="text-xs font-semibold uppercase bg-indigo-100 text-indigo-800 px-2 py-0.5 rounded-full">
@@ -731,7 +705,7 @@
                                 <% if (availableVouchers != null && !availableVouchers.isEmpty()) {%>
                                 <div class="mt-4">
                                     <label class="block text-sm text-gray-600 mb-2">Available vouchers:</label>
-                                    <div class="flex flex-wrap gap-2">
+                                    <div class="flex flex-wrap gap-2 max-h-48 overflow-y-auto">
                                         <% for (Voucher v : availableVouchers) {%>
                                         <button type="button"
                                                 class="voucher-suggestion px-3 py-1 rounded-full bg-purple-100 hover:bg-purple-200 text-purple-700 text-sm font-medium shadow-sm border border-purple-200 transition-all"
@@ -961,9 +935,7 @@
                     }
                 }).showToast();
             }
-
             function selectAddress(addressId) {
-                console.log('👉 selectAddress called with', addressId);
                 showLoadingState();
                 fetch('<%= request.getContextPath()%>/checkout', {
                     method: 'POST',
@@ -973,9 +945,21 @@
                         .then(res => res.json())
                         .then(json => {
                             if (json.success) {
-                                const addr = json.address; // Phải là địa chỉ vừa chọn
-                                renderSelectedAddressCard(addr); // <-- PHẢI GỌI
+                                const addr = json.address;
+                                renderSelectedAddressCard(addr);
                                 updateAddressListSelection(addressId);
+
+                                document.querySelectorAll('.address-item').forEach(item => {
+                                    if (item.dataset.addressId == String(addressId)) {
+                                        const topRadio = document.getElementById('selectedAddressTopRadio');
+                                        topRadio.value = addr.id;
+                                        topRadio.checked = true;
+                                        item.style.display = 'none';
+                                    } else {
+                                        item.style.display = '';
+                                    }
+                                });
+
                                 updatePurchaseButton();
                                 document.getElementById('addressesSection').classList.add('hidden');
                                 showNotification(json.message, 'success');
@@ -1153,6 +1137,11 @@
                     ok = false;
                 }
 
+                if (!ok) {
+                    e.preventDefault();
+                    return;
+                }
+
                 const d = detailsInput.value.trim().toLowerCase();
                 const existing = getExistingAddresses();
 
@@ -1168,6 +1157,7 @@
                     addressPhone: phoneInput.value.trim(),
                     addressDetails: detailsInput.value.trim()
                 });
+
                 if (id)
                     params.append('addressId', id);
 
@@ -1183,7 +1173,6 @@
                                 return;
                             }
                             const addr = json.address;
-                            console.log("parsed address object:", addr);
                             if (action === 'addAddress') {
                                 appendAddressItem(addr);
                                 document.getElementById('addressesSection').classList;
@@ -1394,8 +1383,6 @@
                                 } else {
                                     document.getElementById('discountRow').style.display = 'none';
                                 }
-
-
                                 document.getElementById('totalAmount').textContent = data.totalFormatted + "đ";
                                 document.getElementById('confirmModalTotal').textContent = data.totalFormatted + "đ";
                                 document.getElementById('voucherId').value = data.voucherId;
@@ -1417,15 +1404,14 @@
                 })
                         .then(response => response.json())
                         .then(data => {
-                            // Ẩn block voucher
+
                             const voucherCard = document.querySelector('.voucher-card');
                             if (voucherCard)
                                 voucherCard.style.display = 'none';
-                            // Hiện lại input voucher
+
                             const voucherFormBlock = document.querySelector('.space-y-3');
                             if (voucherFormBlock)
                                 voucherFormBlock.style.display = '';
-                            // Cập nhật các field
                             if (document.getElementById('voucherId'))
                                 document.getElementById('voucherId').value = '';
                             if (document.getElementById('voucherInput'))
@@ -1459,8 +1445,6 @@
                 }
             }
 
-
-
             function confirmPurchase() {
                 const modal = document.getElementById('confirmModal');
                 modal.classList.remove('opacity-0', 'pointer-events-none');
@@ -1472,8 +1456,6 @@
                 modal.classList.add('opacity-0', 'pointer-events-none');
                 document.body.classList.remove('modal-open');
             }
-
-            /////////////////////////////////////////////////////////
 
             document.addEventListener('DOMContentLoaded', () => {
                 document

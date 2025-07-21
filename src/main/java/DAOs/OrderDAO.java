@@ -32,7 +32,6 @@ public class OrderDAO extends DBContext {
         String sql
                 = "SELECT "
                 + "  o.[orderId], "
-                + "  o.[employeeId], "
                 + "  o.[customerId], "
                 + "  o.[totalAmount], "
                 + "  o.[shippingFee], "
@@ -71,10 +70,6 @@ public class OrderDAO extends DBContext {
                 o.setShippingFee(rs.getDouble("shippingFee"));
                 o.setCreatedAt(rs.getTimestamp("createdAt").toLocalDateTime());
                 o.setUpdatedAt(rs.getTimestamp("updatedAt").toLocalDateTime());
-
-                Employee emp = new Employee();
-                emp.setId(rs.getInt("employeeId"));
-                o.setEmployee(emp);
 
                 Customer cust = new Customer();
                 cust.setId(rs.getInt("customerId"));
@@ -189,7 +184,7 @@ public class OrderDAO extends DBContext {
         List<Order> list = new ArrayList<>();
         String sql
                 = "SELECT TOP (1000) "
-                + "  o.[orderId], o.[employeeId], o.[customerId], o.[totalAmount], o.[shippingFee], "
+                + "  o.[orderId],  o.[customerId], o.[totalAmount], o.[shippingFee], "
                 + "  o.[paymentMethodId], o.[paymentStatusId], o.[statusId], o.[voucherId], o.[addressId], "
                 + "  o.[createdAt], o.[updatedAt], "
                 + "  c.[customerName]       AS customerName, "
@@ -215,10 +210,6 @@ public class OrderDAO extends DBContext {
                 o.setShippingFee(rs.getDouble("shippingFee"));
                 o.setCreatedAt(rs.getTimestamp("createdAt").toLocalDateTime());
                 o.setUpdatedAt(rs.getTimestamp("updatedAt").toLocalDateTime());
-
-                Employee emp = new Employee();
-                emp.setId(rs.getInt("employeeId"));
-                o.setEmployee(emp);
 
                 Customer cust = new Customer();
                 cust.setId(rs.getInt("customerId"));
@@ -264,7 +255,7 @@ public class OrderDAO extends DBContext {
         int offset = (page - 1) * limit;
         String sql
                 = "SELECT "
-                + "  o.[orderId], o.[employeeId], o.[customerId], o.[totalAmount], o.[shippingFee], "
+                + "  o.[orderId], o.[customerId], o.[totalAmount], o.[shippingFee], "
                 + "  o.[paymentMethodId], o.[paymentStatusId], o.[statusId], o.[voucherId], o.[addressId], "
                 + "  o.[createdAt], o.[updatedAt], "
                 + "  c.[customerName]       AS customerName, "
@@ -291,10 +282,6 @@ public class OrderDAO extends DBContext {
                 o.setShippingFee(rs.getDouble("shippingFee"));
                 o.setCreatedAt(rs.getTimestamp("createdAt").toLocalDateTime());
                 o.setUpdatedAt(rs.getTimestamp("updatedAt").toLocalDateTime());
-
-                Employee emp = new Employee();
-                emp.setId(rs.getInt("employeeId"));
-                o.setEmployee(emp);
 
                 Customer cust = new Customer();
                 cust.setId(rs.getInt("customerId"));
@@ -449,7 +436,7 @@ public class OrderDAO extends DBContext {
                 + "    o.paymentStatusId = CASE s.statusName\n"
                 + "        WHEN 'Pending' THEN 1\n"
                 + "        WHEN 'Processing' THEN 1\n"
-                + "        WHEN 'Shipped' THEN 1\n"
+                + "        WHEN 'Shipping' THEN 1\n"
                 + "        WHEN 'Delivered' THEN 2\n"
                 + "        WHEN 'Cancelled' THEN 3\n"
                 + "        ELSE o.paymentStatusId\n"
@@ -492,9 +479,9 @@ public class OrderDAO extends DBContext {
 
     public int insertOrder(Order order) {
         String sql = "INSERT INTO Orders "
-                + "(employeeId, customerId, totalAmount, shippingFee, "
+                + "( customerId, totalAmount, shippingFee, "
                 + "paymentMethodId, paymentStatusId, statusId, voucherId, addressId, createdAt) "
-                + "VALUES (2, ?, ?, ?, ?, 1, 1, ?, ?, GETDATE())";
+                + "VALUES ( ?, ?, ?, ?, 1, 1, ?, ?, GETDATE())";
 
         try {
             Object[] params = new Object[]{
@@ -514,7 +501,7 @@ public class OrderDAO extends DBContext {
 
     public List<OrderStatusHistory> getOrderStatusHistory(int orderId) {
         List<OrderStatusHistory> list = new ArrayList<>();
-        String sql = "SELECT h.historyId, h.orderId, h.statusId, s.statusName, h.statusNote, h.updatedAt, h.updatedBy, e.employeeName "
+        String sql = "SELECT h.historyId, h.orderId, h.statusId, s.statusName, h.updatedAt, h.updatedBy, e.employeeName "
                 + "FROM OrderStatusHistory h "
                 + "JOIN OrderStatus s ON h.statusId = s.statusId "
                 + "LEFT JOIN Employees e ON h.updatedBy = e.employeeId "
@@ -527,10 +514,10 @@ public class OrderDAO extends DBContext {
                 his.setOrderId(rs.getInt("orderId"));
                 his.setStatusId(rs.getInt("statusId"));
                 his.setStatusName(rs.getString("statusName"));
-                his.setStatusNote(rs.getString("statusNote"));
+
                 his.setUpdatedAt(rs.getTimestamp("updatedAt").toLocalDateTime());
                 his.setUpdatedBy(rs.getInt("updatedBy"));
-                his.setUpdaterName(rs.getString("employeeName")); // bạn thêm thuộc tính này vào model nếu chưa có
+                his.setUpdaterName(rs.getString("employeeName"));
                 list.add(his);
             }
         } catch (SQLException e) {

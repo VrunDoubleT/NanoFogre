@@ -12,7 +12,7 @@
 <%@page import="java.time.format.DateTimeFormatter"%>
 <%@page import="Models.Order"%>
 <%@page import="java.util.List"%>
-
+<%@ page contentType="text/html;charset=UTF-8" %>
 <%
     List<OrderStatusHistory> historyList = (List<OrderStatusHistory>) request.getAttribute("orderStatusHistory");
 
@@ -90,7 +90,7 @@
                 <h3 class="text-lg font-semibold text-gray-800">Customer Information</h3>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-[20px]">
 
                 <div class="bg-white border border-gray-200 rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow duration-200">
                     <div class="flex items-center gap-4">
@@ -299,7 +299,7 @@
                     </div>
 
                     <div class="flex-1 min-w-0 pb-6">
-                        <div class="bg-white rounded-xl p-5 shadow-sm border border-gray-200 hover:shadow-md transition-shadow duration-200
+                        <div class="bg-white rounded-xl p-5 shadow-sm border border-gray-200 hover:shadow-md transition-shadow duration-200 
                              <%= current ? (stepKeys[i].equals("Delivered") ? " border-green-200 bg-green-50" : " border-indigo-200 bg-indigo-50") : ""%>">
 
                             <div class="flex items-center justify-between mb-3">
@@ -525,7 +525,7 @@
                         </span>
                         <span class="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-semibold
                               bg-red-50 text-red-600 border border-red-200 whitespace-nowrap">
-                            -<%= CurrencyFormatter.formatVietNamCurrency(discount)%> VND
+                            -<%= CurrencyFormatter.formatVietNamCurrency(discount)%>đ
                         </span>
                         <% } else { %>
                         <span class="text-sm text-gray-500">No voucher applied</span>
@@ -587,7 +587,7 @@
 
                                     <td class="px-6 py-4">
 
-                                        <span class="text-sm font-semibold text-green-500"><%= CurrencyFormatter.formatVietNamCurrency(d.getPrice())%> VND</span>
+                                        <span class="text-sm font-semibold text-green-500"><%= CurrencyFormatter.formatVietNamCurrency(d.getPrice())%>đ</span>
                                     </td>
                                     <td class="px-6 py-4 text-center">
                                         <span class="inline-flex items-center justify-center w-8 h-8 bg-blue-100 text-blue-800 rounded-full text-sm font-semibold">
@@ -596,7 +596,7 @@
                                     </td>
                                     <td class="px-6 py-4 text-right">
 
-                                        <span class="text-sm font-semibold text-green-500"> <%= CurrencyFormatter.formatVietNamCurrency(lineTotal)%> VND</span>
+                                        <span class="text-sm font-semibold text-green-500"> <%= CurrencyFormatter.formatVietNamCurrency(lineTotal)%>đ</span>
                                     </td>
                                 </tr>
                                 <% }%>
@@ -614,7 +614,7 @@
                         <div class="flex justify-between items-center py-2 border-b border-gray-100">
                             <span class="text-sm font-medium text-gray-500">Subtotal:</span>
                             <span class="font-semibold text-green-500">
-                                <%= CurrencyFormatter.formatVietNamCurrency(subtotal)%> VND
+                                <%= CurrencyFormatter.formatVietNamCurrency(subtotal)%>đ
                             </span>
                         </div>
                         <%
@@ -626,7 +626,7 @@
                         <div class="flex justify-between items-center py-2 border-b border-gray-100">
                             <span class="text-sm font-medium text-gray-500">Voucher Discount:</span>
                             <span class="font-semibold text-red-500">
-                                -<%= CurrencyFormatter.formatVietNamCurrency(discount)%> VND
+                                -<%= CurrencyFormatter.formatVietNamCurrency(discount)%>đ
                             </span>
                         </div>
                         <% }%>
@@ -634,7 +634,7 @@
                         <div class="flex justify-between items-center py-2 border-b border-gray-100">
                             <span class="ttext-sm font-medium text-gray-500">Shipping Fee:</span>
                             <span class="font-semibold text-green-500">
-                                <%= CurrencyFormatter.formatVietNamCurrency(shippingFee)%> VND
+                                <%= CurrencyFormatter.formatVietNamCurrency(shippingFee)%>đ
                             </span>
                         </div>
 
@@ -642,7 +642,7 @@
                             <span class="text-xl font-bold text-gray-800">Total Amount:</span>
                             <div class="text-right">
                                 <span class="text-2xl font-bold text-green-600">
-                                    <%= CurrencyFormatter.formatVietNamCurrency(total)%> VND
+                                    <%= CurrencyFormatter.formatVietNamCurrency(total)%>đ
                                 </span>
                                 <p class="text-sm text-gray-500 mt-1">Including all fees</p>
                             </div>

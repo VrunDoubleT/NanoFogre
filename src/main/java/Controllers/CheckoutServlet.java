@@ -136,8 +136,16 @@ public class CheckoutServlet extends HttpServlet {
             customer.setPhone(selectedAddress.getPhone());
         }
 
+        List<Integer> productCategoryIds = new ArrayList<>();
+        for (Cart cart : selectedItems) {
+            int catId = cart.getProduct().getCategory().getId();
+            if (!productCategoryIds.contains(catId)) {
+                productCategoryIds.add(catId);
+            }
+        }
+
         List<Address> availableAddresses = addressDAO.getAddressesByCustomerId(customerId);
-        List<Voucher> availableVouchers = voucherDAO.getAvailableVouchersForUser(customerId);
+        List<Voucher> availableVouchers = voucherDAO.getAvailableVouchersForUserByCategories(customerId, productCategoryIds);
 
         request.setAttribute("customer", customer);
         request.setAttribute("selectedItems", selectedItems);
@@ -294,7 +302,8 @@ public class CheckoutServlet extends HttpServlet {
                 json.put("discount", 0);
 
                 json.put("discountFormatted", "0");
-
+                out.print(gson.toJson(json));
+                out.flush();
                 return;
 
             }
@@ -405,6 +414,7 @@ public class CheckoutServlet extends HttpServlet {
 
                 double discounts = 0;
                 if (voucherId != null) {
+                    voucherDao.incrementVoucherUsage(voucherId, customer.getId());
                     Voucher vs = voucherDaos.getVoucherById(voucherId);
                     if (vs != null) {
                         if ("percentage".equalsIgnoreCase(vs.getType())) {
@@ -537,7 +547,7 @@ public class CheckoutServlet extends HttpServlet {
                     addrMap.put("details", aa.getDetails());
 
                     json.put("address", addrMap);
-                    System.out.println("List edit" + addrMap);
+
                 }
                 break;
 
@@ -602,7 +612,7 @@ public class CheckoutServlet extends HttpServlet {
                         addrMap.put("phone", selectedAddress.getPhone());
                         addrMap.put("details", selectedAddress.getDetails());
                         json.put("address", addrMap);
-                        System.out.println("Test select address" + addrMap);
+
                     }
 
                 } else {

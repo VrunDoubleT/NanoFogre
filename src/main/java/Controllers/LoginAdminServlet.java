@@ -14,6 +14,7 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import java.io.PrintWriter;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.logging.Level;
@@ -57,13 +58,17 @@ public class LoginAdminServlet extends HttpServlet {
         String remember = request.getParameter("remember");
 
         String hashedPassword = Common.hashPassword(password);
-        
+
         AdminDAO ad = new AdminDAO();
         Employee emp = ad.getAdminByEmailAndPassword(email, hashedPassword);
-        
+
+        response.setContentType("application/json");
+        response.setCharacterEncoding("UTF-8");
+        PrintWriter out = response.getWriter();
+
         if (emp == null) {
-            request.setAttribute("error", "Invalid email or password!");
-            request.getRequestDispatcher("/WEB-INF/employees/admins/adminLogin.jsp").forward(request, response);
+            out.print("{\"success\":false,\"message\":\"Invalid email or password!\"}");
+            out.flush();
             return;
         }
 
@@ -73,7 +78,8 @@ public class LoginAdminServlet extends HttpServlet {
             cookie.setMaxAge(1 * 24 * 60 * 60);
             response.addCookie(cookie);
         }
-        response.sendRedirect(request.getContextPath() + "/admin/dashboard");
+        out.print("{\"success\":true}");
+        out.flush();
     }
 
     /**
