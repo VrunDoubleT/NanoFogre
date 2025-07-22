@@ -447,31 +447,29 @@
 
                             <!-- Summary -->
                             <div class="cart-summary bg-slate-50 border border-gray-200 rounded-2xl p-8 flex flex-col shadow-lg h-fit sticky top-24">
-                                <h2 class="uppercase text-center text-gray-800 font-bold text-xl mb-6 tracking-wider">Order Summary</h2>
-                                <div class="space-y-3 text-gray-700">
-                                    <div class="flex justify-between">
-                                        <span>Items:</span>
-                                        <span class="font-bold text-lg text-yellow-500" id="itemCount">0</span>
+                             
+                                <div class="fixed bottom-0 left-0 w-full z-50 bg-white border-t border-gray-200 px-4 py-3 shadow-2xl md:static md:shadow-none md:border-0" style="backdrop-filter: blur(8px);">
+                                      <h2 class="uppercase text-center text-gray-800 font-bold text-xl mb-6 tracking-wider">Order Summary</h2>
+                                    <div class="space-y-3 text-gray-700">
+                                        <div class="flex justify-between">
+                                            <span>Items:</span>
+                                            <span class="font-bold text-lg text-yellow-500" id="itemCount">0</span>
+                                        </div>
                                     </div>
-                                    <div class="flex justify-between">
-                                        <span>Subtotal:</span>
-                                        <span class="font-bold text-green-600" id="subtotal">0 ₫</span>
+                                    <div class="flex justify-between text-lg font-bold border-t border-gray-200 pt-4  text-gray-900">
+                                        <span>Total:</span>
+                                        <span class="text-2xl font-extrabold bg-gradient-to-r from-purple-500 to-pink-500 bg-clip-text text-transparent" id="grandTotal">0 ₫</span>
                                     </div>
-                                </div>
-                                <div class="flex justify-between text-lg font-bold border-t border-gray-200 pt-4 mt-4 mb-5 text-gray-900">
-                                    <span>Total:</span>
-                                    <span class="text-2xl font-extrabold bg-gradient-to-r from-purple-500 to-pink-500 bg-clip-text text-transparent" id="grandTotal">0 ₫</span>
-                                </div>
 
-                                <button
-                                    id="purchaseBtn"
-                                    type="button"
-                                    class="checkout-btn w-full mt-6 py-3 rounded-xl bg-gradient-to-r from-purple-500 to-pink-500 font-bold text-lg text-white shadow-lg hover:scale-105 transition-transform duration-300 opacity-50 cursor-not-allowed"
-                                    disabled
-                                    >
-                                    Purchase
-                                </button>
-
+                                    <button
+                                        id="purchaseBtn"
+                                        type="button"
+                                        class="checkout-btn w-full mt-6 py-3 rounded-xl bg-gradient-to-r from-purple-500 to-pink-500 font-bold text-lg text-white shadow-lg hover:scale-105 transition-transform duration-300 opacity-50 cursor-not-allowed"
+                                        disabled
+                                        >
+                                        Purchase
+                                    </button>
+                               
                             </div>
                         </div>
                     </c:when>
@@ -499,9 +497,9 @@
             </div>
         </div>
 
-
         <!-- JavaScript -->
         <script>
+
 
             document.addEventListener('DOMContentLoaded', function () {
                 let loadedCount = 5;
@@ -524,7 +522,7 @@
                             dotsShown = true;
                             setTimeout(() => {
                                 showMoreItems();
-                            }, 1000);
+                            }, 1200);
                         }
                     }
                 });
@@ -763,8 +761,6 @@
                 });
             }
 
-
-
             //* update "You have X item(s) in your cart."
             function updateCartLineCount() {
                 const el = document.getElementById('cartLineCount');
@@ -778,11 +774,10 @@
             // recalc summary and toggle checkout button
             function recalc() {
                 let itemCount = 0;
-                let subtotal = 0;
+                let total = 0;
                 document.querySelectorAll('.item-checkbox').forEach(ch => {
                     if (!ch.checked)
                         return;
-
                     const cartId = Number(ch.dataset.id);
                     const item = cartItems.find(it => it.id === cartId);
                     if (!item) {
@@ -790,24 +785,20 @@
                         return;
                     }
                     itemCount += item.quantity;
-                    subtotal += item.quantity * item.price;
+                    total += item.quantity * item.price;
                 });
 
-                const total = subtotal;
                 document.getElementById('itemCount').textContent = itemCount;
-                document.getElementById('subtotal').textContent = subtotal.toLocaleString('vi-VN') + ' ₫';
                 document.getElementById('grandTotal').textContent = total.toLocaleString('vi-VN') + ' ₫';
 
                 const btn = document.getElementById('purchaseBtn');
                 if (btn) {
-
                     btn.disabled = itemCount === 0;
                     btn.classList.toggle('opacity-50', itemCount === 0);
                     btn.classList.toggle('cursor-not-allowed', itemCount === 0);
                 }
-
-                console.log('[recalc] itemCount=', itemCount, 'subtotal=', subtotal);
             }
+
 
 
             const checked = Array.from(document.querySelectorAll('.item-checkbox'))

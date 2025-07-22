@@ -177,8 +177,7 @@
 
 
             <%
-
-                String[] stepKeys = {"Pending", "Processing", "Shipped", "Delivered", "Cancelled"};
+                String[] stepKeys = {"Pending", "Processing", "Shipping", "Delivered", "Cancelled"};
                 String[] stepTitles = {"Order Placed", "Preparing", "Shipping", "Delivered", "Cancelled"};
                 String[] stepDescs = {
                     "The order has been successfully placed on the system.",
@@ -189,153 +188,135 @@
                 };
 
                 String currentOrderStatus = order.getOrderStatus() != null ? order.getOrderStatus().getName() : "";
-                boolean isCancelled = "Cancelled".equals(currentOrderStatus);
+                boolean isCancelled = "Cancelled".equalsIgnoreCase(currentOrderStatus);
 
                 Models.OrderStatusHistory cancelledHistory = null;
                 if (isCancelled && historyList != null) {
                     for (Models.OrderStatusHistory his : historyList) {
-                        if ("Cancelled".equals(his.getStatusName())) {
+                        if ("Cancelled".equalsIgnoreCase(his.getStatusName())) {
                             cancelledHistory = his;
                             break;
                         }
                     }
                 }
+
+                Models.OrderStatusHistory[] statusHistoryArr = new Models.OrderStatusHistory[stepKeys.length];
+                int currentStep = -1;
+
+                if (historyList != null && !historyList.isEmpty()) {
+                    for (int i = 0; i < stepKeys.length; i++) {
+                        for (Models.OrderStatusHistory his : historyList) {
+                            if (stepKeys[i].equalsIgnoreCase(his.getStatusName())) {
+                                statusHistoryArr[i] = his;
+                                break;
+                            }
+                        }
+                    }
+                    for (int i = 0; i < stepKeys.length; i++) {
+                        if (stepKeys[i].equalsIgnoreCase(currentOrderStatus)) {
+                            currentStep = i;
+                            break;
+                        }
+                    }
+                }
+                if (currentStep == -1)
+                    currentStep = 0;
             %>
-            <div class="space-y-6">
-                <% if (isCancelled && cancelledHistory != null) { %>
-                <!-- hide CANCELLED -->
-                <div class="relative flex items-start gap-4 group">
-                    <div class="flex-shrink-0 relative">
-                        <div class="w-12 h-12 rounded-full border-2 flex items-center justify-center transition-all duration-300 shadow-sm border-red-500 bg-red-500 animate-pulse">
-                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                            </svg>
+
+            <div class="mb-8">
+                <% if (isCancelled) {%>
+
+                <div class="flex items-start min-h-[110px] w-full max-w-3xl mx-auto">
+
+                    <div class="w-full bg-white rounded-2xl p-6 shadow-md border border-red-300 bg-red-50 transition-shadow duration-300 hover:shadow-lg mb-[10px]">
+                        <div class="flex items-center justify-between mb-3">
+                            <h3 class="text-base font-semibold text-red-700">
+                                <%= stepTitles[stepTitles.length - 1]%>
+                            </h3>
+                            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-red-100 text-red-800 border border-red-200">
+                                Cancelled
+                            </span>
                         </div>
-                        <div class="absolute -top-2 -right-2 w-4 h-4 bg-red-400 rounded-full border-2 border-white animate-ping"></div>
-                        <div class="absolute -top-2 -right-2 w-4 h-4 bg-red-400 rounded-full border-2 border-white"></div>
-                    </div>
-                    <div class="flex-1 min-w-0 pb-6">
-                        <div class="bg-white rounded-xl p-5 shadow-sm border border-red-200 bg-red-50">
-                            <div class="flex items-center justify-between mb-3">
-                                <h3 class="text-base font-semibold text-red-600">Cancelled</h3>
-                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800 border border-red-200">
-                                    Cancelled
-                                </span>
-                            </div>
-                            <p class="text-sm text-gray-600 mb-3 leading-relaxed">
-                                The order has been cancelled.
-                            </p>
-                            <div class="flex items-center gap-4 text-xs text-gray-500">
-                                <% if (cancelledHistory.getUpdatedAt() != null) {%>
+                        <p class="text-sm text-red-600 leading-relaxed mb-2">
+                            <%= stepDescs[stepDescs.length - 1]%>
+                        </p>
+                        <div class="flex items-center gap-4 text-xs text-red-500 font-mono">
+                            <% if (cancelledHistory != null && cancelledHistory.getUpdatedAt() != null) {%>
+                            <div class="flex items-center gap-1">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                      d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
                                 <span>
                                     Updated: <%= cancelledHistory.getUpdatedAt().format(java.time.format.DateTimeFormatter.ofPattern("HH:mm dd-MM-yyyy"))%>
                                     by <b><%= cancelledHistory.getUpdaterName() != null ? cancelledHistory.getUpdaterName() : "System/Auto"%></b>
                                 </span>
-                                <% } %>
                             </div>
+                            <% } %>
                         </div>
                     </div>
                 </div>
                 <% } else { %>
 
-                <%
-                    Models.OrderStatusHistory[] statusHistoryArr = new Models.OrderStatusHistory[stepKeys.length];
-                    int currentStep = 0;
-                    if (historyList != null && !historyList.isEmpty()) {
-                        for (int i = 0; i < stepKeys.length; i++) {
-                            for (Models.OrderStatusHistory his : historyList) {
-                                if (stepKeys[i].equals(his.getStatusName())) {
-                                    statusHistoryArr[i] = his;
-                                    break;
-                                }
-                            }
-                        }
-                        for (int i = 0; i < stepKeys.length; i++) {
-                            if (stepKeys[i].equals(currentOrderStatus)) {
-                                currentStep = i;
-                                break;
-                            }
-                        }
-                    }
-                    if (currentStep == -1)
-                        currentStep = 0;
-                %>
-                <% for (int i = 0; i < stepKeys.length - 1; i++) {  %>
-                <%
-                    boolean completed = i < currentStep;
-                    boolean current = i == currentStep;
-                    Models.OrderStatusHistory his = statusHistoryArr[i];
-                %>
-                <div class="relative flex items-start gap-4 group">
+                <div class="grid grid-cols-[48px_1fr] gap-x-6">
+                    <%
+                        int stepCount = stepTitles.length;
+                        for (int i = 0; i < stepCount - 1; i++) {
+                            boolean completed = i < currentStep;
+                            boolean current = i == currentStep;
+                            Models.OrderStatusHistory his = statusHistoryArr[i];
+                    %>
 
-                    <% if (i < stepKeys.length - 2) {%>
-                    <div class="absolute left-6 top-12 w-0.5 h-16 <%= completed || current ? (stepKeys[i].equals("Delivered") ? "bg-green-300" : "bg-indigo-300") : "bg-gray-200"%> transition-colors duration-300"></div>
-                    <% }%>
-
-                    <!-- ICON step -->
-                    <div class="flex-shrink-0 relative">
-                        <div class="w-12 h-12 rounded-full border-2 flex items-center justify-center transition-all duration-300 shadow-sm
-                             <%= completed ? "border-green-500 bg-green-500"
-                                     : (current && stepKeys[i].equals("Delivered")) ? "border-green-300 bg-green-50"
-                                     : current ? "border-indigo-500 bg-indigo-500"
-                                             : "border-gray-300 bg-white hover:border-gray-400"%>">
-
-                            <% if (completed) { %>
-                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
-                            </svg>
-                            <% } else if (current) {%>
-                            <svg class="w-6 h-6 <%= stepKeys[i].equals("Delivered") ? "text-green-600" : "text-indigo-600"%>" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                            </svg>
-                            <% } else { %>
-                            <div class="w-3 h-3 rounded-full bg-gray-400"></div>
-                            <% } %>
+                    <div class="relative flex flex-col items-center justify-center min-h-[110px]">
+                        <% if (i > 0) {%>
+                        <div class="absolute top-0 left-1/2 -translate-x-1/2 w-1 h-full <%= completed ? "bg-green-400" : "bg-gray-300"%> opacity-80"></div>
+                        <% }%>
+                        <div class="z-10 w-14 h-14 flex items-center justify-center rounded-full font-bold text-lg shadow-lg border-4
+                             <%= completed ? "bg-green-600 border-green-600 text-white"
+                                     : current && stepKeys[i].equalsIgnoreCase("Delivered") ? "bg-green-600 border-green-600 text-white animate-pulse"
+                                     : current ? "bg-indigo-600 border-indigo-600 text-white animate-pulse"
+                                             : "bg-gray-300 border-gray-300 text-gray-600"%>">
+                            <%= (i + 1)%>
                         </div>
-                        <% if (current) {%>
-                        <div class="absolute -top-2 -right-2 w-4 h-4 <%= stepKeys[i].equals("Delivered") ? "bg-green-400" : "bg-yellow-400"%> rounded-full border-2 border-white animate-ping"></div>
-                        <div class="absolute -top-2 -right-2 w-4 h-4 <%= stepKeys[i].equals("Delivered") ? "bg-green-400" : "bg-yellow-400"%> rounded-full border-2 border-white"></div>
+                        <% if (i < stepCount - 2) {%>
+                        <div class="flex-1 w-1 <%= (completed || current) ? "bg-green-400" : "bg-gray-300"%> opacity-80"></div>
                         <% }%>
                     </div>
 
-                    <div class="flex-1 min-w-0 pb-6">
-                        <div class="bg-white rounded-xl p-5 shadow-sm border border-gray-200 hover:shadow-md transition-shadow duration-200 
-                             <%= current ? (stepKeys[i].equals("Delivered") ? " border-green-200 bg-green-50" : " border-indigo-200 bg-indigo-50") : ""%>">
-
+                    <div class="flex items-center min-h-[110px]">
+                        <div class="w-full bg-white rounded-2xl p-6 shadow-md border border-gray-200 transition-shadow duration-300 hover:shadow-lg mb-[10px]
+                             <%= current ? (stepKeys[i].equalsIgnoreCase("Delivered") ? "border-green-300 bg-green-50" : "border-indigo-300 bg-indigo-50") : ""%>">
                             <div class="flex items-center justify-between mb-3">
-                                <h3 class="text-base font-semibold <%= completed ? "text-green-700"
-                                        : (current && stepKeys[i].equals("Delivered")) ? "text-green-700"
-                                        : current ? "text-indigo-700"
-                                                : "text-gray-600"%>">
+                                <h3 class="text-base font-semibold
+                                    <%= completed ? "text-green-700"
+                                            : (current && stepKeys[i].equalsIgnoreCase("Delivered")) ? "text-green-700"
+                                            : current ? "text-indigo-700" : "text-gray-700"%>">
                                     <%= stepTitles[i]%>
                                 </h3>
                                 <% if (completed) { %>
-                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 border border-green-200">
+                                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-800 border border-green-200">
                                     Completed
                                 </span>
                                 <% } else if (current) {%>
-                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
-                                      <%= stepKeys[i].equals("Delivered")
+                                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold
+                                      <%= stepKeys[i].equalsIgnoreCase("Delivered")
                                               ? "bg-green-100 text-green-800 border border-green-200"
                                               : "bg-indigo-100 text-indigo-800 border border-indigo-200"%>">
                                     Current
                                 </span>
                                 <% } else { %>
-                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600 border border-gray-200">
+                                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-gray-100 text-gray-600 border border-gray-300">
                                     Pending
                                 </span>
                                 <% }%>
                             </div>
-
-                            <p class="text-sm text-gray-600 mb-3 leading-relaxed">
-                                <%= stepDescs[i]%>
-                            </p>
-                            <div class="flex items-center gap-4 text-xs text-gray-500">
+                            <p class="text-sm text-gray-600 leading-relaxed mb-2"><%= stepDescs[i]%></p>
+                            <div class="flex items-center gap-4 text-xs text-gray-500 font-mono">
                                 <% if (i == 0) {%>
                                 <div class="flex items-center gap-1">
-                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                          d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                          d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                                     </svg>
                                     <span>
                                         Created: <%= order.getCreatedAt() != null
@@ -346,13 +327,12 @@
                                 </div>
                                 <% } else if ((completed || current) && his != null && his.getUpdatedAt() != null) {%>
                                 <div class="flex items-center gap-1">
-                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                          d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                          d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                                     </svg>
                                     <span>
-                                        Updated: <%= his.getUpdatedAt()
-                                                .format(java.time.format.DateTimeFormatter.ofPattern("HH:mm dd-MM-yyyy"))%>
+                                        Updated: <%= his.getUpdatedAt().format(java.time.format.DateTimeFormatter.ofPattern("HH:mm dd-MM-yyyy"))%>
                                         by <b><%= his.getUpdaterName() != null ? his.getUpdaterName() : "System/Auto"%></b>
                                     </span>
                                 </div>
@@ -360,10 +340,11 @@
                             </div>
                         </div>
                     </div>
+                    <% } %>
                 </div>
-                <% } %>
                 <% }%>
             </div>
+
 
 
 

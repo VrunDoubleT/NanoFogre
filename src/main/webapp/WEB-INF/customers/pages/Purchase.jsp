@@ -441,30 +441,43 @@
                             </div>
 
                             <!-- Fixed Currently Selected Address -->
+
                             <div id="selectedAddressCard"
                                  class="glass-card p-4 rounded-2xl border border-gray-200 transition-shadow hover:shadow-lg flex justify-between items-start bg-white/80 backdrop-blur-sm">
                                 <% if (address != null) {%>
                                 <label class="flex items-start space-x-4 flex-1 cursor-pointer">
+
                                     <input id="selectedAddressTopRadio"
-                                           type="radio"
+                                           type="checkbox"
                                            name="selectedAddress"
                                            value="<%= address.getId()%>"
                                            checked
-                                           class="h-5 w-5 text-indigo-600 accent-indigo-500 mt-1" />
-
+                                           class="h-5 w-5 text-indigo-600 accent-indigo-500 mt-1"
+                                           onchange="if (this.checked)
+                         selectAddress(this.value)" />
                                     <div>
-                                        <p id="selectedAddressName" class="font-semibold text-gray-800 text-lg"><%= address.getName()%></p>
+                                        <p id="selectedAddressName" class="font-semibold text-gray-800 text-lg">
+                                            <%= address.getName()%>
+                                        </p>
                                         <div class="text-sm text-gray-600 mt-1 space-y-1">
-                                            <p><i class="fas fa-phone mr-2 text-indigo-500"></i><span id="selectedAddressPhone"><%= address.getPhone()%></span></p>
-                                            <p><i class="fas fa-user mr-2 text-indigo-500"></i><span id="selectedAddressRecipient"><%= address.getRecipientName()%></span></p>
-                                            <p><i class="fas fa-location-dot mr-2 text-indigo-500"></i><span id="selectedAddressDetails"><%= address.getDetails()%></span></p>
+                                            <p>
+                                                <i class="fas fa-phone mr-2 text-indigo-500"></i>
+                                                <span id="selectedAddressPhone"><%= address.getPhone()%></span>
+                                            </p>
+                                            <p>
+                                                <i class="fas fa-user mr-2 text-indigo-500"></i>
+                                                <span id="selectedAddressRecipient"><%= address.getRecipientName()%></span>
+                                            </p>
+                                            <p>
+                                                <i class="fas fa-location-dot mr-2 text-indigo-500"></i>
+                                                <span id="selectedAddressDetails"><%= address.getDetails()%></span>
+                                            </p>
                                         </div>
                                     </div>
                                 </label>
 
                                 <button onclick="toggleAddresses()"
                                         class="ml-4 flex-shrink-0 text-indigo-600 hover:text-indigo-800 transition-colors">
-
                                     <span>Change Address</span>
                                 </button>
                                 <% } else { %>
@@ -478,6 +491,7 @@
                                 </button>
                                 <% }%>
                             </div>
+
 
 
                         </div>
@@ -508,36 +522,32 @@
                                     </c:when>
                                     <c:otherwise>
                                         <c:forEach var="addr" items="${availableAddresses}">
-                                            <div class="address-item group flex items-start justify-between p-4 bg-gray-50 rounded-lg border border-gray-200 hover:bg-white hover:shadow-md transition-all ${addr.equals(address) ? 'ring-2 ring-indigo-400 bg-white' : ''}"
+
+                                            <div class="address-item group flex items-start justify-between p-4 bg-gray-50 rounded-lg border border-gray-200 hover:bg-white hover:shadow-md transition-all ${addr.id.equals(address.id) ? 'ring-2 ring-indigo-400 bg-white' : ''}"
                                                  data-address-id="${addr.id}"
-                                                 data-name="${fn:escapeXml(addr.name)}"
-                                                 data-recipient="${fn:escapeXml(addr.recipientName)}"
-                                                 data-phone="${fn:escapeXml(addr.phone)}"
-                                                 data-details="${fn:escapeXml(addr.details)}">
+                                                 data-name="${addr.name}"
+                                                 data-recipient="${addr.recipientName}"
+                                                 data-phone="${addr.phone}"
+                                                 data-details="${addr.details}">
                                                 <div class="flex-1">
                                                     <div class="flex items-center gap-2 mb-2">
                                                         <input type="radio" name="selectedAddress" value="${addr.id}"
-                                                               class="text-indigo-600 h-5 w-5 cursor-pointer"
-                                                               ${addr.equals(address) ? 'checked' : ''} />
+                                                               class="text-indigo-600 h-5 w-5 cursor-pointer"/>
 
-                                                        <span class="font-medium text-gray-900">${fn:escapeXml(addr.name)}</span>
-                                                        <c:if test="${addr.equals(address)}">
-                                                            <span class="text-xs font-semibold uppercase bg-indigo-100 text-indigo-800 px-2 py-0.5 rounded-full">
-                                                                Default
-                                                            </span>
-                                                        </c:if>
+                                                        <span class="font-medium text-gray-900">${addr.name}</span>
+
                                                     </div>
                                                     <p class="text-sm text-gray-600 flex items-center mb-1">
                                                         <i class="fas fa-phone mr-2 text-gray-400"></i>
-                                                        <strong class="mr-1">Phone:</strong>${fn:escapeXml(addr.phone)}
+                                                        <strong class="mr-1">Phone:</strong>${addr.phone}
                                                     </p>
                                                     <p class="text-sm text-gray-600 flex items-center mb-1">
                                                         <i class="fas fa-user mr-2 text-gray-400"></i>
-                                                        <strong class="mr-1">Recipient:</strong>${fn:escapeXml(addr.recipientName)}
+                                                        <strong class="mr-1">Recipient:</strong>${addr.recipientName}
                                                     </p>
                                                     <p class="text-sm text-gray-600 flex items-center">
                                                         <i class="fas fa-location-dot mr-2 text-gray-400"></i>
-                                                        <strong class="mr-1">Address:</strong>${fn:escapeXml(addr.details)}
+                                                        <strong class="mr-1">Address:</strong>${addr.details}
                                                     </p>
                                                 </div>
                                                 <div class="flex-shrink-0 ml-4 flex flex-col space-y-2">
@@ -547,9 +557,9 @@
                                                             title="Edit address">
                                                         <i class="fas fa-edit"></i>
                                                     </button>
-
                                                 </div>
                                             </div>
+
                                         </c:forEach>
                                     </c:otherwise>
                                 </c:choose>
@@ -868,11 +878,6 @@
 
         <script>
             function renderSelectedAddressCard(addr) {
-
-                const topRadio = document.getElementById('selectedAddressTopRadio');
-                topRadio.value = addr.id;
-                topRadio.checked = true;
-
                 document.getElementById('selectedAddressName').textContent = addr.name;
                 document.getElementById('selectedAddressPhone').textContent = addr.phone;
                 document.getElementById('selectedAddressRecipient').textContent = addr.recipient;
@@ -886,18 +891,13 @@
                     if (id === String(selectedId)) {
                         radio.checked = true;
                         div.classList.add('ring-2', 'ring-indigo-400', 'bg-white');
+                        div.style.display = 'none';
                     } else {
                         div.classList.remove('ring-2', 'ring-indigo-400', 'bg-white');
+                        div.style.display = '';
                     }
                 });
             }
-
-            document.addEventListener('DOMContentLoaded', () => {
-                const selectedTop = document.getElementById('selectedAddressTopRadio');
-                if (selectedTop) {
-                    updatePurchaseButton();
-                }
-            });
 
 
             function updatePurchaseButton() {
@@ -954,12 +954,9 @@
                                         const topRadio = document.getElementById('selectedAddressTopRadio');
                                         topRadio.value = addr.id;
                                         topRadio.checked = true;
-                                        item.style.display = 'none';
-                                    } else {
-                                        item.style.display = '';
+
                                     }
                                 });
-
                                 updatePurchaseButton();
                                 document.getElementById('addressesSection').classList.add('hidden');
                                 showNotification(json.message, 'success');
@@ -981,6 +978,13 @@
                                 selectAddress(e.target.value);
                             });
                         });
+
+                const selectedTop = document.getElementById('selectedAddressTopRadio');
+                if (selectedTop) {
+                    updatePurchaseButton();
+                    updateAddressListSelection(selectedTop.value);
+
+                }
             });
 
 

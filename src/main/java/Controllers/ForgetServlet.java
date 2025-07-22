@@ -36,6 +36,7 @@ public class ForgetServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        request.getRequestDispatcher("/WEB-INF/employees/admins/Forget.jsp").forward(request, response);
 
     }
 
@@ -71,7 +72,6 @@ public class ForgetServlet extends HttpServlet {
                     return;
                 }
 
-                // Tạo code random 6 số
                 String code = String.valueOf((int) ((Math.random() * 900000) + 100000));
                 java.time.LocalDateTime expiredAt = java.time.LocalDateTime.now().plusMinutes(5);
                 boolean saved = dao.insertCodeEmployee(emp.getId(), code, expiredAt);
@@ -105,7 +105,6 @@ public class ForgetServlet extends HttpServlet {
                     return;
                 }
 
-                // Check Employee
                 Employee emp = dao.findByEmail(email.trim());
                 if (emp != null) {
                     boolean valid = dao.checkVerifyCodeEmployee(emp.getId(), code.trim());
@@ -117,7 +116,6 @@ public class ForgetServlet extends HttpServlet {
                     return;
                 }
 
-                // Check Customer (nếu không phải employee)
                 Customer cus = dao.findCustomerByEmail(email.trim());
                 if (cus != null) {
                     boolean valid = dao.checkVerifyCodeCustomer(cus.getId(), code.trim());
@@ -158,7 +156,8 @@ public class ForgetServlet extends HttpServlet {
                     return;
                 }
 
-                boolean updated = dao.confirmResetPassword(emp.getId(), newPassword.trim());
+                String hashed = Common.hashPassword(newPassword);
+                boolean updated = dao.confirmResetPassword(emp.getId(), hashed);
 
                 if (updated) {
                     dao.markCodeAsUsedEmployee(emp.getId(), code.trim());

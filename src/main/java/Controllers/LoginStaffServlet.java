@@ -36,6 +36,11 @@ public class LoginStaffServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+          
+    if (request.getSession().getAttribute("employee") != null) {
+        response.sendRedirect(request.getContextPath() + "/staff/dashboard");
+        return;
+    }
         request.getRequestDispatcher("/WEB-INF/employees/admins/staffLogin.jsp").forward(request, response);
     }
 
@@ -55,8 +60,9 @@ public class LoginStaffServlet extends HttpServlet {
         String remember = request.getParameter("remember");
 
         AdminDAO ad = new AdminDAO();
-        System.out.println(Common.hashPassword(password));
+
         Employee emp = ad.getStaffByEmailAndPassword(email, Common.hashPassword(password));
+
         response.setContentType("application/json");
         response.setCharacterEncoding("UTF-8");
         PrintWriter out = response.getWriter();

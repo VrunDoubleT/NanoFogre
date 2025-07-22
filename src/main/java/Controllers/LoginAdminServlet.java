@@ -39,6 +39,10 @@ public class LoginAdminServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+            if (request.getSession().getAttribute("employee") != null) {
+        response.sendRedirect(request.getContextPath() + "/admin/dashboard");
+        return;
+    }
         request.getRequestDispatcher("/WEB-INF/employees/admins/adminLogin.jsp").forward(request, response);
     }
 

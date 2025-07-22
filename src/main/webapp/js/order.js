@@ -60,25 +60,49 @@ const loadOrderContentAndEvent = (page) => {
                 }
             }
         });
-//////////////
+        //////////////
         function confirmEditOrderStatus(orderId, currentStatus) {
+
+            const statuses = ["Pending", "Processing", "Shipping", "Delivered", "Cancelled"];
+            const currentIndex = statuses.indexOf(currentStatus);
+            let allowedNextStatuses = [];
+
+            if (currentStatus === "Cancelled") {
+                allowedNextStatuses = ["Cancelled"];
+            } else if (currentIndex >= 0 && currentIndex < statuses.length - 2) {
+                allowedNextStatuses = [statuses[currentIndex + 1], "Cancelled"];
+            } else if (currentIndex === statuses.length - 2) {
+                allowedNextStatuses = ["Delivered"];
+            } else {
+                allowedNextStatuses = [];
+            }
+
+            if (allowedNextStatuses.length === 0) {
+                Swal.fire({
+                    icon: 'info',
+                    title: 'No further status update allowed',
+                    text: `Order is already in final status: ${currentStatus}`,
+                });
+                return;
+            }
+
+            const optionsHtml = allowedNextStatuses.map(s =>
+                    `<option value="${s}">${s}</option>`
+            ).join("");
+
             Swal.fire({
                 title: 'Update Order Status',
                 html: `
-      <label for="swal-select" class="block mb-2 text-sm font-medium text-gray-700 text-left">
-        Select new status:
-      </label>
-      <select id="swal-select" class="
-        block w-full px-3 py-2 border border-gray-300 rounded-lg 
-        focus:outline-none focus:ring-2 focus:ring-blue-500
-      ">
-        <option value="Pending">Pending</option>
-        <option value="Processing">Processing</option>
-        <option value="Shipping">Shipping</option>
-        <option value="Delivered">Delivered</option>
-        <option value="Cancelled">Cancelled</option>
-      </select>
-    `,
+            <label for="swal-select" class="block mb-2 text-sm font-medium text-gray-700 text-left">
+                Select new status:
+            </label>
+            <select id="swal-select" class="
+                block w-full px-3 py-2 border border-gray-300 rounded-lg 
+                focus:outline-none focus:ring-2 focus:ring-blue-500
+            ">
+                ${optionsHtml}
+            </select>
+        `,
                 icon: 'warning',
                 showCancelButton: true,
                 confirmButtonText: 'Update',
@@ -93,7 +117,7 @@ const loadOrderContentAndEvent = (page) => {
                 buttonsStyling: false,
                 didOpen: () => {
                     const select = Swal.getPopup().querySelector('#swal-select');
-                    select.value = currentStatus;
+                    select.value = allowedNextStatuses[0];
                 },
                 preConfirm: () => {
                     return Swal.getPopup().querySelector('#swal-select').value;
@@ -129,6 +153,7 @@ const loadOrderContentAndEvent = (page) => {
             });
         }
 
+
         document.querySelectorAll(".openEditOrderStatus").forEach(btn => {
             btn.addEventListener("click", e => {
                 const wrapper = e.target.closest("[data-order-id]");
@@ -140,7 +165,7 @@ const loadOrderContentAndEvent = (page) => {
         });
 
 
-/////////
+        /////////
     }).catch(error => {
         console.error('Error loading order content:', error);
         document.getElementById('LoadingOrders').innerHTML = `
