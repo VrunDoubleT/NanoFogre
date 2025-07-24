@@ -29,126 +29,44 @@
             }
         </style>
     </head>
-    <body class="bg-gradient-to-br from-blue-50 to-white min-h-screen">
+    <body>
         <jsp:include page="../common/header.jsp" />
 
-        <div class="w-full flex justify-center mt-20">
+        <div class="w-full flex justify-center mt-24">
             <div class="container max-w-[1200px] w-full px-4 sm:px-6 lg:px-8">
-                <div class="bg-white rounded-3xl shadow-lg border border-gray-100 p-8">
-                    <div class="flex items-center gap-3 mb-8">
-                        <div class="w-12 h-12 bg-gradient-to-r from-blue-400 to-cyan-500 rounded-full flex items-center justify-center pulse-glow">
-                            <i data-lucide="search" class="w-6 h-6 text-white"></i>
-                        </div>
-                        <div>
-                            <h2 class="text-2xl font-bold text-gray-800">
-                                Search results for: <span class="text-blue-600">${keyword}</span>
-                            </h2>
-                            <p class="text-gray-600 font-light">See the products matching your keyword</p>
-                        </div>
-                    </div>
-
-                    <c:choose>
-                        <c:when test="${not empty products}">
-                            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                                <c:forEach var="p" items="${products}">
-                                    <div class="rounded-xl border bg-white shadow hover:shadow-xl transition-all duration-300 flex flex-col h-full">
-                                        <a href="/product/detail?pId=${p.productId}" class="group flex flex-col h-full">
-                                            <!-- Hình ảnh -->
-                                            <div class="mb-6 rounded-md overflow-hidden bg-gradient-to-br from-gray-50 to-gray-100">
-                                                <c:choose>
-                                                    <c:when test="${not empty p.urls and not empty p.urls[0]}">
-                                                        <img src="${p.urls[0]}" alt="${p.title}"
-                                                             class="w-full h-48 object-cover group-hover:scale-110 transition-transform duration-500" loading="lazy"/>
-                                                    </c:when>
-                                                    <c:otherwise>
-                                                        <div class="w-full h-48 flex items-center justify-center bg-gray-100">
-                                                            <i data-lucide="image" class="w-12 h-12 text-gray-400"></i>
-                                                        </div>
-                                                    </c:otherwise>
-                                                </c:choose>
-                                            </div>
-
-                                            <!-- Thông tin (bỏ grow/mt-auto ở đây) -->
-                                            <div class="px-5 pb-4 flex flex-col flex-1">
-                                                <div class="font-bold text-gray-800 cursor-pointer text-[17px] leading-tight line-clamp-2 hover:text-blue-600 hover:underline transition-colors mb-1">
-                                                    ${p.title}
-                                                </div>
-                                                <div class="mt-1 flex items-center gap-2 mb-1">
-                                                    <div class="flex items-center">
-                                                        <c:forEach begin="1" end="5" var="i">
-                                                            <i data-lucide="star" class="w-3 h-3 ${i <= p.averageStar ? 'text-yellow-400' : 'text-[#e5e7eb]'}"
-                                                               style="fill: currentColor"></i>
-                                                        </c:forEach>
-                                                    </div>
-                                                    <span class="font-semibold text-gray-900">${p.averageStar}</span>
-                                                    <span class="text-blue-600 text-sm">
-                                                        (${p.totalReviews} reviews)
-                                                    </span>
-                                                </div>
-                                                <div class="flex gap-4 items-center mb-1">
-                                                    <div class="flex items-center gap-2 text-sm text-gray-600">
-                                                        <i data-lucide="package" class="w-4 h-4"></i>
-                                                        <c:choose>
-                                                            <c:when test="${p.category != null}">
-                                                                ${p.category.name}
-                                                            </c:when>
-                                                            <c:otherwise>
-                                                                Unknown
-                                                            </c:otherwise>
-                                                        </c:choose>
-                                                    </div>
-                                                    <span class="text-sm text-gray-600">Sold: ${p.sold}</span>
-                                                </div>
-                                                <div class="flex gap-3 text-sm items-center mt-2 mb-2">
-                                                    <span class="bg-blue-100 text-blue-600 text-xs font-medium px-2 py-1 rounded-full">
-                                                        ${p.brand.name}
-                                                    </span>
-                                                    <div>
-                                                        <c:if test="${p.quantity > 0}">
-                                                            <span class="bg-green-100 text-green-600 text-xs font-medium px-2 py-1 rounded-full">
-                                                                In Stock
-                                                            </span>
-                                                        </c:if>
-                                                        <c:if test="${p.quantity == 0}">
-                                                            <span class="bg-red-100 text-red-600 text-xs font-medium px-2 py-1 rounded-full">
-                                                                Out of Stock
-                                                            </span>
-                                                        </c:if>
-                                                    </div>
-                                                </div>
-                                                <span class="text-sm text-[#7f8c8d] mb-2">Quantity: ${p.quantity}</span>
-                                                <!-- GIÁ TIỀN LUÔN Ở ĐÁY VÀ MÀU ĐỎ -->
-                                                <div class="text-2xl font-bold text-red-500 mt-auto">
-                                                    <fmt:formatNumber value="${p.price}" type="number" groupingUsed="true"/>đ
-                                                </div>
-                                            </div>
-                                        </a>
-                                    </div>
-
-                                </c:forEach>
+                <c:choose>
+                    <c:when test="${not empty keyword}">
+                        <div class="flex items-center gap-3 mb-8">
+                            <div class="w-12 h-12 bg-gradient-to-r from-blue-400 to-cyan-500 rounded-full flex items-center justify-center pulse-glow">
+                                <i data-lucide="search" class="w-6 h-6 text-white"></i>
                             </div>
-                        </c:when>
-                        <c:otherwise>
-                            <div class="flex flex-col items-center py-16">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="w-28 h-28 mb-6 opacity-60" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <circle cx="11" cy="11" r="7" stroke-width="2" stroke="gray"/>
-                                <path stroke="gray" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35"/>
-                                </svg>
-                                <div class="text-2xl text-gray-500 font-bold mb-2">No products found</div>
-                                <div class="text-base text-gray-400 mb-4">Try searching with a different keyword!</div>
+                            <div>
+                                <h2 class="text-2xl font-bold text-gray-800">
+                                    Search results for: <span class="text-blue-600">${keyword}</span>
+                                </h2>
+                                <p class="text-gray-600 font-light">See the products matching your keyword</p>
                             </div>
-                        </c:otherwise>
-                    </c:choose>
-
-                    <div class="flex justify-center pt-8">
-                        <a href="/"
-                           class="inline-flex items-center gap-2 px-6 py-2 bg-white border border-blue-200 text-blue-700 font-semibold rounded-full shadow hover:bg-blue-600 hover:text-white transition duration-200 text-lg">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
-                            </svg>
-                            Back to home
-                        </a>
-                    </div>
+                        </div>
+                    </c:when>
+                    <c:otherwise>
+                        <div class="flex items-center gap-3 mb-8">
+                            <div class="w-12 h-12 bg-gradient-to-r from-gray-400 to-gray-500 rounded-full flex items-center justify-center">
+                                <i data-lucide="info" class="w-6 h-6 text-white"></i>
+                            </div>
+                            <div>
+                                <h2 class="text-2xl font-bold text-gray-800">
+                                    No keyword provided
+                                </h2>
+                                <p class="text-gray-600 font-light">Please enter a keyword to search for products</p>
+                            </div>
+                        </div>
+                    </c:otherwise>
+                </c:choose>
+                <div id="loading" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                </div>
+                <div id="listProduct" class="grid md:grid-cols-3 grid-cols-2 lg:grid-cols-4 gap-4">
+                </div>
+                <div id="pagination">
                 </div>
             </div>
         </div>
@@ -156,6 +74,124 @@
         <jsp:include page="../common/footer.jsp" />
         <script>
             lucide.createIcons();
+
+            function getUrlParam(name) {
+                const urlParams = new URLSearchParams(window.location.search);
+                return urlParams.get(name);
+            }
+
+            function updateUrlParam(key, value) {
+                const url = new URL(window.location.href);
+                const params = url.searchParams;
+                params.delete(key);
+                params.set(key, value);
+                url.search = params.toString();
+                window.history.replaceState({}, '', url);
+            }
+
+            const loadProducts = () => {
+                const page = getUrlParam("page") || 1
+                console.log("Product page: " + page);
+                const keyword = getUrlParam("keyword")
+                console.log("Product keyword " + keyword);
+                let rootUrl = '/searchproduct?type=list'
+                rootUrl += "&page=" + page
+                rootUrl += "&keyword=" + keyword
+                document.getElementById("loading").innerHTML = `
+            <c:forEach begin="1" end="8" var="i">
+        <div class="rounded-xl border overflow-hidden animate-pulse bg-white">
+            <div class="mb-6 bg-gradient-to-br from-gray-100 to-gray-200 h-48 w-full"></div>
+
+            <div class="px-5 space-y-3">
+                <div class="h-4 bg-gray-200 rounded w-3/4"></div>
+                <div class="flex items-center gap-2">
+                    <div class="flex gap-1">
+                        <div class="w-3 h-3 bg-gray-200 rounded-full"></div>
+                        <div class="w-3 h-3 bg-gray-200 rounded-full"></div>
+                        <div class="w-3 h-3 bg-gray-200 rounded-full"></div>
+                        <div class="w-3 h-3 bg-gray-200 rounded-full"></div>
+                        <div class="w-3 h-3 bg-gray-200 rounded-full"></div>
+                    </div>
+                    <div class="h-3 bg-gray-200 rounded w-8"></div>
+                    <div class="h-3 bg-gray-200 rounded w-16"></div>
+                </div>
+                <div class="flex gap-4">
+                    <div class="h-3 bg-gray-200 rounded w-20"></div>
+                    <div class="h-3 bg-gray-200 rounded w-16"></div>
+                </div>
+                <div class="flex gap-3">
+                    <div class="h-5 bg-gray-200 rounded-full w-20"></div>
+                    <div class="h-5 bg-gray-200 rounded-full w-24"></div>
+                </div>
+                <div class="h-3 bg-gray-200 rounded w-24"></div>
+                <div class="h-6 bg-gray-300 rounded w-28 mt-3 mb-4"></div>
+            </div>
+        </div>
+            </c:forEach>
+`;
+                document.getElementById("listProduct").innerHTML = ''
+                return fetch(rootUrl)
+                        .then(response => {
+                            if (!response.ok)
+                                throw new Error('Network response was not ok');
+                            return response.text();
+                        })
+                        .then(HTML => {
+                            document.getElementById("listProduct").innerHTML = HTML
+                            document.getElementById("loading").innerHTML = ''
+                            lucide.createIcons()
+                        })
+                        .catch(error => {
+                            console.error('Error when loading error:', error);
+                        });
+            }
+
+            function loadPagination() {
+                const page = getUrlParam("page") || 1
+                const keyword = getUrlParam("keyword")
+                console.log("Paginaiton page: " + page);
+                let rootUrl = '/searchproduct?type=pagination'
+                console.log("Paginaiton keyword " + page);
+                rootUrl += "&page=" + page
+                rootUrl += "&keyword=" + keyword
+                return fetch(rootUrl)
+                        .then(response => {
+                            if (!response.ok)
+                                throw new Error('Network response was not ok');
+                            return response.text();
+                        })
+                        .then(HTML => {
+                            document.getElementById("pagination").innerHTML = HTML
+                            lucide.createIcons()
+                            document.querySelectorAll("div.pagination").forEach(elm => {
+                                elm.addEventListener("click", function () {
+                                    const page = parseInt(elm.getAttribute("page")) || 1;
+                                    updateUrlParam("page", page)
+                                    loadProductsAndPagination()
+                                });
+                            })
+                        })
+                        .catch(error => {
+                            console.error('Lỗi khi fetch dữ liệu:', error);
+                        });
+            }
+
+            const loadProductsAndPagination = () => {
+                Promise.all([
+                    loadProducts(),
+                    loadPagination()
+                ])
+                        .then(() => {
+                            console.log("Load success");
+                        })
+                        .catch(error => {
+                            console.error("Error loading data:", error);
+                        });
+            }
+
+            document.addEventListener("DOMContentLoaded", function () {
+                loadProductsAndPagination()
+            });
         </script>
     </body>
 </html>

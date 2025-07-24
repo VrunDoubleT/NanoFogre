@@ -1,85 +1,138 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/Servlet.java to edit this template
- */
 package Controllers;
 
-import Models.Product;
 import DAOs.ProductDAO;
+import Models.Product;
+import Utils.Converter;
+import com.google.gson.Gson;
 import java.io.IOException;
-import java.util.List;
+import java.io.PrintWriter;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import java.io.PrintWriter;
-import java.util.ArrayList;
+import java.util.List;
 
 /**
  *
- * @author Modern 15
+ * @author Tran Thanh Van - CE181019
  */
-@WebServlet(name = "SearchServlet", urlPatterns = {"/search-products"})
+@WebServlet(name = "SearchServlet", urlPatterns = {"/searchproduct"})
 public class SearchServlet extends HttpServlet {
 
-    private final ProductDAO productDAO = new ProductDAO();
+    /**
+     * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
+     * methods.
+     *
+     * @param request servlet request
+     * @param response servlet response
+     * @throws ServletException if a servlet-specific error occurs
+     * @throws IOException if an I/O error occurs
+     */
+    protected void processRequest(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        response.setContentType("text/html;charset=UTF-8");
+        try ( PrintWriter out = response.getWriter()) {
+            /* TODO output your page here. You may use following sample code. */
+            out.println("<!DOCTYPE html>");
+            out.println("<html>");
+            out.println("<head>");
+            out.println("<title>Servlet SearchServlet</title>");
+            out.println("</head>");
+            out.println("<body>");
+            out.println("<h1>Servlet SearchServlet at " + request.getContextPath() + "</h1>");
+            out.println("</body>");
+            out.println("</html>");
+        }
+    }
 
+    // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
+    /**
+     * Handles the HTTP <code>GET</code> method.
+     *
+     * @param request servlet request
+     * @param response servlet response
+     * @throws ServletException if a servlet-specific error occurs
+     * @throws IOException if an I/O error occurs
+     */
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        String keyword = request.getParameter("keyword");
-        Integer categoryId = null;
-        Integer brandId = null;
-        try {
-            categoryId = Integer.valueOf(request.getParameter("categoryId"));
-        } catch (Exception e) {
-        }
-        try {
-            brandId = Integer.valueOf(request.getParameter("brandId"));
-        } catch (Exception e) {
-        }
+        int limit = 20;
+        ProductDAO pDao = new ProductDAO();
+        String type = !request.getParameter("type").trim().isEmpty() ? request.getParameter("type").trim() : "list";
 
-        List<Product> products = null;
-        boolean hasKeyword = keyword != null && !keyword.trim().isEmpty();
+        switch (type) {
+            case "list":
+                String keywordToSearch = request.getParameter("keyword");
+                System.out.println(keywordToSearch);
+                if (keywordToSearch == null || keywordToSearch.trim().isEmpty()) {
+                    request.setAttribute("products", null);
+                    request.getRequestDispatcher("/WEB-INF/customers/component/products/products.jsp").forward(request, response);
+                    break;
+                }
+                int page = Converter.parseOption(request.getParameter("page"), 1);
+                List<Product> products = pDao.getProductByKeyword(keywordToSearch, page, limit);
+                request.setAttribute("products", products);
+                request.getRequestDispatcher("/WEB-INF/customers/component/products/products.jsp").forward(request, response);
+                break;
+            case "pagination":
+                int pageToPagination = Converter.parseOption(request.getParameter("page"), 1);
+                String keyword = request.getParameter("keyword");
+                if (keyword == null || keyword.trim().isEmpty()) {
+                    request.setAttribute("total", 0);
+                    request.setAttribute("limit", limit);
+                    request.setAttribute("page", pageToPagination);
+                    request.getRequestDispatcher("/WEB-INF/customers/common/paginationTeamplate.jsp").forward(request, response);
+                }
+                int total = pDao.countProductByKeyword(keyword);
+                request.setAttribute("total", total);
+                request.setAttribute("limit", limit);
+                request.setAttribute("page", pageToPagination);
+                request.getRequestDispatcher("/WEB-INF/customers/common/paginationTeamplate.jsp").forward(request, response);
+                break;
+            case "items":
+                String keywordSearch = request.getParameter("keyword");
+                if (keywordSearch == null || keywordSearch.trim().isEmpty()) {
+                    response.setContentType("application/json");
+                    response.getWriter().write("[]");
+                    return;
+                }
 
-        if (hasKeyword) {
-            products = productDAO.search(keyword, categoryId, brandId);
+                List<Product> productsSearch = pDao.getProductByKeyword(keywordSearch, 1, 16);
+                Gson gson = new Gson();
+                String json = gson.toJson(productsSearch);
+                response.setContentType("application/json");
+                response.setCharacterEncoding("UTF-8");
+                response.getWriter().write(json);
+                break;
+            default:
+                throw new AssertionError();
         }
-
-        String isAjax = request.getHeader("X-Requested-With");
-        if ("XMLHttpRequest".equals(isAjax)) {
-            response.setContentType("application/json");
-            PrintWriter out = response.getWriter();
-            out.print(productsToJson(products != null ? products : new ArrayList<Product>()));
-            out.flush();
-            return;
-        }
-
-        request.setAttribute("products", products);
-        request.setAttribute("keyword", keyword);
-        request.setAttribute("categoryId", categoryId);
-        request.setAttribute("brandId", brandId);
-        request.getRequestDispatcher("/WEB-INF/customers/pages/searchResultPage.jsp").forward(request, response);
     }
 
-    private String productsToJson(List<Product> products) {
-        StringBuilder sb = new StringBuilder("[");
-        for (int i = 0; i < products.size(); i++) {
-            Product p = products.get(i);
-            String img = (p.getUrls() != null && !p.getUrls().isEmpty()) ? p.getUrls().get(0) : "";
-            sb.append("{")
-                    .append("\"id\":").append(p.getProductId()).append(",")
-                    .append("\"title\":\"").append(p.getTitle().replace("\"", "\\\"")).append("\",")
-                    .append("\"price\":").append(p.getPrice()).append(",")
-                    .append("\"slug\":\"").append(p.getSlug()).append("\",")
-                    .append("\"img\":\"").append(img.replace("\"", "\\\"")).append("\"")
-                    .append("}");
-            if (i < products.size() - 1) {
-                sb.append(",");
-            }
-        }
-        sb.append("]");
-        return sb.toString();
+    /**
+     * Handles the HTTP <code>POST</code> method.
+     *
+     * @param request servlet request
+     * @param response servlet response
+     * @throws ServletException if a servlet-specific error occurs
+     * @throws IOException if an I/O error occurs
+     */
+    @Override
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        processRequest(request, response);
     }
+
+    /**
+     * Returns a short description of the servlet.
+     *
+     * @return a String containing servlet description
+     */
+    @Override
+    public String getServletInfo() {
+        return "Short description";
+    }// </editor-fold>
+
 }
