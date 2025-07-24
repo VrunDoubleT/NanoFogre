@@ -13,43 +13,44 @@ import Models.Employee;
 import Models.Order;
 import Models.OrderDetails;
 import Models.OrderStatus;
+import Models.OrderStatusHistory;
 import Models.PaymentMethod;
 import Models.PaymentStatus;
 import Models.Product;
 import Models.Voucher;
 import java.sql.*;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.time.format.DateTimeFormatter;
+
 /**
  *
  * @author Modern 15
  */
 public class OrdersDAO {
+
     private DBContext db = new DBContext();
 
-    // 1. Lấy danh sách đơn hàng của customer (nếu cần)
     public List<Order> getOrdersByCustomer(int customerId) throws SQLException {
-        // Có thể implement tương tự filterOrders, bỏ details = null hoặc load details nếu muốn
-        return filterOrders(customerId, null, null);
+        return filterOrders(customerId, null, null, null, null);
     }
 
-    // 2. Lấy chi tiết 1 đơn hàng (đã load cả list OrderDetails)
     public Order getOrderDetail(int orderId, int customerId) throws SQLException {
-        String sql = "SELECT o.*, e.employeeId, e.employeeName, "
-                   + "os.statusId, os.statusName, os.statusDescription, "
-                   + "pm.paymentMethodId, pm.paymentMethodName, "
-                   + "ps.paymentStatusId, ps.paymentStatusName, "
-                   + "v.voucherId, v.voucherCode, v.value, "
-                   + "a.addressId, a.recipientName, a.addressDetails, a.addressPhone "
-                   + "FROM Orders o "
-                   + "LEFT JOIN Employees e ON o.employeeId = e.employeeId "
-                   + "JOIN OrderStatus os ON o.statusId = os.statusId "
-                   + "JOIN PaymentMethods pm ON o.paymentMethodId = pm.paymentMethodId "
-                   + "JOIN PaymentStatus ps ON o.paymentStatusId = ps.paymentStatusId "
-                   + "LEFT JOIN Vouchers v ON o.voucherId = v.voucherId "
-                   + "JOIN Address a ON o.addressId = a.addressId "
-                   + "WHERE o.orderId = ? AND o.customerId = ?";
-        Object[] params = { orderId, customerId };
+        String sql = "SELECT o.*, "
+                + "os.statusId, os.statusName, os.statusDescription, "
+                + "pm.paymentMethodId, pm.paymentMethodName, "
+                + "ps.paymentStatusId, ps.paymentStatusName, "
+                + "v.voucherId, v.voucherCode, v.value, "
+                + "a.addressId, a.recipientName, a.addressDetails, a.addressPhone "
+                + "FROM Orders o "
+                + "JOIN OrderStatus os ON o.statusId = os.statusId "
+                + "JOIN PaymentMethods pm ON o.paymentMethodId = pm.paymentMethodId "
+                + "JOIN PaymentStatus ps ON o.paymentStatusId = ps.paymentStatusId "
+                + "LEFT JOIN Vouchers v ON o.voucherId = v.voucherId "
+                + "JOIN Address a ON o.addressId = a.addressId "
+                + "WHERE o.orderId = ? AND o.customerId = ?";
+        Object[] params = {orderId, customerId};
         ResultSet rs = db.execSelectQuery(sql, params);
         if (!rs.next()) {
             rs.getStatement().getConnection().close();
@@ -63,24 +64,17 @@ public class OrdersDAO {
         order.setTotalAmount(rs.getDouble("totalAmount"));
         order.setShippingFee(rs.getDouble("shippingFee"));
 
-        // Employee
-        Employee emp = new Employee();
-        emp.setId(rs.getInt("employeeId"));
-        emp.setName(rs.getString("employeeName"));
-        order.setEmployee(emp);
-
-        // Customer (chỉ chứa id)
-        // Bạn có thể bỏ nếu không cần
-        // Customer cust = new Customer();
-        // cust.setId(customerId);
-        // order.setCustomer(cust);
-
-        // OrderStatus
         OrderStatus os = new OrderStatus();
         os.setId(rs.getInt("statusId"));
         os.setName(rs.getString("statusName"));
         os.setDescription(rs.getString("statusDescription"));
         order.setOrderStatus(os);
+
+        // PaymentMethod
+        PaymentMethod pm = new PaymentMethod();
+        pm.setId(rs.getInt("paymentMethodId"));
+        pm.setName(rs.getString("paymentMethodName"));
+        order.setPaymentMethod(pm);
 
         // PaymentStatus
         PaymentStatus ps = new PaymentStatus();
@@ -88,7 +82,7 @@ public class OrdersDAO {
         ps.setName(rs.getString("paymentStatusName"));
         order.setPaymentStatus(ps);
 
-        // Voucher (nếu có)
+        // Voucher
         if (rs.getObject("voucherId") != null) {
             Voucher v = new Voucher();
             v.setId(rs.getInt("voucherId"));
@@ -104,24 +98,24 @@ public class OrdersDAO {
         addr.setPhone(rs.getString("addressPhone"));
         order.setAddress(addr);
 
-        // Details - SỬA: truyền thêm customerId
+        // Details
         order.setDetails(getOrderDetails(orderId, customerId));
 
         rs.getStatement().getConnection().close();
         return order;
     }
 
-    // 3. Lấy chi tiết các sản phẩm trong 1 đơn
     public List<OrderDetails> getOrderDetails(int orderId, int customerId) throws SQLException {
         List<OrderDetails> list = new ArrayList<>();
-        String sql =
-            "SELECT od.orderDetailId, od.detailQuantity, od.detailPrice, "
-          + "       p.productId, p.productTitle, "
-          + "       (SELECT TOP 1 pi.url FROM ProductImages pi WHERE pi.productId = p.productId) AS url "
-          + "  FROM OrderDetails od "
-          + "  JOIN Products p ON od.productId = p.productId "
-          + " WHERE od.orderId = ?";
+        String sql
+                = "SELECT od.orderDetailId, od.detailQuantity, od.detailPrice, "
+                + "       p.productId, p.productTitle, "
+                + "       (SELECT TOP 1 pi.url FROM ProductImages pi WHERE pi.productId = p.productId) AS url "
+                + "  FROM OrderDetails od "
+                + "  JOIN Products p ON od.productId = p.productId "
+                + " WHERE od.orderId = ?";
         ResultSet rs = db.execSelectQuery(sql, new Object[]{orderId});
+        ReviewDAO reviewDAO = new ReviewDAO();
         while (rs.next()) {
             OrderDetails d = new OrderDetails();
             d.setId(rs.getInt("orderDetailId"));
@@ -134,13 +128,22 @@ public class OrdersDAO {
             p.setTitle(rs.getString("productTitle"));
             List<String> urls = new ArrayList<>();
             String url = rs.getString("url");
-            if (url != null) urls.add(url);
+            if (url != null) {
+                urls.add(url);
+            }
             p.setUrls(urls);
-
             d.setProduct(p);
 
-            // Check reviewed: chỉ cần customerId, productId
+            // Check reviewed
             d.setReviewed(isProductReviewed(customerId, p.getProductId()));
+            Models.Review review = reviewDAO.getReviewByCustomerAndProduct(customerId, p.getProductId());
+            if (review != null) {
+                d.setReviewContent(review.getContent());
+                d.setReviewStar(review.getStar());
+            } else {
+                d.setReviewContent("");
+                d.setReviewStar(5);
+            }
 
             list.add(d);
         }
@@ -149,27 +152,28 @@ public class OrdersDAO {
     }
 
     // 4. Hủy đơn hàng (nếu status IN (1,2))
-    public boolean cancelOrder(int orderId, int customerId) throws SQLException {
-        String sql = "UPDATE Orders SET statusId = 5 "
-                   + "WHERE orderId = ? AND customerId = ? AND statusId IN (1,2)";
-        Object[] params = { orderId, customerId };
-        int updated = db.execQuery(sql, params);
-        return updated > 0;
-    }
-
-    // 5. Lọc đơn hàng theo status/search, load luôn address + details
-    public List<Order> filterOrders(int customerId, Integer statusId, String search) throws SQLException {
+//    public boolean cancelOrder(int orderId, int customerId) throws SQLException {
+//        String sql = "UPDATE Orders SET statusId = 5 "
+//                + "WHERE orderId = ? AND customerId = ? AND statusId IN (1,2)";
+//        Object[] params = {orderId, customerId};
+//        int updated = db.execQuery(sql, params);
+//        if (updated > 0) {
+//            insertOrderStatusHistory(orderId, 5, 1); // 1 là employeeId của Admin User
+//        }
+//        return updated > 0;
+//    }
+    public List<Order> filterOrders(int customerId, Integer statusId, String search, Integer page, Integer pageSize) throws SQLException {
         List<Order> orders = new ArrayList<>();
         StringBuilder sql = new StringBuilder(
-            "SELECT o.orderId, o.createdAt, o.totalAmount, o.shippingFee, "
-          + "       os.statusId, os.statusName, "
-          + "       ps.paymentStatusId, ps.paymentStatusName, "
-          + "       a.recipientName, a.addressDetails, a.addressPhone "
-          + "  FROM Orders o "
-          + "  JOIN OrderStatus os ON o.statusId = os.statusId "
-          + "  JOIN PaymentStatus ps ON o.paymentStatusId = ps.paymentStatusId "
-          + "  JOIN Address a ON o.addressId = a.addressId "
-          + " WHERE o.customerId = ? "
+                "SELECT o.orderId, o.createdAt, o.totalAmount, o.shippingFee, "
+                + "       os.statusId, os.statusName, "
+                + "       ps.paymentStatusId, ps.paymentStatusName, "
+                + "       a.recipientName, a.addressDetails, a.addressPhone "
+                + "  FROM Orders o "
+                + "  JOIN OrderStatus os ON o.statusId = os.statusId "
+                + "  JOIN PaymentStatus ps ON o.paymentStatusId = ps.paymentStatusId "
+                + "  JOIN Address a ON o.addressId = a.addressId "
+                + " WHERE o.customerId = ? "
         );
         List<Object> params = new ArrayList<>();
         params.add(customerId);
@@ -182,7 +186,14 @@ public class OrdersDAO {
             sql.append(" AND o.orderId LIKE ? ");
             params.add("%" + search + "%");
         }
-        sql.append(" ORDER BY o.createdAt DESC");
+        sql.append(" ORDER BY o.createdAt DESC ");
+
+        if (page != null && pageSize != null && page > 0 && pageSize > 0) {
+            int offset = (page - 1) * pageSize;
+            sql.append(" OFFSET ? ROWS FETCH NEXT ? ROWS ONLY ");
+            params.add(offset);
+            params.add(pageSize);
+        }
 
         ResultSet rs = db.execSelectQuery(sql.toString(), params.toArray());
         while (rs.next()) {
@@ -207,17 +218,13 @@ public class OrdersDAO {
             addr.setDetails(rs.getString("addressDetails"));
             addr.setPhone(rs.getString("addressPhone"));
             order.setAddress(addr);
-
-            // Load chi tiết sản phẩm - SỬA: truyền customerId
             order.setDetails(getOrderDetails(order.getId(), customerId));
-
             orders.add(order);
         }
         rs.getStatement().getConnection().close();
         return orders;
     }
 
-    // 6. Lấy tất cả trạng thái đơn
     public List<OrderStatus> getAllOrderStatus() throws SQLException {
         List<OrderStatus> list = new ArrayList<>();
         String sql = "SELECT * FROM OrderStatus";
@@ -233,13 +240,45 @@ public class OrdersDAO {
         return list;
     }
 
-    // Hàm kiểm tra sản phẩm đã được review chưa
     public boolean isProductReviewed(int customerId, int productId) throws SQLException {
         String sql = "SELECT COUNT(*) FROM Reviews WHERE customerId=? AND productId=?";
         ResultSet rs = db.execSelectQuery(sql, new Object[]{customerId, productId});
         boolean result = false;
-        if (rs.next()) result = rs.getInt(1) > 0;
+        if (rs.next()) {
+            result = rs.getInt(1) > 0;
+        }
         rs.getStatement().getConnection().close();
         return result;
     }
+
+    public void insertOrderStatusHistory(int orderId, int statusId, int updatedBy) throws SQLException {
+        String sql = "INSERT INTO OrderStatusHistory (orderId, statusId, updatedAt, updatedBy) VALUES (?, ?, GETDATE(), ?)";
+        db.execQuery(sql, new Object[]{orderId, statusId, updatedBy});
+    }
+
+    public List<OrderStatusHistory> getOrderStatusHistory(int orderId) throws SQLException {
+        List<OrderStatusHistory> history = new ArrayList<>();
+        String sql = "SELECT h.*, os.statusName, os.statusDescription "
+                + "FROM OrderStatusHistory h "
+                + "JOIN OrderStatus os ON h.statusId = os.statusId "
+                + "WHERE h.orderId = ? ORDER BY h.updatedAt ASC";
+        ResultSet rs = db.execSelectQuery(sql, new Object[]{orderId});
+        while (rs.next()) {
+            OrderStatusHistory item = new OrderStatusHistory();
+            item.setHistoryId(rs.getInt("historyId"));
+            item.setOrderId(rs.getInt("orderId"));
+            item.setStatusId(rs.getInt("statusId"));
+            item.setStatusName(rs.getString("statusName"));
+            item.setStatusNote(rs.getString("statusDescription"));
+            LocalDateTime updatedAt = rs.getTimestamp("updatedAt").toLocalDateTime();
+            item.setUpdatedAt(updatedAt);
+            item.setUpdatedAtStr(updatedAt.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")));
+            item.setUpdatedBy(rs.getInt("updatedBy"));
+            // item.setUpdaterName(rs.getString("updaterName"));
+            history.add(item);
+        }
+        rs.getStatement().getConnection().close();
+        return history;
+    }
+
 }

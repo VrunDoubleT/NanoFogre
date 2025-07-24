@@ -1,26 +1,41 @@
 document.addEventListener("DOMContentLoaded", function () {
     const input = document.querySelector('input[name="keyword"]');
     let timer;
-    let suggestionBox;
+    let suggestionBox, wrapper;
 
     if (input) {
-        const parent = input.closest('form'); // Lấy form làm parent, đảm bảo position:relative
-        parent.classList.add('relative'); // Đảm bảo form có position:relative
+        const parent = input.closest('form');
+        parent.classList.add('relative');
+
+        // Tạo wrapper cho suggestion box
+        wrapper = document.createElement("div");
+        wrapper.className = `
+            suggestion-list-wrapper
+            absolute left-0 right-0 top-[110%]
+            z-30
+            rounded-2xl
+            overflow-hidden
+            shadow-xl
+            border border-gray-200
+            bg-white
+        `.replace(/\s+/g, ' ');
+        wrapper.style.display = "none";
+
+        // suggestionBox thật sẽ cuộn, wrapper không cuộn
         suggestionBox = document.createElement("div");
         suggestionBox.className = `
-                suggestion-list
-                absolute left-0 right-0 top-[110%]
-                bg-white border border-gray-200 rounded-2xl shadow-xl z-30
-                max-h-80 overflow-y-auto py-2 pb-2
-              `.replace(/\s+/g, ' ');
-        suggestionBox.style.display = "none";
-        parent.appendChild(suggestionBox);
+            suggestion-list
+            max-h-80 overflow-y-auto py-2 pb-2
+        `.replace(/\s+/g, ' ');
+        wrapper.appendChild(suggestionBox);
+        parent.appendChild(wrapper);
 
+        // Search suggestion
         input.addEventListener("input", function () {
             const value = input.value.trim();
             clearTimeout(timer);
             if (value.length === 0) {
-                suggestionBox.style.display = "none";
+                wrapper.style.display = "none";
                 suggestionBox.innerHTML = "";
                 return;
             }
@@ -28,12 +43,12 @@ document.addEventListener("DOMContentLoaded", function () {
                 fetch("/search-products?keyword=" + encodeURIComponent(value), {
                     headers: {'X-Requested-With': 'XMLHttpRequest'}
                 })
-                        .then(res => res.json())
-                        .then(arr => {
-                            if (arr.length === 0) {
-                                suggestionBox.innerHTML = `<div class='px-4 py-2 text-gray-400'>No products found.</div>`;
-                            } else {
-                                suggestionBox.innerHTML = arr.map((item, idx) => `
+                .then(res => res.json())
+                .then(arr => {
+                    if (arr.length === 0) {
+                        suggestionBox.innerHTML = `<div class='px-4 py-2 text-gray-400'>No products found.</div>`;
+                    } else {
+                        suggestionBox.innerHTML = arr.map((item, idx) => `
                             <a href="/product/${item.slug}"
                                class="flex items-center gap-3 px-4 py-3
                                       ${idx < arr.length - 1 ? 'border-b border-gray-100' : ''}
@@ -49,33 +64,49 @@ document.addEventListener("DOMContentLoaded", function () {
                                 </div>
                             </a>
                         `).join('');
-                            }
-                            suggestionBox.style.display = "block";
-                        });
+                    }
+                    wrapper.style.display = "block";
+                });
             }, 200);
         });
 
         function formatPrice(price) {
-            if (!price)
-                return '0';
+            if (!price) return '0';
             return Number(price).toLocaleString('vi-VN');
         }
 
         document.addEventListener("mousedown", function (e) {
-            if (!input.contains(e.target) && !suggestionBox.contains(e.target)) {
-                suggestionBox.style.display = "none";
+            if (!input.contains(e.target) && !wrapper.contains(e.target)) {
+                wrapper.style.display = "none";
             }
         });
 
         input.addEventListener("focus", function () {
             if (suggestionBox.innerHTML.trim() !== "") {
-                suggestionBox.style.display = "block";
+                wrapper.style.display = "block";
             }
         });
     }
 });
 
-
+// ---- Reset search input & suggestion khi về HOME hoặc search page ----
+function resetInputIfNeed() {
+    var input = document.querySelector('input[name="keyword"]');
+    if (!input) return;
+    // Nếu là trang home hoặc là trang search (tùy ý bạn thêm path khác nếu muốn)
+    if (
+        window.location.pathname === "/" ||
+        window.location.pathname === "/index" ||
+        window.location.pathname === "/index.jsp" ||
+        window.location.pathname === "/search-products"
+    ) {
+        input.value = "";
+        var wrapper = document.querySelector('.suggestion-list-wrapper');
+        if (wrapper) wrapper.style.display = "none";
+    }
+}
+document.addEventListener("DOMContentLoaded", resetInputIfNeed);
+window.addEventListener("pageshow", resetInputIfNeed);
 
 // Button animation (không đổi)
 document.addEventListener("DOMContentLoaded", function () {
@@ -91,4 +122,3 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     });
 });
-

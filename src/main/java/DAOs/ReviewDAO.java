@@ -51,11 +51,10 @@ public class ReviewDAO extends DBContext {
                         rs.getString("customerPhone"),
                         rs.getTimestamp("createdAt").toLocalDateTime(),
                         rs.getInt("isBlock") == 1,
-                        rs.getInt("isVerify") == 1 // <<== Bổ sung dòng này
+                        rs.getInt("isVerify") == 1
                 );
                 review.setCustomer(customer);
 
-                // Lấy danh sách phản hồi
                 Object[] replyParams = {reviewId};
                 List<Reply> replies = new ArrayList<>();
 
@@ -235,6 +234,48 @@ public class ReviewDAO extends DBContext {
     public boolean insertReview(int productId, int customerId, int star, String content) {
         String sql = "INSERT INTO Reviews (productId, customerId, star, reviewContent, createdAt, _destroy) VALUES (?, ?, ?, ?, GETDATE(), 0)";
         Object[] params = {productId, customerId, star, content};
+        try {
+            int rows = execQuery(sql, params);
+            return rows > 0;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public Review getReviewByCustomerAndProduct(int customerId, int productId) {
+        String sql = "SELECT r.*, c.customerId, c.customerName, c.customerAvatar, c.customerEmail, c.customerPhone "
+                + "FROM Reviews r "
+                + "JOIN Customers c ON r.customerId = c.customerId "
+                + "WHERE r.customerId = ? AND r.productId = ?";
+        Object[] params = {customerId, productId};
+        try ( ResultSet rs = execSelectQuery(sql, params)) {
+            if (rs.next()) {
+                Review r = new Review();
+                r.setId(rs.getInt("reviewId"));
+                r.setProductId(productId);
+                Customer customer = new Customer();
+                customer.setId(rs.getInt("customerId"));
+                customer.setName(rs.getString("customerName"));
+                customer.setAvatar(rs.getString("customerAvatar"));
+                customer.setEmail(rs.getString("customerEmail"));
+                customer.setPhone(rs.getString("customerPhone"));
+                r.setCustomer(customer);
+
+                r.setStar(rs.getInt("star"));
+                r.setContent(rs.getString("reviewContent"));
+                r.setCreatedAt(rs.getTimestamp("createdAt").toLocalDateTime());
+                return r;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public boolean updateReview(int productId, int customerId, int star, String content) {
+        String sql = "UPDATE Reviews SET star = ?, reviewContent = ?, createdAt = GETDATE() WHERE productId = ? AND customerId = ?";
+        Object[] params = {star, content, productId, customerId};
         try {
             int rows = execQuery(sql, params);
             return rows > 0;
