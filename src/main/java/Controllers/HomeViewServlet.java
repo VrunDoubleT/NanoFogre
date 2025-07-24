@@ -4,9 +4,11 @@ package Controllers;
 import DAOs.BrandDAO;
 import DAOs.CategoryDAO;
 import DAOs.HomeDAO;
+import DAOs.ReviewDAO;
 import Models.Brand;
 import Models.Category;
 import Models.Product;
+import Models.Review;
 import java.io.IOException;
 import java.io.PrintWriter;
 import jakarta.servlet.ServletException;
@@ -60,15 +62,18 @@ public class HomeViewServlet extends HttpServlet {
             throws ServletException, IOException {
         HomeDAO hDao = new HomeDAO();
         CategoryDAO cDao = new CategoryDAO();
+        ReviewDAO rDao = new ReviewDAO();
         BrandDAO bDao = new BrandDAO();
         List<Product> topRated = hDao.getTopRatedProducts(8);
         List<Product> topSelling = hDao.getTopSellingProducts(8);
         List<Product> newest = hDao.getNewestProducts(8);
         List<Brand> brands = bDao.getAllBrands();
+        List<Review> reviews = rDao.getTopFiveStarReviews(12);
         request.setAttribute("topRatedProducts", topRated);
         request.setAttribute("topSellingProducts", topSelling);
         request.setAttribute("newestProducts", newest);
         request.setAttribute("brands", brands);
+        request.setAttribute("reviews", reviews);
         request.getRequestDispatcher("/WEB-INF/customers/pages/homePage.jsp").forward(request, response);
     } 
 

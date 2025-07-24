@@ -789,7 +789,7 @@ public class ProductDAO extends DB.DBContext {
                 p.setDescription(rs.getString("productDescription"));
                 p.setMaterial(rs.getString("material"));
                 p.setSlug(rs.getString("slug"));
-                p.setPrice(rs.getDouble("productPrice")); // RẤT QUAN TRỌNG, KHÔNG ĐƯỢC ĐỔI FIELD
+                p.setPrice(rs.getDouble("productPrice"));
                 p.setQuantity(rs.getInt("productQuantity"));
 
                 // Brand
