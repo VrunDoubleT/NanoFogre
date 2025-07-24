@@ -27,7 +27,9 @@
     </head>
     <body>
         <%@ include file="../../common/loading.jsp" %>
-        <%@ include file="../common/employeeHeader.jsp" %>
+        <div id="header">
+            <%@ include file="../common/employeeHeader.jsp" %>
+        </div>
         <div id="modal" class="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50 hidden">
             <div id="modalContent" class="bg-white max-h-[90%] rounded-2xl overflow-y-auto">
                 <!-- Load content -->
@@ -95,8 +97,8 @@
                                 document.getElementById('brandContainer').innerHTML = html;
                             } else {
                                 document.getElementById('main-content').innerHTML = html;
+                                loadHeader();
                             }
-
                             if (push) {
                                 history.pushState({page: path}, '', '/staff/dashboard?view=' + path);
                             }
@@ -146,6 +148,9 @@
                                         voucherPage = parseOptionNumber(params[0].value, 1);
                                     }
                                     loadVoucherContentAndEvent(voucherPage);
+                                    break;
+                                case 'profile':
+                                    initStaffProfileForm();
                                     break;
                                 default:
                                     break;
@@ -223,6 +228,9 @@
                         loadContent(viewPage, false, [{name: 'page', value: voucherPage}
                         ]);
                         break;
+//                    case "profile":
+//                        loadContent(viewPage, false);
+//                        break;
                     default:
                         loadContent(viewPage, false);
                         break;
@@ -238,6 +246,7 @@
         <script src="../../../js/brand.js"></script>       
         <script src="../../../js/category.js"></script>       
         <script src="../../../js/staff.js"></script> 
+        <script src="../../../js/staffAccount.js"></script> 
         <script src="../../../js/loading.js"></script>
         <script src="../../../js/voucher.js"></script>
         <script src="../../../js/skeletonLoading.js"></script>

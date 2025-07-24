@@ -6,33 +6,48 @@ import java.time.LocalDateTime;
  *
  * @author Tran Thanh Van - CE181019
  */
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+
 public class Employee {
 
     private int id;
     private String email;
     private String password;
+    private String newPassword;
     private String name;
     private String avatar;
+    private String citizenIdentityId;
+    private String phoneNumber;
+    private LocalDate dateOfBirth;
+    private String gender;
+    private String address;
     private Role role;
     private boolean isBlock;
+    private boolean destroy;
     private LocalDateTime createdAt;
-    private boolean _destroy;
 
     public Employee() {
     }
 
-    public Employee(int id, String email, String password, String name, String avatar, Role role, boolean isBlock, LocalDateTime createdAt, boolean _destroy) {
+    public Employee(int id, String email, String password, String newPassword, String name, String avatar,
+            String citizenIdentityId, String phoneNumber, LocalDate dateOfBirth, String gender,
+            String address, Role role, boolean isBlock, boolean destroy, LocalDateTime createdAt) {
         this.id = id;
         this.email = email;
         this.password = password;
+        this.newPassword = newPassword;
         this.name = name;
         this.avatar = avatar;
+        this.citizenIdentityId = citizenIdentityId;
+        this.phoneNumber = phoneNumber;
+        this.dateOfBirth = dateOfBirth;
+        this.gender = gender;
+        this.address = address;
         this.role = role;
         this.isBlock = isBlock;
+        this.destroy = destroy;
         this.createdAt = createdAt;
-
-        this._destroy = _destroy;
-
     }
 
     public int getId() {
@@ -59,6 +74,14 @@ public class Employee {
         this.password = password;
     }
 
+    public String getNewPassword() {
+        return newPassword;
+    }
+
+    public void setNewPassword(String newPassword) {
+        this.newPassword = newPassword;
+    }
+
     public String getName() {
         return name;
     }
@@ -75,6 +98,46 @@ public class Employee {
         this.avatar = avatar;
     }
 
+    public String getCitizenIdentityId() {
+        return citizenIdentityId;
+    }
+
+    public void setCitizenIdentityId(String citizenIdentityId) {
+        this.citizenIdentityId = citizenIdentityId;
+    }
+
+    public String getPhoneNumber() {
+        return phoneNumber;
+    }
+
+    public void setPhoneNumber(String phoneNumber) {
+        this.phoneNumber = phoneNumber;
+    }
+
+    public LocalDate getDateOfBirth() {
+        return dateOfBirth;
+    }
+
+    public void setDateOfBirth(LocalDate dateOfBirth) {
+        this.dateOfBirth = dateOfBirth;
+    }
+
+    public String getGender() {
+        return gender;
+    }
+
+    public void setGender(String gender) {
+        this.gender = gender;
+    }
+
+    public String getAddress() {
+        return address;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
+    }
+
     public Role getRole() {
         return role;
     }
@@ -87,8 +150,16 @@ public class Employee {
         return isBlock;
     }
 
-    public void setIsBlock(boolean isBlock) {
-        this.isBlock = isBlock;
+    public void setIsBlock(boolean block) {
+        isBlock = block;
+    }
+
+    public boolean isDestroy() {
+        return destroy;
+    }
+
+    public void setDestroy(boolean destroy) {
+        this.destroy = destroy;
     }
 
     public LocalDateTime getCreatedAt() {
@@ -99,17 +170,24 @@ public class Employee {
         this.createdAt = createdAt;
     }
 
-    public boolean isDestroy() {
-        return _destroy;
-    }
-
-    public void setDestroy(boolean _destroy) {
-        this._destroy = _destroy;
-    }
-
     @Override
     public String toString() {
-        return "Employee{" + "id=" + id + ", email=" + email + ", password=" + password + ", name=" + name + ", avatar=" + avatar + ", role=" + role + ", isBlock=" + isBlock + ", createdAt=" + createdAt + '}';
+        return "Employee{"
+                + "id=" + id
+                + ", email='" + email + '\''
+                + ", password='" + password + '\''
+                + ", newPassword='" + newPassword + '\''
+                + ", name='" + name + '\''
+                + ", avatar='" + avatar + '\''
+                + ", citizenIdentityId='" + citizenIdentityId + '\''
+                + ", phoneNumber='" + phoneNumber + '\''
+                + ", dateOfBirth=" + dateOfBirth
+                + ", gender='" + gender + '\''
+                + ", address='" + address + '\''
+                + ", role=" + role
+                + ", isBlock=" + isBlock
+                + ", destroy=" + destroy
+                + ", createdAt=" + createdAt
+                + '}';
     }
-
 }

@@ -18,12 +18,14 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.BufferedReader;
+import java.time.LocalDate;
 import java.util.List;
 
 /**
  *
  * @author Duong Tran Ngoc Chau - CE181040
  */
+@WebServlet("/staff")
 public class StaffServlet extends HttpServlet {
 
     // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
@@ -41,6 +43,7 @@ public class StaffServlet extends HttpServlet {
         int limit = 10;
         StaffDAO sDao = new StaffDAO();
         String type = request.getParameter("type") != null ? request.getParameter("type") : "slist";
+        String idStaff = request.getParameter("id");
         switch (type) {
             case "list":
                 int page = Converter.parseOption(request.getParameter("page"), 1);
@@ -71,17 +74,42 @@ public class StaffServlet extends HttpServlet {
                 break;
             case "checkEmail":
                 String allEmails = request.getParameter("email");
-                boolean exists = sDao.isEmailExists(allEmails);
+                boolean emailExists = sDao.isEmailExists(allEmails);
                 response.setContentType("text/plain");
-                response.getWriter().write(String.valueOf(exists));
+                response.getWriter().write(String.valueOf(emailExists));
                 break;
             case "checkEmailExceptOwn":
                 String email = request.getParameter("email");
-                String idRaw = request.getParameter("id");
-                int idCheckMail = idRaw != null ? Integer.parseInt(idRaw) : -1;
-                boolean exist = sDao.isEmailExistsExceptOwn(email, idCheckMail);
+                int idCheckMail = idStaff != null ? Integer.parseInt(idStaff) : -1;
+                boolean emailExist = sDao.isEmailExistsExceptOwn(email, idCheckMail);
                 response.setContentType("text/plain");
-                response.getWriter().write(String.valueOf(exist));
+                response.getWriter().write(String.valueOf(emailExist));
+                break;
+            case "checkCitizenId":
+                String allCitizenId = request.getParameter("citizenId");
+                boolean idExists = sDao.isCitizenIdExists(allCitizenId);
+                response.setContentType("text/plain");
+                response.getWriter().write(String.valueOf(idExists));
+                break;
+            case "checkCitizenIdExceptOwn":
+                String citizenId = request.getParameter("citizenId");
+                int idCheckCitizenId = idStaff != null ? Integer.parseInt(idStaff) : -1;
+                boolean idExist = sDao.isCitizenIdExistsExceptOwn(citizenId, idCheckCitizenId);
+                response.setContentType("text/plain");
+                response.getWriter().write(String.valueOf(idExist));
+                break;
+            case "checkPhone":
+                String allPhone = request.getParameter("phone");
+                boolean phoneExists = sDao.isPhoneExists(allPhone);
+                response.setContentType("text/plain");
+                response.getWriter().write(String.valueOf(phoneExists));
+                break;
+            case "checkPhoneExceptOwn":
+                String phoneId = request.getParameter("phone");
+                int idCheckPhone = idStaff != null ? Integer.parseInt(idStaff) : -1;
+                boolean phoneExist = sDao.isPhoneExistsExceptOwn(phoneId, idCheckPhone);
+                response.setContentType("text/plain");
+                response.getWriter().write(String.valueOf(phoneExist));
                 break;
             case "update":
                 try {
@@ -110,13 +138,34 @@ public class StaffServlet extends HttpServlet {
                 String password = request.getParameter("password");
                 String name = request.getParameter("name");
                 String avatar = request.getParameter("avatar");
+                String newPassword = request.getParameter("newPassword");
+                String citizenId = request.getParameter("citizenIdentityId");
+                String phone = request.getParameter("phoneNumber");
+                String dobStr = request.getParameter("dateOfBirth");
+                LocalDate dob = null;
+                if (dobStr != null && !dobStr.trim().isEmpty()) {
+                    try {
+                        dob = LocalDate.parse(dobStr);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+                String gender = request.getParameter("gender");
+                String address = request.getParameter("address");
                 String isBlockedParam = request.getParameter("block");
 
                 staff.setEmail(email);
                 staff.setPassword(password);
+                staff.setNewPassword(newPassword);
                 staff.setName(name);
                 staff.setAvatar((avatar != null && !avatar.trim().isEmpty()) ? avatar : null);
+                staff.setCitizenIdentityId(citizenId);
+                staff.setPhoneNumber(phone);
+                staff.setGender(gender);
+                staff.setAddress(address);
                 staff.setIsBlock(isBlockedParam != null);
+                staff.setDateOfBirth(dob);
+                staff.setDestroy(false);
                 boolean created = sDao.createStaff(staff);
 
                 if (created) {
@@ -133,6 +182,9 @@ public class StaffServlet extends HttpServlet {
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
+                    response.setStatus(200);
+                } else {
+                    response.setStatus(500);
                 }
                 break;
             case "delete":
@@ -154,12 +206,35 @@ public class StaffServlet extends HttpServlet {
                 }
                 String json = sb.toString();
                 JsonObject obj = JsonParser.parseString(json).getAsJsonObject();
+
                 int staffIdToUpdate = Integer.parseInt(obj.get("id").getAsString());
                 String nameToUpdate = obj.get("name").getAsString();
                 String emailToUpdate = obj.get("email").getAsString();
                 String status = obj.get("status").getAsString();
                 boolean isBlocked = "Block".equalsIgnoreCase(status);
-                boolean updated = sDao.updateStaff(staffIdToUpdate, nameToUpdate, emailToUpdate, isBlocked);
+                String citizenIdToUpdate = obj.get("citizenIdentityId").getAsString();
+                String genderToUpdate = obj.get("gender").getAsString();
+                String dobStrToUpdate = obj.get("dob").getAsString();
+                String addressToUpdate = obj.get("address").getAsString();
+                String phoneToUpdate = obj.get("phoneNumber").getAsString();
+                LocalDate dobToUpdate = null;
+                try {
+                    dobToUpdate = LocalDate.parse(dobStrToUpdate);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                Employee staffToUpdate = new Employee();
+                staffToUpdate.setId(staffIdToUpdate);
+                staffToUpdate.setName(nameToUpdate);
+                staffToUpdate.setEmail(emailToUpdate);
+                staffToUpdate.setIsBlock(isBlocked);
+                staffToUpdate.setCitizenIdentityId(citizenIdToUpdate);
+                staffToUpdate.setGender(genderToUpdate);
+                staffToUpdate.setDateOfBirth(dobToUpdate);
+                staffToUpdate.setAddress(addressToUpdate);
+                staffToUpdate.setPhoneNumber(phoneToUpdate);
+
+                boolean updated = sDao.updateStaff(staffToUpdate);
 
                 if (updated) {
                     response.setStatus(200);

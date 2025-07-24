@@ -13,7 +13,9 @@ public class Voucher {
     private String type;
     private double value;
     private double minValue;
-    private double maxValue;
+    private Double maxValue;
+    private Integer totalUsageLimit;
+    private Integer userUsageLimit;
     private String description;
     private LocalDateTime validFrom;
     private LocalDateTime validTo;
@@ -23,13 +25,15 @@ public class Voucher {
     public Voucher() {
     }
 
-    public Voucher(int id, String code, String type, double value, double minValue, double maxValue, String description, LocalDateTime validFrom, LocalDateTime validTo, boolean isActive, boolean _destroy) {
+    public Voucher(int id, String code, String type, double value, double minValue, Double maxValue, Integer totalUsageLimit, Integer userUsageLimit, String description, LocalDateTime validFrom, LocalDateTime validTo, boolean isActive, boolean _destroy) {
         this.id = id;
         this.code = code;
         this.type = type;
         this.value = value;
         this.minValue = minValue;
         this.maxValue = maxValue;
+        this.totalUsageLimit = totalUsageLimit;
+        this.userUsageLimit = userUsageLimit;
         this.description = description;
         this.validFrom = validFrom;
         this.validTo = validTo;
@@ -77,12 +81,28 @@ public class Voucher {
         this.minValue = minValue;
     }
 
-    public double getMaxValue() {
+    public Double getMaxValue() {
         return maxValue;
     }
 
-    public void setMaxValue(double maxValue) {
+    public void setMaxValue(Double maxValue) {
         this.maxValue = maxValue;
+    }
+
+    public Integer getTotalUsageLimit() {
+        return totalUsageLimit;
+    }
+
+    public void setTotalUsageLimit(Integer totalUsageLimit) {
+        this.totalUsageLimit = totalUsageLimit;
+    }
+
+    public Integer getUserUsageLimit() {
+        return userUsageLimit;
+    }
+
+    public void setUserUsageLimit(Integer userUsageLimit) {
+        this.userUsageLimit = userUsageLimit;
     }
 
     public String getDescription() {

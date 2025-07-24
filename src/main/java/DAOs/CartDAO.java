@@ -588,6 +588,8 @@ Object[] params = {
                         rs.getDouble("value"),
                         rs.getDouble("minValue"),
                         rs.getObject("maxValue") != null ? rs.getDouble("maxValue") : 0,
+                        rs.getInt("totalUsageLimit"),
+                        rs.getInt("userUsageLimit"),
                         rs.getString("voucherDescription"),
                         rs.getTimestamp("validFrom").toLocalDateTime(),
                         rs.getTimestamp("validTo").toLocalDateTime(),

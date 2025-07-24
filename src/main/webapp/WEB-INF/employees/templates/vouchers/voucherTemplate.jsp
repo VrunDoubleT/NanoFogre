@@ -11,10 +11,18 @@
     List<Voucher> voucher = (List<Voucher>) request.getAttribute("vlist");
     Integer currentPage = (Integer) request.getAttribute("page");
     Integer limit = (Integer) request.getAttribute("limit");
-
-    if (voucher != null && page != null && limit != null) {
-        int index = (currentPage - 1) * limit + 1;
-        for (Voucher v : voucher) {
+%>
+<% if (voucher == null || voucher.isEmpty()) { %>
+<tr>
+    <td colspan="7">
+        <div class="flex justify-center items-center text-gray-500 text-center w-full h-20">
+            Can't find any vouchers matching your request
+        </div>
+    </td>
+</tr>
+<% } else if (currentPage != null && limit != null) {
+    int index = (currentPage - 1) * limit + 1;
+    for (Voucher v : voucher) {
 %>
 <tr>
     <td class="px-9 py-3 whitespace-nowrap text-center">
@@ -38,7 +46,14 @@
                 formatted = moneyInThousands + ".000";
             }
         %>
-        <span class="text-sm font-medium text-gray-900"><%= formatted%></span>
+        <span class="text-sm text-gray-900"><strong><%= formatted%></strong></span>
+    </td>
+
+    <td class="px-8 py-3 whitespace-nowrap text-center">
+        <div class="text-sm text-gray-900">
+            <div><strong>Total:</strong> <%= v.getTotalUsageLimit() == null ? "Unlimited" : v.getTotalUsageLimit()%></div>
+            <div><strong>User:</strong> <%= v.getUserUsageLimit() == null ? "Unlimited" : v.getUserUsageLimit()%></div>
+        </div>
     </td>
 
     <td class="px-8 py-3 whitespace-nowrap text-center">

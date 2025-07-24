@@ -55,7 +55,7 @@
                                     <select
                                         id="voucherType"
                                         name="voucherType"
-                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none"
                                         required
                                         >
                                         <option value="PERCENTAGE">Percentage (%)</option>
@@ -73,15 +73,30 @@
                                             type="number"
                                             id="value"
                                             name="value"
-                                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none"
                                             placeholder="Enter discount value"
                                             step="1"
                                             min="0"
                                             required
-                                            />
-                                        <!--                                        <span id="valueUnit" class="absolute right-3 top-2 text-gray-500 text-sm"></span>-->
+                                            />                                      
                                         <span id="valueError" class="text-sm text-red-500 mt-1 block"></span>
                                     </div>
+                                </div>
+
+                                <!-- Multi-Category Select -->
+                                <div>
+                                    <label for="category" class="block text-sm font-medium text-gray-700 mb-2">Applicable Categories</label>
+                                    <select id="category" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none">
+                                        <option value="">Select Category</option>
+                                        <c:forEach var="cat" items="${categoryList}">
+                                            <option value="${cat.id}">${cat.name}</option>
+                                        </c:forEach>
+                                    </select>
+                                    <!-- Display selected categories -->
+                                    <div id="selectedCategories" class="flex flex-wrap gap-2 mt-3"></div>
+                                    <!-- Hidden inputs to send selected ids -->
+                                    <div id="selectedCategoryInputs"></div>
+                                    <span id="categoryError" class="text-sm text-red-500 mt-1 block"></span>
                                 </div>
 
                                 <!-- Description -->
@@ -97,14 +112,14 @@
                         <div class="space-y-6">
                             <div class="bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl p-6 border border-blue-100">
                                 <h3 class="text-lg font-semibold text-gray-900 mb-4">Conditions & Limits</h3>
-                                <div class="space-y-4">
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <div>
                                         <label for="minValue" class="block text-sm font-medium text-gray-700 mb-2">Minimum Order Value</label>
                                         <input
                                             type="number"
                                             id="minValue"
                                             name="minValue"
-                                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none"
                                             placeholder="Minimum order amount"
                                             step="1"
                                             min="0"
@@ -118,12 +133,40 @@
                                             type="number"
                                             id="maxValue"
                                             name="maxValue"
-                                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none"
                                             placeholder="Maximum discount cap"
                                             step="1"
                                             min="0"
                                             />
                                         <span id="maxValueError" class="text-sm text-red-500 mt-1 block"></span>
+                                    </div>
+
+                                    <div>
+                                        <label for="totalUsageLimit" class="block text-sm font-medium text-gray-700 mb-2">Total Usage Limit</label>
+                                        <input
+                                            type="number"
+                                            id="totalUsageLimit"
+                                            name="totalUsageLimit"
+                                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none"
+                                            placeholder="Total number of times this voucher can be used"
+                                            step="1"
+                                            min="0"
+                                            />
+                                        <span id="totalUsageLimitError" class="text-sm text-red-500 mt-1 block"></span>
+                                    </div>
+
+                                    <div>
+                                        <label for="userUsageLimit" class="block text-sm font-medium text-gray-700 mb-2">Per User Limit</label>
+                                        <input
+                                            type="number"
+                                            id="userUsageLimit"
+                                            name="userUsageLimit"
+                                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none"
+                                            placeholder="Number of times each user can use"
+                                            step="1"
+                                            min="0"
+                                            />
+                                        <span id="userUsageLimitError" class="text-sm text-red-500 mt-1 block"></span>
                                     </div>
                                 </div>
                             </div>
@@ -157,8 +200,6 @@
                                     </div>
                                 </div>
                             </div>
-
-
                         </div>
                     </div>
 

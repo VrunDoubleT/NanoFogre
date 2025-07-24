@@ -4,6 +4,8 @@
     Author     : Duong Tran Ngoc Chau - CE181040
 --%>
 
+<%@page import="Models.Category"%>
+<%@page import="java.util.List"%>
 <%@page import="Models.Voucher"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
@@ -12,6 +14,7 @@
     java.time.format.DateTimeFormatter formatter = java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
     String validFromFormatted = voucher.getValidFrom().format(formatter);
     String validToFormatted = voucher.getValidTo().format(formatter);
+    List<Category> categories = (List<Category>) request.getAttribute("categories");
 %>
 
 
@@ -39,7 +42,7 @@
 
         <!-- Description -->
         <div class="relative bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded-md shadow-sm border-b border-gray-200">
-            <p class="text-sm italic text-yellow-800">
+            <p class="text-sm italic text-yellow-800 break-words">
                 "<%= voucher.getDescription()%>"
             </p>
         </div>
@@ -72,6 +75,45 @@
                     </div>
                 </div>
                 <% }%>
+            </div>
+
+            <!-- Applicable Category -->
+            <div class="bg-gray-50 border border-gray-200 rounded-lg p-4 shadow-sm flex items-start gap-3">
+                <div class="w-10 h-10 bg-blue-100 flex items-center justify-center rounded-lg">
+                    <i data-lucide="tag" class="w-5 h-5 text-blue-600"></i>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-500">Applicable Category</p>
+                    <% for (Category cat : categories) {%>
+                    <p class="text-base font-semibold text-gray-800 mt-1"><%= cat.getName()%></p>
+                    <% }%>
+                </div>
+            </div>
+
+            <!-- Total Usage Limit -->
+            <div class="bg-gray-50 border border-gray-200 rounded-lg p-4 shadow-sm flex items-start gap-3">
+                <div class="w-10 h-10 bg-blue-100 flex items-center justify-center rounded-lg">
+                    <i data-lucide="users" class="w-5 h-5 text-blue-600"></i>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-500">Total Usage Limit</p>
+                    <p class="text-base font-semibold text-gray-800 mt-1">
+                        <%= voucher.getTotalUsageLimit() == null ? "Unlimited" : voucher.getTotalUsageLimit()%> use
+                    </p>
+                </div>
+            </div>
+
+            <!-- User Usage Limit -->
+            <div class="bg-gray-50 border border-gray-200 rounded-lg p-4 shadow-sm flex items-start gap-3 mt-4">
+                <div class="w-10 h-10 bg-blue-100 flex items-center justify-center rounded-lg">
+                    <i data-lucide="user-check" class="w-5 h-5 text-blue-600"></i>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-500">User Usage Limit</p>
+                    <p class="text-base font-semibold text-gray-800 mt-1">
+                        <%= voucher.getUserUsageLimit() == null ? "Unlimited" : voucher.getUserUsageLimit()%> use
+                    </p>
+                </div>
             </div>
 
             <!-- Status -->

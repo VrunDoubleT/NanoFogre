@@ -1,7 +1,7 @@
- <%-- 
-    Document   : createStaffTemplate
-    Created on : Jun 15, 2025, 12:19:42 PM
-    Author     : Duong Tran Ngoc Chau - CE181040
+<%-- 
+   Document   : createStaffTemplate
+   Created on : Jun 15, 2025, 12:19:42 PM
+   Author     : Duong Tran Ngoc Chau - CE181040
 --%>
 
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
@@ -17,7 +17,7 @@
 
 <div class="bg-gray-100">
     <!-- Modal container -->
-    <div class="w-4x1 mx-auto h-[90vh] flex flex-col bg-white shadow-2xl overflow-hidden">
+    <div class="w-[800px] h-[90vh] flex flex-col bg-white shadow-2xl overflow-hidden">
         <!-- Header Section -->
         <div class="bg-gradient-to-r flex justify-between from-blue-600 to-purple-600 px-8 py-3">
             <h1 class="text-2xl font-bold text-white m-2 ml-0">Create New Staff</h1>
@@ -46,6 +46,14 @@
                                 <span id="nameError" class="text-sm text-red-500 mt-1 block"></span>
                             </div>
 
+                            <!-- Citizen ID -->
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Citizen ID</label>
+                                <input type="text" id="citizenId" name="citizenId" placeholder="Enter citizen ID"
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none">
+                                <span id="citizenIdError" class="text-sm text-red-500 mt-1 block"></span>
+                            </div>
+
                             <!-- Email -->
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
@@ -54,6 +62,42 @@
                                 <span id="emailError" class="text-sm text-red-500 mt-1 block"></span>
                             </div>
 
+                            <!-- Phone Number -->
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Phone Number</label>
+                                <input type="text" id="phone" name="phone" placeholder="Enter phone number"
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none">
+                                <span id="phoneError" class="text-sm text-red-500 mt-1 block"></span>
+                            </div>
+
+                            <!-- Date of Birth -->
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Date of Birth</label>
+                                <input type="date" id="dob" name="dateOfBirth"
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none">
+                                <span id="dobError" class="text-sm text-red-500 mt-1 block"></span>
+                            </div>
+
+                            <!-- Gender Select -->
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Gender</label>
+                                <select id="gender" name="gender"
+                                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none">
+                                    <option value="Other" selected>Other</option>
+                                    <option value="Male">Male</option>
+                                    <option value="Female">Female</option>
+                                </select>
+                                <span id="genderError" class="text-sm text-red-500 mt-1 block"></span>
+                            </div>
+
+                            <!-- Address -->
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Address</label>
+                                <input type="text" id="address" name="address" placeholder="Enter address"
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none">
+                                <span id="addressError" class="text-sm text-red-500 mt-1 block"></span>
+                            </div>
+                            
                             <!-- Password -->
                             <div>
                                 <label for="password" class="block text-sm font-medium text-gray-700 mb-2">Password</label>

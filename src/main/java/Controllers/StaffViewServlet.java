@@ -7,6 +7,7 @@ import DAOs.ProductDAO;
 import DAOs.StaffDAO;
 import Models.Brand;
 import Models.Category;
+import Models.Employee;
 import Models.Order;
 import Models.ProductStat;
 import java.io.IOException;
@@ -15,6 +16,8 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 /**
@@ -22,6 +25,7 @@ import java.util.List;
  * @author Tran Thanh Van - CE181019
  */
 public class StaffViewServlet extends HttpServlet {
+
     // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
     /**
      * Handles the HTTP <code>GET</code> method.
@@ -34,6 +38,14 @@ public class StaffViewServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        HttpSession session = request.getSession(false);
+        Employee emp = (session != null) ? (Employee) session.getAttribute("employee") : null;
+
+        if (emp == null || emp.getRole() == null || emp.getRole().getId() != 2) {
+            response.sendRedirect(request.getContextPath() + "/staff/auth/login");
+            return;
+        }
+
         ProductDAO pDao = new ProductDAO();
         CategoryDAO categoryDao = new CategoryDAO();
         OrderDAO orderDao = new OrderDAO();
@@ -43,6 +55,7 @@ public class StaffViewServlet extends HttpServlet {
         if (viewPage == null) {
             viewPage = "dashboard";
         }
+        Employee staff = sDao.getStaffById(emp.getId());
         String viewPath;
         switch (viewPage) {
             case "customer":
@@ -78,6 +91,13 @@ public class StaffViewServlet extends HttpServlet {
                 int totalOrder = orderDao.countOrders();
                 request.setAttribute("total", totalOrder);
                 request.setAttribute("orders", order);
+                break;
+            case "profile":
+                request.setAttribute("staff", staff);
+                viewPath = "/WEB-INF/employees/components/profileComponent.jsp";
+                break;
+            case "header":
+                viewPath = "/WEB-INF/employees/common/employeeHeader.jsp";
                 break;
             case "dashboard":
                 // Forward request DashboardServlet

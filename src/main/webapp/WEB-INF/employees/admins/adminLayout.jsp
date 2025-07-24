@@ -148,10 +148,12 @@
                                     break;
                                 case 'voucher':
                                     let voucherPage = 1;
+                                    let categoryIdOfVoucher = 0;
                                     if (params.length > 0) {
                                         voucherPage = parseOptionNumber(params[0].value, 1);
+                                        categoryIdOfVoucher = parseOptionNumber(params[1].value, 0);
                                     }
-                                    loadVoucherContentAndEvent(voucherPage);
+                                    loadVoucherContentAndEvent(voucherPage, categoryIdOfVoucher);
                                     break;
                                 default:
                                     break;
@@ -231,7 +233,9 @@
                         break;
                     case "voucher":
                         const voucherPage = params.get('page') || '1';
-                        loadContent(viewPage, false, [{name: 'page', value: voucherPage}
+                        const categoryIdOfVoucher = params.get('categoryId') || '0';
+                        loadContent(viewPage, false, [{name: 'page', value: voucherPage},
+                            {name: 'categoryId', value: categoryIdOfVoucher}
                         ]);
                         break;
                     default:
