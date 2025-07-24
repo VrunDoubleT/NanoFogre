@@ -11,8 +11,26 @@ public class OrderDetails {
     private double price;
     private int quantity;
     private boolean reviewed;
-    
+    private Address address;
     public OrderDetails() {
+    }
+
+    public Address getAddress() {
+        return address;
+    }
+
+    public void setAddress(Address address) {
+        this.address = address;
+    }
+
+    public OrderDetails(int id, int orderId, Product product, double price, int quantity, boolean reviewed, Address address) {
+        this.id = id;
+        this.orderId = orderId;
+        this.product = product;
+        this.price = price;
+        this.quantity = quantity;
+        this.reviewed = reviewed;
+        this.address = address;
     }
 
     public OrderDetails(int id, int orderId, Product product, double price, int quantity) {
@@ -22,14 +40,7 @@ public class OrderDetails {
         this.price = price;
         this.quantity = quantity;
     }
-     public OrderDetails(int id, int orderId, Product product, double price, int quantity, boolean reviewed) {
-        this.id = id;
-        this.orderId = orderId;
-        this.product = product;
-        this.price = price;
-        this.quantity = quantity;
-        this.reviewed = reviewed;
-    }
+    
 
     public int getId() {
         return id;

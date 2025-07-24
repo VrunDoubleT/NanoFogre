@@ -1,5 +1,5 @@
 <%-- 
-    Document   : adminLogin
+    Document   : staffLogin
     Created on : Jun 30, 2025, 12:03:34 PM
     Author     : Tran Thanh Van - CE181019
 --%>
@@ -195,7 +195,6 @@
                 color: #ff8e8e;
             }
 
-            /* Forgot Password Popup Styles */
             .forgot-popup {
                 display: none;
                 position: fixed;
@@ -464,7 +463,6 @@
                 }
             }
 
-            /* Loading animation */
             .loading-spinner {
                 display: inline-block;
                 width: 16px;
@@ -511,38 +509,25 @@
         </style>
     </head>
     <body>
-        <div class="background-video-container">
+        <div class="background-video-container">          
         </div>
 
         <div class="login-container">
             <div class="login-header">
-                <h1>Login</h1>
+                <h1>Login for Staff</h1>
             </div>
 
             <form id="loginForm" method="post" action="${pageContext.request.contextPath}/staff/auth/login">
-                <% String error = (String) request.getAttribute("error");
-                    if (error != null) {%>
-                <div style="
-                     color: #b22222;
-                     background: rgba(178, 34, 34, 0.2);
-                     border-radius: 8px;
-                     padding: 12px 16px;
-                     margin-bottom: 18px;
-                     text-align: center;
-                     font-weight: 700;
-                     ">
-                    <%= error%>
-                </div>
-                <% }%>
 
                 <div class="form-group">
                     <label for="email">Enter your email</label>
-                    <input type="email" id="email" name="email" placeholder="admin@example.com" required>
+                    <input type="email" id="email" name="email" placeholder="staff@example.com" required>
                 </div>
 
                 <div class="form-group">
                     <label for="password">Enter your password</label>
-                    <input type="password" id="password" name="password" placeholder="Enter your password" required>
+                    <input type="password" id="password" name="password" placeholder="Enter your password" autocomplete="new-password" required>
+
                 </div>
 
                 <div class="form-options">
@@ -550,80 +535,26 @@
                         <input type="checkbox" id="remember" name="remember">
                         <label for="remember">Remember me</label>
                     </div>
-                    <a href="#" class="forgot-password" onclick="openForgotPopup(); return false;">Forgot password?</a>
+                    <a href="${pageContext.request.contextPath}/forget" class="forgot-password">Forgot password?</a>
+
                 </div>
 
                 <button type="submit" class="login-btn">Log In</button>
+                <div id="error-message" style="color:#ff4d4f; margin-top:10px; text-align:center; min-height:22px;"></div>
             </form>
         </div>
 
-        <!-- Improved Forgot Password Popup -->
-        <div id="forgot-popup" class="forgot-popup">
-            <div class="forgot-content">
-                <button class="close-btn" onclick="closeForgotPopup()">×</button>
-
-                <div class="forgot-header">
-                    <h2>Forgot Password?</h2>
-                    <p>Don't worry, we'll help you reset it</p>
-                </div>
-
-                <div class="step-indicator">
-                    <div class="step-dot active" id="step-dot-1"></div>
-                    <div class="step-dot" id="step-dot-2"></div>
-                </div>
-
-                <div class="step-container">
-                    <!-- Step 1: Enter Email -->
-                    <div id="step-email" class="form-step active">
-                        <div class="forgot-form-group">
-                            <label for="forgot-email">Email Address</label>
-                            <input id="forgot-email" type="email" placeholder="Enter your email address" required />
-                        </div>
-                        <button id="send-code-btn" class="forgot-btn" onclick="sendForgotEmail()">
-                            Send Verification Code
-                        </button>
-                    </div>
-
-                    <!-- Step 2: Enter Code & New Password -->
-                    <div id="step-code" class="form-step">
-                        <div class="forgot-form-group">
-                            <label for="forgot-code">Verification Code</label>
-                            <div id="otp-group" style="display:flex;gap:10px;justify-content:center;">
-                                <input type="text" inputmode="numeric" pattern="[0-9]*" maxlength="1" class="otp-input" />
-                                <input type="text" inputmode="numeric" pattern="[0-9]*" maxlength="1" class="otp-input" />
-                                <input type="text" inputmode="numeric" pattern="[0-9]*" maxlength="1" class="otp-input" />
-                                <input type="text" inputmode="numeric" pattern="[0-9]*" maxlength="1" class="otp-input" />
-                                <input type="text" inputmode="numeric" pattern="[0-9]*" maxlength="1" class="otp-input" />
-                                <input type="text" inputmode="numeric" pattern="[0-9]*" maxlength="1" class="otp-input" />
-                            </div>
-                        </div>
-                        <div class="forgot-form-group">
-                            <label for="new-password">New Password</label>
-                            <input id="new-password" type="password" placeholder="Enter new password" required />
-                        </div>
-                        <button id="verify-code-btn" class="forgot-btn" onclick="verifyCodeAndChangePass()">
-                            Change Password
-                        </button>
-                        <button class="back-btn" onclick="goBackToEmailStep()"> Back to email</button>
-                    </div>
-                </div>
-
-                <div id="forgot-error" class="forgot-error"></div>
-            </div>
-        </div>
-
         <script>
-            // Add some interactive effects
-            document.querySelectorAll('input').forEach(input => {
-                input.addEventListener('focus', function () {
-                    this.parentElement.style.transform = 'translateY(-2px)';
-                });
-                input.addEventListener('blur', function () {
-                    this.parentElement.style.transform = 'translateY(0)';
-                });
+     
+            window.addEventListener("DOMContentLoaded", function () {
+                const email = getCookie("remember_email");
+                const pass = getCookie("remember_pass");
+                if (email && pass) {
+                    document.getElementById("email").value = email;
+                    document.getElementById("password").value = pass;
+                    document.getElementById("remember").checked = true;
+                }
             });
-
-            // Function to set cookie
             function setCookie(name, value, days) {
                 const d = new Date();
                 d.setTime(d.getTime() + (days * 24 * 60 * 60 * 1000));
@@ -631,7 +562,6 @@
                 document.cookie = name + "=" + encodeURIComponent(value) + ";" + expires + ";path=/";
             }
 
-            // Function to get cookie
             function getCookie(name) {
                 let decodedCookie = decodeURIComponent(document.cookie);
                 let ca = decodedCookie.split(';');
@@ -646,274 +576,63 @@
                 return "";
             }
 
-            // On page load: fill data if exist
+            document.getElementById("loginForm").addEventListener("submit", function (e) {
+                e.preventDefault();
+                const email = document.getElementById("email").value.trim();
+                const password = document.getElementById("password").value.trim();
+                const remember = document.getElementById("remember").checked;
+
+                const errorDiv = document.getElementById("error-message");
+                errorDiv.textContent = "";
+
+                let params = "email=" + encodeURIComponent(email) + "&password=" + encodeURIComponent(password);
+                if (remember)
+                    params += "&remember=on";
+
+                fetch('${pageContext.request.contextPath}/staff/auth/login', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+                    body: params
+                })
+                        .then(res => res.json())
+                        .then(data => {
+                            if (data.success) {
+                                if (remember) {
+                                    setCookie("remember_email", email, 1);
+                                    setCookie("remember_pass", password, 1);
+                                } else {
+                                    setCookie("remember_email", "", -1);
+                                    setCookie("remember_pass", "", -1);
+                                }
+                                window.location.href = '${pageContext.request.contextPath}/staff/dashboard';
+                            } else {
+                                errorDiv.textContent = data.message || "Invalid email or password!";
+                            }
+                        })
+                        .catch(() => {
+                            errorDiv.textContent = "Network error. Please try again!";
+                        });
+            });
+
+         
+
             window.addEventListener("DOMContentLoaded", function () {
+
                 const email = getCookie("remember_email");
                 const pass = getCookie("remember_pass");
-                if (email && pass) {
+                if (email) {
                     document.getElementById("email").value = email;
+                }
+                if (pass && !error) {
                     document.getElementById("password").value = pass;
                     document.getElementById("remember").checked = true;
-                }
-            });
-
-            // On submit: set or remove cookie
-            document.getElementById("loginForm").addEventListener("submit", function () {
-                const email = document.getElementById("email").value;
-                const pass = document.getElementById("password").value;
-                const remember = document.getElementById("remember").checked;
-                if (remember) {
-                    setCookie("remember_email", email, 1);
-                    setCookie("remember_pass", pass, 1);
                 } else {
-                    setCookie("remember_email", "", -1);
-                    setCookie("remember_pass", "", -1);
+                    document.getElementById("password").value = "";
+                    document.getElementById("remember").checked = false;
                 }
             });
 
-            // Forgot Password Functions
-            function openForgotPopup() {
-                const popup = document.getElementById('forgot-popup');
-                popup.classList.add('active');
-                resetForgotForm();
-            }
 
-            function closeForgotPopup() {
-                const popup = document.getElementById('forgot-popup');
-                popup.classList.remove('active');
-            }
-
-            function resetForgotForm() {
-                document.getElementById('forgot-email').value = '';
-                document.getElementById('forgot-code').value = '';
-                document.getElementById('new-password').value = '';
-                document.getElementById('forgot-error').textContent = '';
-
-                // Reset to step 1
-                document.getElementById('step-email').classList.add('active');
-                document.getElementById('step-code').classList.remove('active');
-                document.getElementById('step-dot-1').classList.add('active');
-                document.getElementById('step-dot-1').classList.remove('completed');
-                document.getElementById('step-dot-2').classList.remove('active');
-
-                // Reset button states
-                document.getElementById('send-code-btn').disabled = false;
-                document.getElementById('verify-code-btn').disabled = false;
-                document.getElementById('send-code-btn').innerHTML = 'Send Verification Code';
-                document.getElementById('verify-code-btn').innerHTML = 'Change Password';
-            }
-
-            function goBackToEmailStep() {
-                document.getElementById('step-email').classList.add('active');
-                document.getElementById('step-code').classList.remove('active');
-                document.getElementById('step-dot-1').classList.add('active');
-                document.getElementById('step-dot-1').classList.remove('completed');
-                document.getElementById('step-dot-2').classList.remove('active');
-                document.getElementById('forgot-error').textContent = '';
-            }
-
-            function showError(message) {
-                const errorDiv = document.getElementById('forgot-error');
-                errorDiv.textContent = message;
-                errorDiv.className = 'forgot-error error-message';
-            }
-
-            function showSuccess(message) {
-                const errorDiv = document.getElementById('forgot-error');
-                errorDiv.textContent = message;
-                errorDiv.className = 'forgot-error success-message';
-            }
-
-            function showInfo(message) {
-                const errorDiv = document.getElementById('forgot-error');
-                errorDiv.textContent = message;
-                errorDiv.className = 'forgot-error info-message';
-            }
-
-            function sendForgotEmail() {
-                const email = document.getElementById('forgot-email').value.trim();
-                const button = document.getElementById('send-code-btn');
-
-                if (!email) {
-                    showError("Please enter your email address.");
-                    return;
-                }
-
-                if (!/^[\w-.]+@[\w-]+\.[a-zA-Z]{2,}$/.test(email)) {
-                    showError("Please enter a valid email address.");
-                    return;
-                }
-
-                // Show loading state
-                button.disabled = true;
-                button.innerHTML = '<span class="loading-spinner"></span>Sending...';
-                showInfo("Sending verification code...");
-
-                // Simulate API call
-                fetch('${pageContext.request.contextPath}/forget', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-                    body: 'email=' + encodeURIComponent(email) + '&action=sendCode'
-                })
-                        .then(r => r.json())
-                        .then(data => {
-                            if (data.success) {
-                                showSuccess("Verification code sent! Check your email.");
-
-                                // Move to step 2
-                                setTimeout(() => {
-                                    document.getElementById('step-email').classList.remove('active');
-                                    document.getElementById('step-code').classList.add('active');
-                                    document.getElementById('step-dot-1').classList.remove('active');
-                                    document.getElementById('step-dot-1').classList.add('completed');
-                                    document.getElementById('step-dot-2').classList.add('active');
-                                    document.getElementById('forgot-error').textContent = '';
-                                }, 1500);
-                            } else {
-                                showError(data.message || "Failed to send verification code. Please try again.");
-                            }
-                        })
-                        .catch(() => {
-                            showError("Network error. Please check your connection and try again.");
-                        })
-                        .finally(() => {
-                            button.disabled = false;
-                            button.innerHTML = 'Send Verification Code';
-                        });
-            }
-
-
-            let verifiedOTP = false;
-
-            document.querySelectorAll('.otp-input').forEach((input, idx, arr) => {
-                input.addEventListener('input', function () {
-                    this.value = this.value.replace(/[^0-9]/g, '');
-                    if (this.value.length === 1 && idx < arr.length - 1)
-                        arr[idx + 1].focus();
-                    this.classList.remove('error');
-                    const code = Array.from(arr).map(i => i.value).join('');
-                    if (code.length === 6) {
-                        checkOTPCode(code);
-                    } else {
-                        verifiedOTP = false;
-                        document.getElementById('verify-code-btn').disabled = true;
-                    }
-                });
-
-                input.addEventListener('keydown', function (e) {
-                    if (e.key === "Backspace" && !this.value && idx > 0)
-                        arr[idx - 1].focus();
-                    if (e.key.length === 1 && !/[0-9]/.test(e.key))
-                        e.preventDefault();
-                });
-
-                input.addEventListener('paste', function (e) {
-                    e.preventDefault();
-                    const paste = (e.clipboardData || window.clipboardData).getData('text').replace(/\D/g, '').substring(0, 6);
-                    for (let i = 0; i < arr.length; i++)
-                        arr[i].value = paste[i] || '';
-                    const code = Array.from(arr).map(i => i.value).join('');
-                    if (code.length === 6)
-                        checkOTPCode(code);
-                });
-            });
-
-            function checkOTPCode(code) {
-                const email = document.getElementById('forgot-email').value.trim();
-                if (!email) {
-                    showError("Please enter your email address first.");
-                    return;
-                }
-
-                showInfo("Verifying code...");
-                fetch('${pageContext.request.contextPath}/forget', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-                    body: 'email=' + encodeURIComponent(email) +
-                            '&code=' + encodeURIComponent(code) +
-                            '&action=checkCode'
-                })
-                        .then(r => r.json())
-                        .then(data => {
-                            if (data.success) {
-                                showSuccess("Verification code is correct! Please enter your new password.");
-                                verifiedOTP = true;
-                                document.getElementById('verify-code-btn').disabled = false;
-                                document.getElementById('new-password').focus();
-                                document.querySelectorAll('.otp-input').forEach(i => i.classList.remove('error'));
-                            } else {
-                                showError(data.message || "Verification code is invalid or expired.");
-                                verifiedOTP = false;
-                                document.getElementById('verify-code-btn').disabled = true;
-                                document.querySelectorAll('.otp-input').forEach(i => i.classList.add('error'));
-                            }
-                        })
-                        .catch(() => {
-                            showError("Network error. Please try again.");
-                            verifiedOTP = false;
-                            document.getElementById('verify-code-btn').disabled = true;
-                            document.querySelectorAll('.otp-input').forEach(i => i.classList.add('error'));
-                        });
-            }
-
-
-            function verifyCodeAndChangePass() {
-                if (!verifiedOTP) {
-                    showError("Please enter a valid verification code first.");
-                    return;
-                }
-                const email = document.getElementById('forgot-email').value.trim();
-                const code = Array.from(document.querySelectorAll('.otp-input')).map(i => i.value).join('');
-                const newPass = document.getElementById('new-password').value.trim();
-                const button = document.getElementById('verify-code-btn');
-
-                if (!newPass || newPass.length < 6) {
-                    showError("Please enter a new password with at least 6 characters.");
-                    document.getElementById('new-password').focus();
-                    return;
-                }
-
-                button.disabled = true;
-                button.innerHTML = '<span class="loading-spinner"></span>Updating...';
-                showInfo("Updating your password...");
-
-                fetch('${pageContext.request.contextPath}/forget', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-                    body: 'email=' + encodeURIComponent(email) +
-                            '&code=' + encodeURIComponent(code) +
-                            '&newPassword=' + encodeURIComponent(newPass) +
-                            '&action=verifyCode'
-                })
-                        .then(r => r.json())
-                        .then(data => {
-                            if (data.success) {
-                                showSuccess("Password updated successfully! You can now log in.");
-                                setTimeout(() => {
-                                    closeForgotPopup();
-                                }, 2000);
-                            } else {
-                                showError(data.message || "Invalid or expired verification code.");
-                            }
-                        })
-                        .catch(() => {
-                            showError("Network error. Please try again.");
-                        })
-                        .finally(() => {
-                            button.disabled = false;
-                            button.innerHTML = 'Change Password';
-                        });
-            }
-
-
-
-
-            // Close popup when clicking outside
-            document.getElementById('forgot-popup').addEventListener('click', function (e) {
-                if (e.target === this) {
-                    closeForgotPopup();
-                }
-            });
         </script>
     </body>
 </html>

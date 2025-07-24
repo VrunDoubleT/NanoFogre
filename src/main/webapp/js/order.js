@@ -29,13 +29,13 @@ const loadOrderContentAndEvent = (page) => {
             history.pushState(null, '', url.toString());
         }
 
-        // ADD EVENT FOR PAGINATION - FIXED: Call loadOrderContentAndEvent instead of loadCategoryContentAndEvent
+        // ADD EVENT FOR PAGINATION 
         document.querySelectorAll("div.pagination").forEach(element => {
             element.addEventListener("click", function () {
                 const pageClick = this.getAttribute("page");
                 if (page !== parseOptionNumber(pageClick, 1)) {
                     updatePageUrl(pageClick);
-                    loadOrderContentAndEvent(parseOptionNumber(pageClick, 1)); // FIXED: Changed from loadCategoryContentAndEvent
+                    loadOrderContentAndEvent(parseOptionNumber(pageClick, 1));
                 }
             });
         });
@@ -60,55 +60,47 @@ const loadOrderContentAndEvent = (page) => {
                 }
             }
         });
-//////////////
+        //////edit////////
         function confirmEditOrderStatus(orderId, currentStatus) {
+            const statuses = ["Pending", "Processing", "Shipping", "Delivered"];
+            const currentIndex = statuses.indexOf(currentStatus);
+
+            if (currentIndex < 0 || currentIndex === statuses.length - 1) {
+                Swal.fire({
+                    icon: 'info',
+                    title: 'No further status update allowed',
+                    text: `Order is already in final status: ${currentStatus}`,
+                });
+                return;
+            }
+
+            const nextStatus = statuses[currentIndex + 1];
+
             Swal.fire({
                 title: 'Update Order Status',
-                html: `
-      <label for="swal-select" class="block mb-2 text-sm font-medium text-gray-700 text-left">
-        Select new status:
-      </label>
-      <select id="swal-select" class="
-        block w-full px-3 py-2 border border-gray-300 rounded-lg 
-        focus:outline-none focus:ring-2 focus:ring-blue-500
-      ">
-        <option value="Pending">Pending</option>
-        <option value="Processing">Processing</option>
-        <option value="Shipped">Shipped</option>
-        <option value="Delivered">Delivered</option>
-        <option value="Cancelled">Cancelled</option>
-      </select>
-    `,
+                text: `Are you sure you want to change status to "${nextStatus}"?`,
                 icon: 'warning',
                 showCancelButton: true,
                 confirmButtonText: 'Update',
                 cancelButtonText: 'Cancel',
-                focusConfirm: false,
                 customClass: {
                     popup: 'p-6 rounded-2xl shadow-xl',
                     title: 'text-xl font-semibold mb-4',
-                    confirmButton: 'ml-[220px] mr-[25px] px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700',
+                    confirmButton: 'ml-4 mr-[20px] px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700',
                     cancelButton: 'px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700'
                 },
                 buttonsStyling: false,
-                didOpen: () => {
-                    const select = Swal.getPopup().querySelector('#swal-select');
-                    select.value = currentStatus;
-                },
-                preConfirm: () => {
-                    return Swal.getPopup().querySelector('#swal-select').value;
-                }
-            }).then((result) => {
+            }).then(result => {
                 if (!result.isConfirmed)
                     return;
-                const newStatus = result.value;
+
                 fetch('/order/view', {
                     method: 'POST',
                     headers: {'Content-Type': 'application/x-www-form-urlencoded'},
                     body: new URLSearchParams({
                         type: 'updateStatus',
                         orderId: orderId,
-                        statusName: newStatus
+                        statusName: nextStatus
                     })
                 })
                         .then(res => res.json())
@@ -121,6 +113,7 @@ const loadOrderContentAndEvent = (page) => {
                                 style: {background: data.isSuccess ? "#2196F3" : "#f44336"},
                                 close: true
                             }).showToast();
+
                             if (data.isSuccess) {
                                 loadOrderContentAndEvent(getPageFromUrl());
                             }
@@ -128,6 +121,9 @@ const loadOrderContentAndEvent = (page) => {
                         .catch(err => console.error("Error updating status:", err));
             });
         }
+
+
+
 
         document.querySelectorAll(".openEditOrderStatus").forEach(btn => {
             btn.addEventListener("click", e => {
@@ -140,7 +136,6 @@ const loadOrderContentAndEvent = (page) => {
         });
 
 
-/////////
     }).catch(error => {
         console.error('Error loading order content:', error);
         document.getElementById('LoadingOrders').innerHTML = `

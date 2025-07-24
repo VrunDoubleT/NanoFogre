@@ -1,8 +1,10 @@
 package Controllers;
 
 import DAOs.OrderDAO;
+import Models.Employee;
 import Models.Order;
 import Models.OrderDetails;
+import Models.OrderStatusHistory;
 import Utils.Converter;
 import com.google.gson.JsonObject;
 import java.io.IOException;
@@ -12,6 +14,7 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 
 /**
  * Servlet for handling order view requests
@@ -56,30 +59,29 @@ public class OrderServlet extends HttpServlet {
                 break;
 
             case "detail":
-                int orderId = Integer.parseInt(request.getParameter("orderId"));
                 OrderDAO dao = new OrderDAO();
-
+                int orderId = Integer.parseInt(request.getParameter("orderId"));
                 Order o = dao.getOrderById(orderId);
-                if (o == null) {
-                    response.sendError(HttpServletResponse.SC_NOT_FOUND, "Order #" + orderId + " not found");
-                    return;
-
-                }
-
                 List<OrderDetails> details = dao.getOrderDetailsByOrderId(orderId);
-
+                List<OrderStatusHistory> historyList = dao.getOrderStatusHistory(orderId);
+                System.out.println("show list hgisstory" + historyList);
                 request.setAttribute("order", o);
                 request.setAttribute("orderDetails", details);
-
-                request.getRequestDispatcher(
-                        "/WEB-INF/employees/templates/order/orderDetailTeamplate.jsp"
-                ).forward(request, response);
+                request.setAttribute("orderStatusHistory", historyList);
+                request.getRequestDispatcher("/WEB-INF/employees/templates/order/orderDetailTeamplate.jsp").forward(request, response);
                 break;
+
         }
     }
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        HttpSession session = request.getSession(false);
+        Employee emp = (session != null) ? (Employee) session.getAttribute("employee") : null;
+
+        int updatedBy = (emp != null) ? emp.getId() : 0;
+        String updaterName = (emp != null) ? emp.getName() : "System/Auto";
+
         String type = request.getParameter("type");
         response.setContentType("application/json");
         response.setCharacterEncoding("UTF-8");
@@ -87,12 +89,25 @@ public class OrderServlet extends HttpServlet {
         boolean ok = false;
         String message = "No action taken";
         switch (type) {
+
             case "updateStatus":
                 int orderId = Integer.parseInt(request.getParameter("orderId"));
                 String statusName = request.getParameter("statusName");
-                ok = orderDao.updateOrderStatus(orderId, statusName);
+                String statusNote = request.getParameter("statusNote");
 
-                message = ok ? "Status updated" : "Update failed";
+                ok = orderDao.updateOrderStatus(orderId, statusName);
+                System.out.println("test u pdateby" + updatedBy);
+                if (ok) {
+
+                    if (orderDao.isExistOrderStatusHistory(orderId, statusName)) {
+                        orderDao.updateOrderStatusHistory(orderId, statusName, statusNote, updatedBy);
+                    } else {
+                        orderDao.insertOrderStatusHistory(orderId, statusName, statusNote, updatedBy);
+                    }
+                    message = "Status updated & history recorded";
+                } else {
+                    message = "Update failed";
+                }
                 break;
         }
 

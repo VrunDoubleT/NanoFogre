@@ -275,24 +275,22 @@
                 </div>
             </div>
 
-            <!------------------------------------------------------------------>
             <!-- Add Attribute Product Button -->
             <button type="button" class="openAddAttributeProduct btn-add-attr">
                 <i data-lucide="diamond-plus" class="w-5 h-5"></i>
                 <span>Add Attribute Product</span>
             </button>
 
-            <!--            hand attribute-->
+            <!-- hand attribute-->
             <div id="attributes-container" class="mt-4 space-y-4"></div>
 
-            <!------------------------------------------------------------------>
             <!-- Attribute Item Template (Hidden) -->
             <div id="attribute-item-template" class="hidden">
                 <div id="main-attribute-item" class="custom-attr-item">
 
 
 
-                    <!-- Row: Attribute Name + Required Field -->
+                  
                     <div class="flex items-center mb-3 gap-4 pr-32">
 
                         <div class="flex-1">

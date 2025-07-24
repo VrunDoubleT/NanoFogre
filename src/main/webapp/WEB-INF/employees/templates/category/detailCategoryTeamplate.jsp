@@ -100,14 +100,7 @@
         transform: scaleX(0);
         transition: transform 0.3s ease;
     }
-    .info-card:hover {
-        transform:translateY(-2px);
-        box-shadow:0 15px 30px rgba(0,0,0,0.15);
-        border-color:#cbd5e1;
-    }
-    .info-card:hover::before {
-        transform:scaleX(1);
-    }
+
     .attribute-card {
         background: linear-gradient(135deg, #ffffff 0%, #fafbfc 100%);
         border: 1px solid #e2e8f0;
@@ -127,14 +120,7 @@
         transform: scaleY(0);
         transition: transform 0.3s ease;
     }
-    .attribute-card:hover {
-        transform:translateY(-3px);
-        box-shadow:0 20px 40px rgba(0,0,0,0.10);
-        border-color:#cbd5e1;
-    }
-    .attribute-card:hover::before {
-        transform:scaleY(1);
-    }
+
     .status-badge {
         position:relative;
         padding:6px 12px;
@@ -211,7 +197,6 @@
 
     <div class="p-8 h-full w-full overflow-y-auto ">
 
-        <!-- Body Section -->
         <div class="p-8 space-y-6">
 
             <!-- Category Image -->

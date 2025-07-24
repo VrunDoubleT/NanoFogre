@@ -19,8 +19,26 @@ public class Voucher {
     private LocalDateTime validTo;
     private boolean isActive;
     private boolean _destroy;
-
+    private int totalUsageLimit;
+    private int userUsageLimit;
+        
     public Voucher() {
+    }
+
+    public Voucher(int id, String code, String type, double value, double minValue, double maxValue, String description, LocalDateTime validFrom, LocalDateTime validTo, boolean isActive, boolean _destroy, int totalUsageLimit, int userUsageLimit) {
+        this.id = id;
+        this.code = code;
+        this.type = type;
+        this.value = value;
+        this.minValue = minValue;
+        this.maxValue = maxValue;
+        this.description = description;
+        this.validFrom = validFrom;
+        this.validTo = validTo;
+        this.isActive = isActive;
+        this._destroy = _destroy;
+        this.totalUsageLimit = totalUsageLimit;
+        this.userUsageLimit = userUsageLimit;
     }
 
     public Voucher(int id, String code, String type, double value, double minValue, double maxValue, String description, LocalDateTime validFrom, LocalDateTime validTo, boolean isActive, boolean _destroy) {
@@ -36,6 +54,26 @@ public class Voucher {
         this.isActive = isActive;
         this._destroy = _destroy;
     }
+    
+    
+
+    public int getTotalUsageLimit() {
+        return totalUsageLimit;
+    }
+
+    public void setTotalUsageLimit(int totalUsageLimit) {
+        this.totalUsageLimit = totalUsageLimit;
+    }
+
+    public int getUserUsageLimit() {
+        return userUsageLimit;
+    }
+
+    public void setUserUsageLimit(int userUsageLimit) {
+        this.userUsageLimit = userUsageLimit;
+    }
+
+
 
     public int getId() {
         return id;
