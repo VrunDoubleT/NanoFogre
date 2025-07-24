@@ -62,7 +62,7 @@
                                 <div id="cart-list">
                                     <c:forEach var="item" items="${cartItems}" varStatus="status">
 
-                                        <div class="product-card cart-product flex flex-col sm:flex-row items-center bg-white rounded-2xl mt-[15px] p-5 shadow-lg gap-6 transition-all duration-300"
+                                        <div class="product-card cart-product flex flex-col border sm:flex-row items-center bg-white rounded-2xl mb-5 p-5 gap-6 transition-all duration-300"
                                              id="cart-item-${item.cartId}"
                                              style="${status.index >= 5 ? 'display:none;' : ''}"
                                              data-idx="${status.index}">
@@ -77,7 +77,7 @@
                                                     >
                                                 <!-- Image -->
                                                 <img src="${not empty item.product.urls ? item.product.urls[0] : 'default.png'}"
-                                                 alt="${item.product.title}" class="w-[146px] ${item.product.quantity <= 0 ? 'out-of-stock' : ''} h-auto object-cover rounded-lg border-2 border-gray-200" />
+                                                 alt="${item.product.title}" class="w-[146px] ${item.product.quantity <= 0 ? 'out-of-stock' : ''} h-[146px] object-cover rounded-lg border-2 border-gray-200" />
                                             <!-- Info -->
                                             <div class="flex-1 ml-0 sm:ml-6 w-full ${item.product.quantity <= 0 ? 'out-of-stock' : ''}">
                                                 <h2 class="font-bold text-lg text-gray-800 leading-tight line-clamp-2 hover:text-purple-600 transition-colors cursor-pointer">${item.product.title}</h2>
@@ -155,9 +155,9 @@
 
 
                             <!-- Summary -->
-                            <div class="cart-summary bg-slate-50 border border-gray-200 rounded-2xl p-8 flex flex-col shadow-lg h-fit sticky top-24">
+                            <div class="cart-summary border border-gray-200 rounded-2xl p-8 flex flex-col h-fit sticky top-24">
 
-                                <div class="fixed bottom-0 left-0 w-full z-50 bg-white border-t border-gray-200 px-4 py-3 shadow-2xl md:static md:shadow-none md:border-0" style="backdrop-filter: blur(8px);">
+                                <div class="fixed bottom-0 left-0 w-full z-50 bg-white border-t border-gray-200 shadow-2xl md:static md:shadow-none md:border-0" style="backdrop-filter: blur(8px);">
                                     <h2 class="uppercase text-center text-gray-800 font-bold text-xl mb-6 tracking-wider">Order Summary</h2>
                                     <div class="space-y-3 text-gray-700">
                                         <div class="flex justify-between">

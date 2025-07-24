@@ -20,7 +20,7 @@
                 <!-- Load content -->
             </div>
         </div>
-        <div class="bg-gray-100 w-full flex justify-center mt-6">
+        <div class="w-full flex justify-center mt-6">
             <div class="container max-w-[1200px] w-full px-4 sm:px-6 lg:px-8">
                 <div class="flex">
                     <div id="sidebar">

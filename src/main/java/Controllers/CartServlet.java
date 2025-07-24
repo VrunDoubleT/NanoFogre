@@ -53,7 +53,7 @@ public class CartServlet extends HttpServlet {
         List<Cart> cartItems = dao.getCartItemsByUserId(customerId);
         request.setAttribute("cartItems", cartItems);
         VoucherDAO voucherDAO = new VoucherDAO();
-        request.getRequestDispatcher("/WEB-INF/customers/pages/cart.jsp")
+        request.getRequestDispatcher("/WEB-INF/customers/pages/Cart.jsp")
                 .forward(request, response);
 
     }

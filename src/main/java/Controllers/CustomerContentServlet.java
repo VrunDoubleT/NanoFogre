@@ -33,11 +33,6 @@ public class CustomerContentServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        CustomerDAO dao = new CustomerDAO();
-        Customer customer = dao.getCustomerById(1);
-        HttpSession session = request.getSession();
-        session.setAttribute("customer", customer);
-        session.setAttribute("customerId", customer.getId());
         request.getRequestDispatcher("/WEB-INF/customers/component/layout/customerLayout.jsp").forward(request, response);
     }
 }

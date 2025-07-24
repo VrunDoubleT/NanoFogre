@@ -11,13 +11,8 @@
     }
     List<Address> addressList = (List<Address>) session.getAttribute("addressList");
 %>
-<style>
-    footer.mt-20 {
-        margin-top: 0;
-    }
-</style>
 
-<div class="bg-white/95 backdrop-blur-sm rounded-3xl p-8 shadow-2xl">
+<div class="rounded-3xl border border-gray-200 p-8">
     <h1 class="text-3xl font-bold text-gray-800 text-center mb-8">My Profile</h1>
 
     <form method="post" action="/customer/self" id="customerUpdateForm" enctype="multipart/form-data" class="space-y-6">
