@@ -59,7 +59,14 @@ public class AuthServlet extends HttpServlet {
             }
             response.sendRedirect(request.getContextPath() + "/auth?action=login");
         } else if ("verifyCode".equals(action)) {
-            String email = request.getParameter("email");
+            // Lấy email từ session
+            HttpSession session = request.getSession();
+            String email = (String) session.getAttribute("verifyEmail");
+            if (email == null) {
+                // Nếu user truy cập trực tiếp mà chưa có email trong session
+                response.sendRedirect(request.getContextPath() + "/auth?action=login&error=" + java.net.URLEncoder.encode("You need to register first!", "UTF-8"));
+                return;
+            }
             request.setAttribute("email", email);
             request.getRequestDispatcher("/WEB-INF/customers/pages/verifyCode.jsp").forward(request, response);
         }
@@ -185,7 +192,8 @@ public class AuthServlet extends HttpServlet {
                 response.sendRedirect(redirectBase + "&error=" + java.net.URLEncoder.encode("Registration succeeded, but sending email failed. " + mailResult, "UTF-8"));
                 return;
             }
-            response.sendRedirect(request.getContextPath() + "/auth?action=verifyCode&email=" + java.net.URLEncoder.encode(email, "UTF-8"));
+            request.getSession().setAttribute("verifyEmail", email);
+            response.sendRedirect(request.getContextPath() + "/auth?action=verifyCode");
         } else {
             response.sendRedirect(redirectBase + "&error=" + java.net.URLEncoder.encode("Registration failed, please try again!", "UTF-8"));
         }
@@ -218,8 +226,9 @@ public class AuthServlet extends HttpServlet {
         }
 
         customerDAO.setVerified(customer.getId());
-
         forgetDAO.deleteCodeCustomer(customer.getId(), code.trim());
+
+        request.getSession().removeAttribute("verifyEmail");
 
         request.getSession().setAttribute("registerSuccess", true);
         response.sendRedirect(request.getContextPath() + "/auth?action=register&justRegistered=true");

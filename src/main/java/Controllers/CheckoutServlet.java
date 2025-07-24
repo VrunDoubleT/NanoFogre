@@ -63,7 +63,7 @@ public class CheckoutServlet extends HttpServlet {
 
         if (cartIdsJson == null || cartIdsJson.trim().isEmpty() || cartIdsJson.equals("[]")) {
             request.setAttribute("errorMessage", "No items selected for purchase.");
-            request.getRequestDispatcher("/WEB-INF/customers/pages/purchase.jsp").forward(request, response);
+            request.getRequestDispatcher("/WEB-INF/customers/pages/Purchase.jsp").forward(request, response);
             return;
         }
 
@@ -76,13 +76,13 @@ public class CheckoutServlet extends HttpServlet {
         } catch (Exception ex) {
 
             request.setAttribute("errorMessage", "Invalid cart data.");
-            request.getRequestDispatcher("/WEB-INF/customers/pages/purchase.jsp").forward(request, response);
+            request.getRequestDispatcher("/WEB-INF/customers/pages/Purchase.jsp").forward(request, response);
             return;
         }
 
         if (cartIdList == null || cartIdList.isEmpty()) {
             request.setAttribute("errorMessage", "No valid items selected for purchase.");
-            request.getRequestDispatcher("/WEB-INF/customers/pages/purchase.jsp").forward(request, response);
+            request.getRequestDispatcher("/WEB-INF/customers/pages/Purchase.jsp").forward(request, response);
             return;
         }
 
@@ -97,7 +97,7 @@ public class CheckoutServlet extends HttpServlet {
 
         if (selectedItems.isEmpty()) {
             request.setAttribute("errorMessage", "No valid items found in your cart.");
-            request.getRequestDispatcher("/WEB-INF/customers/pages/purchase.jsp").forward(request, response);
+            request.getRequestDispatcher("/WEB-INF/customers/pages/Purchase.jsp").forward(request, response);
             return;
         }
 
@@ -155,7 +155,7 @@ public class CheckoutServlet extends HttpServlet {
         request.setAttribute("availableAddresses", availableAddresses);
         request.setAttribute("address", selectedAddress);
 
-        request.getRequestDispatcher("/WEB-INF/customers/pages/purchase.jsp").forward(request, response);
+        request.getRequestDispatcher("/WEB-INF/customers/pages/Purchase.jsp").forward(request, response);
     }
 
     /**
