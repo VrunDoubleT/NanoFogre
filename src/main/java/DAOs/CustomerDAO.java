@@ -203,7 +203,6 @@ public class CustomerDAO extends DB.DBContext {
 
         return details;
     }
-// Đăng nhập khách hàng
 
     public Customer login(String email, String hashedPassword) {
         String sql = "SELECT * FROM Customers WHERE customerEmail=? AND customerPassword=? AND isBlock=0 AND isVerify=1 AND _destroy=0";
@@ -244,7 +243,6 @@ public class CustomerDAO extends DB.DBContext {
         }
     }
 
-// Kiểm tra email đã tồn tại chưa
     public boolean checkEmailExists(String email) {
         String sql = "SELECT 1 FROM Customers WHERE customerEmail=? AND _destroy=0";
         Object[] params = {email};
@@ -256,7 +254,6 @@ public class CustomerDAO extends DB.DBContext {
         return false;
     }
 
-// Đăng ký khách hàng mới
     public boolean register(Customer c) {
         String sql = "INSERT INTO Customers (customerEmail, customerPassword, customerName, isVerify, isBlock, _destroy, createdAt) VALUES (?, ?, ?, ?, ?, ?, GETDATE())";
         Object[] params = {
@@ -277,32 +274,30 @@ public class CustomerDAO extends DB.DBContext {
     }
 
     public Customer findCustomerByEmail(String email) {
-    String sql = "SELECT * FROM Customers WHERE customerEmail=? AND _destroy=0";
-    try (ResultSet rs = this.execSelectQuery(sql, new Object[]{email})) {
-        if (rs.next()) {
-            Customer c = new Customer();
-            c.setId(rs.getInt("customerId"));
-            c.setEmail(rs.getString("customerEmail"));
-            c.setPassword(rs.getString("customerPassword")); 
-            c.setName(rs.getString("customerName"));
-            c.setAvatar(rs.getString("customerAvatar"));
-            c.setPhone(rs.getString("customerPhone"));
-            java.sql.Timestamp ts = rs.getTimestamp("createdAt");
-            if (ts != null) {
-                c.setCreatedAt(ts.toLocalDateTime());
+        String sql = "SELECT * FROM Customers WHERE customerEmail=? AND _destroy=0";
+        try ( ResultSet rs = this.execSelectQuery(sql, new Object[]{email})) {
+            if (rs.next()) {
+                Customer c = new Customer();
+                c.setId(rs.getInt("customerId"));
+                c.setEmail(rs.getString("customerEmail"));
+                c.setPassword(rs.getString("customerPassword"));
+                c.setName(rs.getString("customerName"));
+                c.setAvatar(rs.getString("customerAvatar"));
+                c.setPhone(rs.getString("customerPhone"));
+                java.sql.Timestamp ts = rs.getTimestamp("createdAt");
+                if (ts != null) {
+                    c.setCreatedAt(ts.toLocalDateTime());
+                }
+                c.setIsBlock(rs.getBoolean("isBlock"));
+                c.setIsVerify(rs.getInt("isVerify") == 1);
+                return c;
             }
-            c.setIsBlock(rs.getBoolean("isBlock"));
-            c.setIsVerify(rs.getInt("isVerify") == 1);
-            return c;
+        } catch (Exception ex) {
+            ex.printStackTrace();
         }
-    } catch (Exception ex) {
-        ex.printStackTrace();
+        return null;
     }
-    return null;
-}
 
-
-// 4. Đánh dấu khách hàng đã xác thực email (isVerify = 1)
     public boolean setVerified(int customerId) {
         String sql = "UPDATE Customers SET isVerify = 1 WHERE customerId = ?";
         try {
@@ -314,11 +309,10 @@ public class CustomerDAO extends DB.DBContext {
         return false;
     }
 
-// 5. Lưu mã xác thực vào bảng VerifyCodes (dùng cho register)
-    public boolean insertCodeCustomer(int userId, String code, LocalDateTime expiredAt) {
-        String sql = "INSERT INTO VerifyCodes (userType, userId, code, isVerified, createdAt, expiredAt) VALUES (0, ?, ?, 0, ?, ?)";
+    public boolean insertCodeCustomer(int customerId, String code, LocalDateTime expiredAt) {
+        String sql = "INSERT INTO VerifyCodes (userType, customerId, code, isVerified, createdAt, expiredAt) VALUES (0, ?, ?, 0, ?, ?)";
         Object[] params = {
-            userId,
+            customerId,
             code,
             Timestamp.valueOf(LocalDateTime.now()),
             Timestamp.valueOf(expiredAt)

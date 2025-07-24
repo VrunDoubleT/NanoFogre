@@ -15,11 +15,12 @@ public class OrderStatusHistory {
     private int historyId;
     private int orderId;
     private int statusId;
-    private String statusName; 
+    private String statusName;
     private String statusNote;
     private LocalDateTime updatedAt;
     private int updatedBy;
-    private String updaterName; 
+    private String updaterName;
+    private String updatedAtStr;
 
     public OrderStatusHistory() {
     }
@@ -99,7 +100,11 @@ public class OrderStatusHistory {
         this.updaterName = updaterName;
     }
 
-    
-    
-    
+    public String getUpdatedAtStr() {
+        return updatedAtStr;
+    }
+
+    public void setUpdatedAtStr(String updatedAtStr) {
+        this.updatedAtStr = updatedAtStr;
+    }
 }

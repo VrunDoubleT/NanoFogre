@@ -6,7 +6,6 @@ document.addEventListener("DOMContentLoaded", function () {
     if (input) {
         const parent = input.closest('form');
         parent.classList.add('relative');
-
         wrapper = document.createElement("div");
         wrapper.className = `
             suggestion-list-wrapper
@@ -26,8 +25,6 @@ document.addEventListener("DOMContentLoaded", function () {
         `.replace(/\s+/g, ' ');
         wrapper.appendChild(suggestionBox);
         parent.appendChild(wrapper);
-
-        // Suggestion search
         input.addEventListener("input", function () {
             const value = input.value.trim();
             clearTimeout(timer);
@@ -42,7 +39,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 })
                 .then(res => res.json())
                 .then(arr => {
-                    if (!Array.isArray(arr) || arr.length === 0) {
+                    if (arr.length === 0) {
                         suggestionBox.innerHTML = `<div class='px-4 py-2 text-gray-400'>No products found.</div>`;
                     } else {
                         suggestionBox.innerHTML = arr.map((item, idx) => `
@@ -64,7 +61,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     }
                     wrapper.style.display = "block";
                 });
-            }, 200); // Delay 200ms
+            }, 200);
         });
 
         function formatPrice(price) {
@@ -86,7 +83,6 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 });
 
-// ---- Reset search input & suggestion 
 function resetInputIfNeed() {
     var input = document.querySelector('input[name="keyword"]');
     if (!input) return;
@@ -104,7 +100,6 @@ function resetInputIfNeed() {
 document.addEventListener("DOMContentLoaded", resetInputIfNeed);
 window.addEventListener("pageshow", resetInputIfNeed);
 
-// Button animation
 document.addEventListener("DOMContentLoaded", function () {
     document.querySelectorAll('a,button').forEach(el => {
         el.addEventListener('mousedown', function () {

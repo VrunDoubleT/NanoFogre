@@ -33,7 +33,6 @@ public class AuthServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         String action = request.getParameter("action");
-
         // Get remembered email from cookie if exists
         String rememberedEmail = null;
         Cookie[] cookies = request.getCookies();
@@ -59,6 +58,10 @@ public class AuthServlet extends HttpServlet {
                 session.invalidate();
             }
             response.sendRedirect(request.getContextPath() + "/auth?action=login");
+        } else if ("verifyCode".equals(action)) {
+            String email = request.getParameter("email");
+            request.setAttribute("email", email);
+            request.getRequestDispatcher("/WEB-INF/customers/pages/verifyCode.jsp").forward(request, response);
         }
     }
 
@@ -66,16 +69,24 @@ public class AuthServlet extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         String action = request.getParameter("action");
-        if ("login".equals(action)) {
-            handleLogin(request, response);
-        } else if ("register".equals(action)) {
-            handleRegister(request, response);
-        } else if ("verifyEmail".equals(action)) {
-            handleVerifyEmail(request, response);
-        } else if ("forgot".equals(action)) {
-            handleForgotCustomer(request, response); // Gửi mã về email
-        } else if ("verifyCode".equals(action)) {
-            handleVerifyForgotCode(request, response);
+        switch (action) {
+            case "login":
+                handleLogin(request, response);
+                break;
+            case "register":
+                handleRegister(request, response);
+                break;
+            case "verifyEmail":
+                handleVerifyEmail(request, response);
+                break;
+            case "forgot":
+                handleForgotCustomer(request, response);
+                break;
+            case "verifyCode":
+                handleVerifyForgotCode(request, response);
+                break;
+            default:
+                break;
         }
     }
 
@@ -84,43 +95,38 @@ public class AuthServlet extends HttpServlet {
         String email = request.getParameter("email");
         String password = request.getParameter("password");
         String remember = request.getParameter("remember");
-        System.out.println(Common.hashPassword(password));
         Customer customer = customerDAO.login(email, Common.hashPassword(password));
 
         if (customer != null) {
-            // **Thêm kiểm tra đã xác thực email chưa**
             if (!customer.isIsVerify()) {
-                request.setAttribute("error", "Your email has not been verified! Please check your email and verify your account.");
-                request.setAttribute("rememberedEmail", email);
-                request.getRequestDispatcher("/WEB-INF/customers/pages/loginPage.jsp").forward(request, response);
+                response.sendRedirect(request.getContextPath() + "/auth?action=login"
+                        + "&error=" + java.net.URLEncoder.encode("Your email has not been verified! Please check your email and verify your account.", "UTF-8")
+                        + "&email=" + java.net.URLEncoder.encode(email, "UTF-8"));
                 return;
             }
             if (customer.isIsBlock()) {
-                request.setAttribute("error", "Your account is blocked!");
-                request.setAttribute("rememberedEmail", email);
-                request.getRequestDispatcher("/WEB-INF/customers/pages/loginPage.jsp").forward(request, response);
+                response.sendRedirect(request.getContextPath() + "/auth?action=login"
+                        + "&error=" + java.net.URLEncoder.encode("Your account is blocked!", "UTF-8")
+                        + "&email=" + java.net.URLEncoder.encode(email, "UTF-8"));
                 return;
             }
             HttpSession session = request.getSession();
             session.setAttribute("customer", customer);
 
-            // Set cookie if user checks "Remember me"
             if ("on".equals(remember)) {
                 Cookie cookie = new Cookie("customer_email", email);
                 cookie.setMaxAge(7 * 24 * 60 * 60); // 7 days
                 response.addCookie(cookie);
             } else {
-                // Remove cookie if not checked
                 Cookie cookie = new Cookie("customer_email", "");
                 cookie.setMaxAge(0);
                 response.addCookie(cookie);
             }
-
             response.sendRedirect(request.getContextPath() + "/");
         } else {
-            request.setAttribute("error", "Invalid email or password!");
-            request.setAttribute("rememberedEmail", email);
-            request.getRequestDispatcher("/WEB-INF/customers/pages/loginPage.jsp").forward(request, response);
+            response.sendRedirect(request.getContextPath() + "/auth?action=login"
+                    + "&error=" + java.net.URLEncoder.encode("Invalid email or password!", "UTF-8")
+                    + "&email=" + java.net.URLEncoder.encode(email, "UTF-8"));
         }
     }
 
@@ -131,18 +137,16 @@ public class AuthServlet extends HttpServlet {
         String password = request.getParameter("password");
         String confirm = request.getParameter("confirm_password");
 
-        request.setAttribute("name", name);
-        request.setAttribute("email", email);
+        String redirectBase = request.getContextPath() + "/auth?action=register"
+                + "&name=" + java.net.URLEncoder.encode(name == null ? "" : name, "UTF-8")
+                + "&email=" + java.net.URLEncoder.encode(email == null ? "" : email, "UTF-8");
 
         if (!password.equals(confirm)) {
-            request.setAttribute("error", "Passwords do not match!");
-            request.getRequestDispatcher("/WEB-INF/customers/pages/registerPage.jsp").forward(request, response);
+            response.sendRedirect(redirectBase + "&error=" + java.net.URLEncoder.encode("Passwords do not match!", "UTF-8"));
             return;
         }
-
         if (customerDAO.checkEmailExists(email)) {
-            request.setAttribute("error", "Email already exists!");
-            request.getRequestDispatcher("/WEB-INF/customers/pages/registerPage.jsp").forward(request, response);
+            response.sendRedirect(redirectBase + "&error=" + java.net.URLEncoder.encode("Email already exists!", "UTF-8"));
             return;
         }
 
@@ -153,43 +157,37 @@ public class AuthServlet extends HttpServlet {
         newCustomer.setIsBlock(false);
 
         if (customerDAO.register(newCustomer)) {
-            // Lấy lại Customer vừa đăng ký
             Customer saved = customerDAO.findCustomerByEmail(email);
             if (saved == null) {
-                request.setAttribute("error", "Registration error, please try again!");
-                request.getRequestDispatcher("/WEB-INF/customers/pages/registerPage.jsp").forward(request, response);
+                response.sendRedirect(redirectBase + "&error=" + java.net.URLEncoder.encode("Registration error, please try again!", "UTF-8"));
                 return;
             }
-            // Random code 6 số
             String code = String.valueOf((int) ((Math.random() * 900000) + 100000));
             LocalDateTime expiredAt = LocalDateTime.now().plusMinutes(10);
 
-            // Lưu mã xác thực
-            boolean savedCode = customerDAO.insertCodeCustomer(saved.getId(), code, expiredAt);
-            if (!savedCode) {
-                request.setAttribute("error", "Could not save verification code, try again later!");
-                request.getRequestDispatcher("/WEB-INF/customers/pages/registerPage.jsp").forward(request, response);
+            ForgetDAO forgetDAO = new ForgetDAO();
+            ForgetDAO.SendResult codeResult = forgetDAO.upsertCodeCustomer(saved.getId(), code, expiredAt, true);
+            if (codeResult == ForgetDAO.SendResult.TOO_MANY_REQUESTS) {
+                response.sendRedirect(redirectBase + "&error=" + java.net.URLEncoder.encode("You have reached the maximum number of resend attempts today. Please try again later!", "UTF-8"));
+                return;
+            }
+            if (codeResult != ForgetDAO.SendResult.OK) {
+                response.sendRedirect(redirectBase + "&error=" + java.net.URLEncoder.encode("Could not save verification code, try again later!", "UTF-8"));
                 return;
             }
 
-            // Gửi mail xác thực
             String subject = "Account Verification";
             String content = "Hello " + name + ",\n\nYour verification code is: " + code
                     + "\nThis code will expire in 10 minutes.\n\nThank you!";
             String mailResult = Utils.MailUtil.sendEmail(email, subject, content);
 
             if (!mailResult.startsWith("Email sent")) {
-                request.setAttribute("error", "Registration succeeded, but sending email failed. " + mailResult);
-                request.getRequestDispatcher("/WEB-INF/customers/pages/registerPage.jsp").forward(request, response);
+                response.sendRedirect(redirectBase + "&error=" + java.net.URLEncoder.encode("Registration succeeded, but sending email failed. " + mailResult, "UTF-8"));
                 return;
             }
-
-            // Sang trang nhập mã xác thực
-            request.setAttribute("email", email);
-            request.getRequestDispatcher("/WEB-INF/customers/pages/verifyCode.jsp").forward(request, response);
+            response.sendRedirect(request.getContextPath() + "/auth?action=verifyCode&email=" + java.net.URLEncoder.encode(email, "UTF-8"));
         } else {
-            request.setAttribute("error", "Registration failed, please try again!");
-            request.getRequestDispatcher("/WEB-INF/customers/pages/registerPage.jsp").forward(request, response);
+            response.sendRedirect(redirectBase + "&error=" + java.net.URLEncoder.encode("Registration failed, please try again!", "UTF-8"));
         }
     }
 
@@ -204,15 +202,12 @@ public class AuthServlet extends HttpServlet {
             request.getRequestDispatcher("/WEB-INF/customers/pages/verifyCode.jsp").forward(request, response);
             return;
         }
-
         Customer customer = customerDAO.findCustomerByEmail(email.trim());
         if (customer == null) {
             request.setAttribute("error", "Invalid email!");
             request.getRequestDispatcher("/WEB-INF/customers/pages/registerPage.jsp").forward(request, response);
             return;
         }
-
-        // Sử dụng ForgetDAO để check verify code
         ForgetDAO forgetDAO = new ForgetDAO();
         boolean valid = forgetDAO.checkVerifyCodeCustomer(customer.getId(), code.trim());
         if (!valid) {
@@ -222,8 +217,9 @@ public class AuthServlet extends HttpServlet {
             return;
         }
 
-        forgetDAO.markCodeAsUsedCustomer(customer.getId(), code.trim());
         customerDAO.setVerified(customer.getId());
+
+        forgetDAO.deleteCodeCustomer(customer.getId(), code.trim());
 
         request.getSession().setAttribute("registerSuccess", true);
         response.sendRedirect(request.getContextPath() + "/auth?action=register&justRegistered=true");
@@ -245,9 +241,14 @@ public class AuthServlet extends HttpServlet {
             return;
         }
         String code = String.valueOf((int) ((Math.random() * 900000) + 100000));
-        java.time.LocalDateTime expiredAt = java.time.LocalDateTime.now().plusMinutes(5);
-        boolean saved = dao.insertCodeCustomer(cus.getId(), code, expiredAt);
-        if (!saved) {
+        LocalDateTime expiredAt = LocalDateTime.now().plusMinutes(5);
+
+        ForgetDAO.SendResult result = dao.upsertCodeCustomer(cus.getId(), code, expiredAt, false);
+        if (result == ForgetDAO.SendResult.TOO_MANY_REQUESTS) {
+            response.getWriter().write("{\"success\":false,\"message\":\"You have reached the maximum number of resend attempts today. Please try again later!\"}");
+            return;
+        }
+        if (result != ForgetDAO.SendResult.OK) {
             response.getWriter().write("{\"success\":false,\"message\":\"System error, please try again!\"}");
             return;
         }
@@ -265,7 +266,6 @@ public class AuthServlet extends HttpServlet {
             throws IOException {
         response.setContentType("application/json");
         response.setCharacterEncoding("UTF-8");
-
         String email = request.getParameter("email");
         String code = request.getParameter("code");
         String newPassword = request.getParameter("newPassword");
@@ -283,9 +283,25 @@ public class AuthServlet extends HttpServlet {
             return;
         }
 
+        int failedCount = dao.getFailedCount(customer.getId());
+        if (failedCount >= 3) {
+            response.getWriter().write("{\"success\":false,\"message\":\"You have entered the wrong code too many times. Please request a new code.\"}");
+            return;
+        }
+
         boolean validCode = dao.checkVerifyCodeCustomer(customer.getId(), code.trim());
         if (!validCode) {
-            response.getWriter().write("{\"success\":false,\"message\":\"Invalid or expired code.\"}");
+            try {
+                dao.incrementFailedCountForCustomer(customer.getId());
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            failedCount = dao.getFailedCountForCustomer(customer.getId());
+            if (failedCount >= 3) {
+                response.getWriter().write("{\"success\":false,\"message\":\"You have entered the wrong code too many times. Please request a new code.\"}");
+            } else {
+                response.getWriter().write("{\"success\":false,\"message\":\"Invalid or expired code. (" + failedCount + "/3 attempts used)\"}");
+            }
             return;
         }
 
@@ -297,11 +313,11 @@ public class AuthServlet extends HttpServlet {
 
         boolean updated = dao.confirmResetPasswordCustomer(customer.getId(), hashedPwd);
         if (updated) {
-            dao.markCodeAsUsedCustomer(customer.getId(), code.trim());
+            dao.deleteCodeCustomer(customer.getId(), code.trim());
+
             response.getWriter().write("{\"success\":true,\"message\":\"Password changed successfully.\"}");
         } else {
             response.getWriter().write("{\"success\":false,\"message\":\"Failed to update password.\"}");
         }
     }
-
 }

@@ -1,5 +1,4 @@
 document.addEventListener("DOMContentLoaded", function () {
-    // Success registration alert
     if (localStorage.getItem("registerSuccess") === "true") {
         localStorage.removeItem("registerSuccess");
         Swal.fire({
@@ -16,7 +15,25 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
-    // Login Validation
+    function getQueryParam(name) {
+        const url = new URL(window.location.href);
+        return url.searchParams.get(name);
+    }
+    const errorMsg = getQueryParam("error");
+    if (errorMsg) {
+        Swal.fire({
+            icon: "error",
+            title: "Oops!",
+            text: decodeURIComponent(errorMsg)
+        }).then(() => {
+            const url = new URL(window.location.href);
+            url.searchParams.delete("error");
+            url.searchParams.delete("email");
+            window.history.replaceState({}, document.title, url.pathname + url.search);
+        });
+    }
+
+    // ---- validation ----
     const loginForm = document.getElementById("loginForm");
     if (loginForm) {
         const emailInput = document.getElementById("login-email");
@@ -40,15 +57,17 @@ document.addEventListener("DOMContentLoaded", function () {
             } else {
                 passError.classList.add("hidden");
             }
-            if (!valid) e.preventDefault();
+            if (!valid)
+                e.preventDefault();
         });
 
-        // Hide error on input
         emailInput.addEventListener("input", function () {
-            if (emailInput.value.trim()) emailError.classList.add("hidden");
+            if (emailInput.value.trim())
+                emailError.classList.add("hidden");
         });
         passInput.addEventListener("input", function () {
-            if (passInput.value.trim()) passError.classList.add("hidden");
+            if (passInput.value.trim())
+                passError.classList.add("hidden");
         });
     }
 
@@ -68,7 +87,6 @@ document.addEventListener("DOMContentLoaded", function () {
         registerForm.addEventListener("submit", function (e) {
             let valid = true;
 
-            // Name validation
             if (!nameInput.value.trim()) {
                 nameError.textContent = "Please enter your full name.";
                 nameError.classList.remove("hidden");
@@ -77,7 +95,6 @@ document.addEventListener("DOMContentLoaded", function () {
                 nameError.classList.add("hidden");
             }
 
-            // Email validation
             if (!emailInput.value.trim()) {
                 emailError.textContent = "Please enter your email.";
                 emailError.classList.remove("hidden");
@@ -90,7 +107,6 @@ document.addEventListener("DOMContentLoaded", function () {
                 emailError.classList.add("hidden");
             }
 
-            // Password validation
             if (!pwdInput.value.trim()) {
                 pwdError.textContent = "Please enter your password.";
                 pwdError.classList.remove("hidden");
@@ -107,7 +123,6 @@ document.addEventListener("DOMContentLoaded", function () {
                 pwdError.classList.add("hidden");
             }
 
-            // Confirm password validation
             if (!confirmInput.value.trim()) {
                 confirmError.textContent = "Please confirm your password.";
                 confirmError.classList.remove("hidden");
@@ -124,22 +139,27 @@ document.addEventListener("DOMContentLoaded", function () {
                 confirmError.classList.add("hidden");
             }
 
-            if (!valid) e.preventDefault();
+            if (!valid)
+                e.preventDefault();
         });
 
-        // Hide error on input (live)
         nameInput.addEventListener("input", function () {
-            if (nameInput.value.trim()) nameError.classList.add("hidden");
+            if (nameInput.value.trim())
+                nameError.classList.add("hidden");
         });
         emailInput.addEventListener("input", function () {
-            if (emailInput.value.trim() && /^[\w\-\.]+@([\w-]+\.)+[\w-]{2,4}$/.test(emailInput.value.trim())) emailError.classList.add("hidden");
+            if (emailInput.value.trim() && /^[\w\-\.]+@([\w-]+\.)+[\w-]{2,4}$/.test(emailInput.value.trim()))
+                emailError.classList.add("hidden");
         });
         pwdInput.addEventListener("input", function () {
-            if (pwdInput.value.trim().length >= 6 && isValidPassword(pwdInput.value.trim())) pwdError.classList.add("hidden");
-            if (confirmInput.value === pwdInput.value && isValidPassword(confirmInput.value)) confirmError.classList.add("hidden");
+            if (pwdInput.value.trim().length >= 6 && isValidPassword(pwdInput.value.trim()))
+                pwdError.classList.add("hidden");
+            if (confirmInput.value === pwdInput.value && isValidPassword(confirmInput.value))
+                confirmError.classList.add("hidden");
         });
         confirmInput.addEventListener("input", function () {
-            if (confirmInput.value === pwdInput.value && isValidPassword(confirmInput.value)) confirmError.classList.add("hidden");
+            if (confirmInput.value === pwdInput.value && isValidPassword(confirmInput.value))
+                confirmError.classList.add("hidden");
         });
     }
 
@@ -151,18 +171,36 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     };
 
-    // Show backend error if exists
-    const backendErrorEl = document.getElementById("backend-error");
-    if (backendErrorEl && backendErrorEl.textContent.trim()) {
-        Swal.fire({
-            icon: "error",
-            title: "Oops!",
-            text: backendErrorEl.textContent.trim(),
-        });
-    }
-
     // Password regex: No accent, no space
     function isValidPassword(pwd) {
         return /^[A-Za-z0-9!@#$%^&*()_+=\-{}\[\]:;"'<>,.?/\\|~]{6,}$/.test(pwd);
+    }
+});
+document.addEventListener("DOMContentLoaded", function () {
+    function getQueryParam(name) {
+        const url = new URL(window.location.href);
+        return url.searchParams.get(name);
+    }
+
+    const errorMsg = getQueryParam("error");
+    if (errorMsg) {
+        Swal.fire({
+            icon: "error",
+            title: "Oops!",
+            text: decodeURIComponent(errorMsg)
+        }).then(() => {
+            const url = new URL(window.location.href);
+            url.searchParams.delete("error");
+            url.searchParams.delete("name");
+            url.searchParams.delete("email");
+            window.history.replaceState({}, document.title, url.pathname + url.search);
+        });
+    }
+});
+document.addEventListener("DOMContentLoaded", function () {
+    var hiddenEmail = document.getElementById("hiddenEmail");
+    if (hiddenEmail && hiddenEmail.value) {
+        localStorage.setItem("registerEmail", hiddenEmail.value.trim());
+        localStorage.setItem("registerStep", "verify");
     }
 });

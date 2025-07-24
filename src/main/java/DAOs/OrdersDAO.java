@@ -13,13 +13,16 @@ import Models.Employee;
 import Models.Order;
 import Models.OrderDetails;
 import Models.OrderStatus;
+import Models.OrderStatusHistory;
 import Models.PaymentMethod;
 import Models.PaymentStatus;
 import Models.Product;
 import Models.Voucher;
 import java.sql.*;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.time.format.DateTimeFormatter;
 
 /**
  *
@@ -30,12 +33,11 @@ public class OrdersDAO {
     private DBContext db = new DBContext();
 
     public List<Order> getOrdersByCustomer(int customerId) throws SQLException {
-
-        return filterOrders(customerId, null, null);
+        return filterOrders(customerId, null, null, null, null);
     }
 
     public Order getOrderDetail(int orderId, int customerId) throws SQLException {
-        String sql = "SELECT o.*, e.employeeId, e.employeeName, "
+        String sql = "SELECT o.*, "
                 + "os.statusId, os.statusName, os.statusDescription, "
                 + "pm.paymentMethodId, pm.paymentMethodName, "
                 + "ps.paymentStatusId, ps.paymentStatusName, "
@@ -63,18 +65,17 @@ public class OrdersDAO {
         order.setTotalAmount(rs.getDouble("totalAmount"));
         order.setShippingFee(rs.getDouble("shippingFee"));
 
-        // Employee
-        Employee emp = new Employee();
-        emp.setId(rs.getInt("employeeId"));
-        emp.setName(rs.getString("employeeName"));
-        order.setEmployee(emp);
-
-        // OrderStatus
         OrderStatus os = new OrderStatus();
         os.setId(rs.getInt("statusId"));
         os.setName(rs.getString("statusName"));
         os.setDescription(rs.getString("statusDescription"));
         order.setOrderStatus(os);
+
+        // PaymentMethod
+        PaymentMethod pm = new PaymentMethod();
+        pm.setId(rs.getInt("paymentMethodId"));
+        pm.setName(rs.getString("paymentMethodName"));
+        order.setPaymentMethod(pm);
 
         // PaymentStatus
         PaymentStatus ps = new PaymentStatus();
@@ -82,7 +83,6 @@ public class OrdersDAO {
         ps.setName(rs.getString("paymentStatusName"));
         order.setPaymentStatus(ps);
 
-        // Voucher 
         if (rs.getObject("voucherId") != null) {
             Voucher v = new Voucher();
             v.setId(rs.getInt("voucherId"));
@@ -97,7 +97,6 @@ public class OrdersDAO {
         addr.setDetails(rs.getString("addressDetails"));
         addr.setPhone(rs.getString("addressPhone"));
         order.setAddress(addr);
-
         order.setDetails(getOrderDetails(orderId, customerId));
 
         rs.getStatement().getConnection().close();
@@ -114,6 +113,7 @@ public class OrdersDAO {
                 + "  JOIN Products p ON od.productId = p.productId "
                 + " WHERE od.orderId = ?";
         ResultSet rs = db.execSelectQuery(sql, new Object[]{orderId});
+        ReviewDAO reviewDAO = new ReviewDAO();
         while (rs.next()) {
             OrderDetails d = new OrderDetails();
             d.setId(rs.getInt("orderDetailId"));
@@ -130,10 +130,16 @@ public class OrdersDAO {
                 urls.add(url);
             }
             p.setUrls(urls);
-
             d.setProduct(p);
-
             d.setReviewed(isProductReviewed(customerId, p.getProductId()));
+            Models.Review review = reviewDAO.getReviewByCustomerAndProduct(customerId, p.getProductId());
+            if (review != null) {
+                d.setReviewContent(review.getContent());
+                d.setReviewStar(review.getStar());
+            } else {
+                d.setReviewContent("");
+                d.setReviewStar(5);
+            }
 
             list.add(d);
         }
@@ -141,15 +147,18 @@ public class OrdersDAO {
         return list;
     }
 
-    public boolean cancelOrder(int orderId, int customerId) throws SQLException {
-        String sql = "UPDATE Orders SET statusId = 5 "
-                + "WHERE orderId = ? AND customerId = ? AND statusId IN (1,2)";
-        Object[] params = {orderId, customerId};
-        int updated = db.execQuery(sql, params);
-        return updated > 0;
-    }
-
-    public List<Order> filterOrders(int customerId, Integer statusId, String search) throws SQLException {
+    // 4. Hủy đơn hàng (nếu status IN (1,2))
+//    public boolean cancelOrder(int orderId, int customerId) throws SQLException {
+//        String sql = "UPDATE Orders SET statusId = 5 "
+//                + "WHERE orderId = ? AND customerId = ? AND statusId IN (1,2)";
+//        Object[] params = {orderId, customerId};
+//        int updated = db.execQuery(sql, params);
+//        if (updated > 0) {
+//            insertOrderStatusHistory(orderId, 5, 1); // 1 là employeeId của Admin User
+//        }
+//        return updated > 0;
+//    }
+    public List<Order> filterOrders(int customerId, Integer statusId, String search, Integer page, Integer pageSize) throws SQLException {
         List<Order> orders = new ArrayList<>();
         StringBuilder sql = new StringBuilder(
                 "SELECT o.orderId, o.createdAt, o.totalAmount, o.shippingFee, "
@@ -173,7 +182,14 @@ public class OrdersDAO {
             sql.append(" AND o.orderId LIKE ? ");
             params.add("%" + search + "%");
         }
-        sql.append(" ORDER BY o.createdAt DESC");
+        sql.append(" ORDER BY o.createdAt DESC ");
+
+        if (page != null && pageSize != null && page > 0 && pageSize > 0) {
+            int offset = (page - 1) * pageSize;
+            sql.append(" OFFSET ? ROWS FETCH NEXT ? ROWS ONLY ");
+            params.add(offset);
+            params.add(pageSize);
+        }
 
         ResultSet rs = db.execSelectQuery(sql.toString(), params.toArray());
         while (rs.next()) {
@@ -198,9 +214,7 @@ public class OrdersDAO {
             addr.setDetails(rs.getString("addressDetails"));
             addr.setPhone(rs.getString("addressPhone"));
             order.setAddress(addr);
-
             order.setDetails(getOrderDetails(order.getId(), customerId));
-
             orders.add(order);
         }
         rs.getStatement().getConnection().close();
@@ -231,5 +245,35 @@ public class OrdersDAO {
         }
         rs.getStatement().getConnection().close();
         return result;
+    }
+
+    public void insertOrderStatusHistory(int orderId, int statusId, int updatedBy) throws SQLException {
+        String sql = "INSERT INTO OrderStatusHistory (orderId, statusId, updatedAt, updatedBy) VALUES (?, ?, GETDATE(), ?)";
+        db.execQuery(sql, new Object[]{orderId, statusId, updatedBy});
+    }
+
+    public List<OrderStatusHistory> getOrderStatusHistory(int orderId) throws SQLException {
+        List<OrderStatusHistory> history = new ArrayList<>();
+        String sql = "SELECT h.*, os.statusName, os.statusDescription "
+                + "FROM OrderStatusHistory h "
+                + "JOIN OrderStatus os ON h.statusId = os.statusId "
+                + "WHERE h.orderId = ? ORDER BY h.updatedAt ASC";
+        ResultSet rs = db.execSelectQuery(sql, new Object[]{orderId});
+        while (rs.next()) {
+            OrderStatusHistory item = new OrderStatusHistory();
+            item.setHistoryId(rs.getInt("historyId"));
+            item.setOrderId(rs.getInt("orderId"));
+            item.setStatusId(rs.getInt("statusId"));
+            item.setStatusName(rs.getString("statusName"));
+            item.setStatusNote(rs.getString("statusDescription"));
+            LocalDateTime updatedAt = rs.getTimestamp("updatedAt").toLocalDateTime();
+            item.setUpdatedAt(updatedAt);
+            item.setUpdatedAtStr(updatedAt.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")));
+            item.setUpdatedBy(rs.getInt("updatedBy"));
+            // item.setUpdaterName(rs.getString("updaterName"));
+            history.add(item);
+        }
+        rs.getStatement().getConnection().close();
+        return history;
     }
 }

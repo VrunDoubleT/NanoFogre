@@ -93,8 +93,13 @@
                             const container = document.getElementById('main-content');
                             container.innerHTML = html;
                             lucide.createIcons();
-                            if (typeof initCustomerForm === 'function')
+                            // GỌI ĐÚNG INIT cho mỗi module:
+                            if (path === 'profile' && typeof initCustomerForm === 'function') {
                                 initCustomerForm();
+                            }
+                            if (path === 'order' && typeof initCustomerOrdersPage === 'function') {
+                                initCustomerOrdersPage();
+                            }
                             if (typeof initCreateAddressButton === 'function')
                                 initCreateAddressButton();
                             if (push) {
@@ -102,6 +107,7 @@
                             }
                         });
             }
+
 
             const updateActiveSidebar = (page) => {
                 document.querySelectorAll(".nav-link").forEach((element) => {

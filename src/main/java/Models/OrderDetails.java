@@ -5,6 +5,7 @@ package Models;
  * @author Tran Thanh Van - CE181019
  */
 public class OrderDetails {
+
     private int id;
     private int orderId;
     private Product product;
@@ -12,6 +13,9 @@ public class OrderDetails {
     private int quantity;
     private boolean reviewed;
     private Address address;
+    private String reviewContent;
+    private Integer reviewStar;
+    
     public OrderDetails() {
     }
 
@@ -41,6 +45,14 @@ public class OrderDetails {
         this.quantity = quantity;
     }
     
+    public OrderDetails(int id, int orderId, Product product, double price, int quantity, boolean reviewed) {
+        this.id = id;
+        this.orderId = orderId;
+        this.product = product;
+        this.price = price;
+        this.quantity = quantity;
+        this.reviewed = reviewed;
+    }
 
     public int getId() {
         return id;
@@ -81,12 +93,29 @@ public class OrderDetails {
     public void setQuantity(int quantity) {
         this.quantity = quantity;
     }
-     public boolean isReviewed() {
+
+    public boolean isReviewed() {
         return reviewed;
     }
 
     public void setReviewed(boolean reviewed) {
         this.reviewed = reviewed;
+    }
+
+    public String getReviewContent() {
+        return reviewContent;
+    }
+
+    public void setReviewContent(String reviewContent) {
+        this.reviewContent = reviewContent;
+    }
+
+    public Integer getReviewStar() {
+        return reviewStar;
+    }
+
+    public void setReviewStar(Integer reviewStar) {
+        this.reviewStar = reviewStar;
     }
 
     @Override
