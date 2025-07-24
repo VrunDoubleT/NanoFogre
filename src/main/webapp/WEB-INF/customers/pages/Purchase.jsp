@@ -107,18 +107,6 @@
             }
 
 
-            .animate-fade-in {
-                animation: fadeIn 0.5s ease forwards;
-                opacity: 0;
-            }
-            @keyframes fadeIn {
-                to {
-                    opacity: 1;
-                    transform: none;
-                }
-            }
-
-
             .success-message {
                 background: linear-gradient(135deg, #10b981 0%, #059669 100%);
                 color: white;
@@ -206,34 +194,6 @@
                 box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
             }
 
-            @keyframes fadeInUp {
-                from {
-                    opacity: 0;
-                    transform: translateY(30px);
-                }
-                to   {
-                    opacity: 1;
-                    transform: translateY(0);
-                }
-            }
-            @keyframes slideIn {
-                from {
-                    opacity: 0;
-                    transform: translateX(-30px);
-                }
-                to   {
-                    opacity: 1;
-                    transform: translateX(0);
-                }
-            }
-            @keyframes pulse-glow {
-                0%,100% {
-                    box-shadow: 0 0 20px rgba(99,102,241,0.3);
-                }
-                50%     {
-                    box-shadow: 0 0 30px rgba(99,102,241,0.5);
-                }
-            }
 
             .btn-modern {
                 position: relative;
@@ -255,10 +215,7 @@
                 background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
                 box-shadow: 0 4px 15px rgba(102,126,234,0.4);
             }
-            .btn-primary-modern:hover {
-                transform: translateY(-2px);
-                box-shadow: 0 8px 25px rgba(102,126,234,0.6);
-            }
+
             .btn-success-modern {
                 background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
                 box-shadow: 0 4px 15px rgba(17,153,142,0.4);
@@ -294,16 +251,9 @@
                 width: 200%;
                 height: 200%;
                 background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
-                animation: shimmer 3s infinite;
+
             }
-            @keyframes shimmer {
-                0%   {
-                    transform: rotate(0deg);
-                }
-                100% {
-                    transform: rotate(360deg);
-                }
-            }
+
 
             .modern-input {
                 background: rgba(255,255,255,0.9);
@@ -1420,6 +1370,12 @@
                                 document.getElementById('totalAmount').textContent = data.totalFormatted + "đ";
                             if (document.getElementById('confirmModalTotal'))
                                 document.getElementById('confirmModalTotal').textContent = data.totalFormatted + "đ";
+
+                            const msg = document.getElementById('voucherMessage');
+                            if (msg) {
+                                msg.textContent = '';
+                                msg.className = 'text-sm mt-3 min-h-[20px] text-center font-medium rounded-lg';
+                            }
                         });
             }
 

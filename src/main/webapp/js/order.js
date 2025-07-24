@@ -86,7 +86,7 @@ const loadOrderContentAndEvent = (page) => {
                 customClass: {
                     popup: 'p-6 rounded-2xl shadow-xl',
                     title: 'text-xl font-semibold mb-4',
-                    confirmButton: 'ml-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700',
+                    confirmButton: 'ml-4 mr-[20px] px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700',
                     cancelButton: 'px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700'
                 },
                 buttonsStyling: false,

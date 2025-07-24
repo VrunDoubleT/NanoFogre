@@ -20,267 +20,7 @@
         <script src="https://cdn.tailwindcss.com"></script>
         <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
         <%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>
-        <style>
-            :root {
-                --tech-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            }
 
-            .cart-item {
-                border: 1px solid rgba(255, 255, 255, 0.1);
-                transition: all 0.3s ease;
-            }
-
-
-            .quantity-controls button {
-                background: rgba(255, 255, 255, 0.1);
-                border: 1px solid rgba(255, 255, 255, 0.2);
-                color: white;
-                width: 35px;
-                height: 35px;
-                border-radius: 8px;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                cursor: pointer;
-                transition: all 0.2s ease;
-                font-size: 18px;
-                font-weight: bold;
-            }
-
-            .quantity-controls button:hover {
-                background: rgba(255, 255, 255, 0.2);
-                transform: scale(1.05);
-            }
-
-            .quantity-controls button:disabled {
-                opacity: 0.5;
-                cursor: not-allowed;
-            }
-
-            .quantity-controls span {
-                min-width: 40px;
-                text-align: center;
-                font-weight: bold;
-                font-size: 16px;
-            }
-
-            .remove-btn {
-                background: linear-gradient(135deg, #ff4757, #ff3838);
-                color: white;
-                border: none;
-                padding: 8px 16px;
-                border-radius: 8px;
-                cursor: pointer;
-                font-size: 14px;
-                font-weight: 500;
-                transition: all 0.2s ease;
-                margin-top: 8px;
-            }
-
-
-            .checkbox-custom {
-                appearance: none;
-                width: 20px;
-                height: 20px;
-                border: 2px solid rgba(255, 255, 255, 0.3);
-                border-radius: 4px;
-                position: relative;
-                cursor: pointer;
-                transition: all 0.2s ease;
-            }
-
-            .checkbox-custom:checked {
-                background: var(--tech-gradient);
-                border-color: #667eea;
-            }
-
-            .checkbox-custom:checked::after {
-                content: '✓';
-                position: absolute;
-                top: 50%;
-                left: 50%;
-                transform: translate(-50%, -50%);
-                color: white;
-                font-size: 12px;
-                font-weight: bold;
-            }
-
-
-            .summary-title {
-                font-size: 1.5rem;
-                font-weight: bold;
-                margin-bottom: 1rem;
-                color: white;
-            }
-
-            .summary-row {
-                padding: 0.5rem 0;
-                border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-                margin-bottom: 0.5rem;
-            }
-
-            .checkout-btn {
-                background: var(--tech-gradient);
-                color: white;
-                border: none;
-                padding: 12px 24px;
-                border-radius: 12px;
-                font-size: 16px;
-                font-weight: bold;
-                cursor: pointer;
-                transition: all 0.3s ease;
-            }
-
-
-            .continue-shopping {
-                background: var(--tech-gradient);
-                color: white;
-                text-decoration: none;
-                transition: all 0.3s ease;
-            }
-
-
-            .loading {
-                opacity: 0.6;
-                pointer-events: none;
-            }
-            body.modal-open {
-                overflow: hidden;
-            }
-
-            .modal-overlay {
-                position: fixed;
-                top: 0;
-                left: 0;
-                right: 0;
-                bottom: 0;
-                background: rgba(0, 0, 0, 0.8);
-                backdrop-filter: blur(4px);
-                z-index: 1000;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                opacity: 0;
-                visibility: hidden;
-                transition: all 0.3s ease;
-            }
-
-            .modal-overlay.active {
-                opacity: 1;
-                visibility: visible;
-            }
-
-            .modal-content {
-                background: rgba(31, 41, 55, 0.95);
-                border: 1px solid rgba(255, 255, 255, 0.1);
-                border-radius: 20px;
-                width: 90%;
-                max-width: 1200px;
-                max-height: 90vh;
-                overflow-y: auto;
-                transform: scale(0.9);
-                transition: transform 0.3s ease;
-            }
-
-
-            .product-card {
-                background: rgba(255, 255, 255, 0.05);
-                border: 1px solid rgba(255, 255, 255, 0.1);
-                border-radius: 12px;
-                transition: all 0.3s ease;
-            }
-
-
-
-            .add-to-cart-btn {
-                background: var(--tech-gradient);
-                color: white;
-                border: none;
-                padding: 8px 16px;
-                border-radius: 8px;
-                cursor: pointer;
-                font-size: 14px;
-                font-weight: 500;
-                transition: all 0.2s ease;
-                width: 100%;
-            }
-
-
-            .add-to-cart-btn:disabled {
-                background: rgba(255, 255, 255, 0.1);
-                cursor: not-allowed;
-                transform: none;
-                box-shadow: none;
-            }
-
-            .modal-content::-webkit-scrollbar {
-                width: 8px;
-            }
-
-            .modal-content::-webkit-scrollbar-track {
-                background: rgba(255, 255, 255, 0.1);
-                border-radius: 4px;
-            }
-
-            .modal-content::-webkit-scrollbar-thumb {
-                background: rgba(255, 255, 255, 0.3);
-                border-radius: 4px;
-            }
-
-            .modal-content::-webkit-scrollbar-thumb:hover {
-                background: rgba(255, 255, 255, 0.5);
-            }
-
-            .glass-card {
-                background: rgba(255, 255, 255, 0.95);
-                backdrop-filter: blur(10px);
-                border: 1px solid rgba(255, 255, 255, 0.2);
-            }
-
-            .product-card {
-                background: #ffffff;
-                border: 1px solid #e2e8f0;
-                transition: all 0.3s ease;
-            }
-
-            .voucher-suggestion {
-                cursor: pointer;
-                outline: none;
-            }
-            .voucher-suggestion:focus {
-                box-shadow: 0 0 0 2px #c4b5fd;
-            }
-
-            .out-of-stock {
-                position: relative;
-
-                opacity: 0.6;
-                pointer-events: none;
-            }
-            .out-of-stock button,
-            .out-of-stock .related-btn,
-            .out-of-stock .remove-btn {
-                pointer-events: auto !important;
-                opacity: 10;
-            }
-
-            .out-of-stock::after {
-
-                position: absolute;
-                top: 8px;
-                right: 8px;
-                background: #e53e3e;
-                color: white;
-                font-size: 0.75rem;
-                font-weight: bold;
-                padding: 4px 8px;
-                border-radius: 4px;
-                text-transform: uppercase;
-                pointer-events: none;
-                box-shadow: 0 2px 6px rgba(0,0,0,0.2);
-            }
-
-        </style>
     </head>
 
     <body class="flex flex-col min-h-screen bg-white-900 text-white font-rajdhani">
@@ -416,9 +156,9 @@
 
                             <!-- Summary -->
                             <div class="cart-summary bg-slate-50 border border-gray-200 rounded-2xl p-8 flex flex-col shadow-lg h-fit sticky top-24">
-                             
+
                                 <div class="fixed bottom-0 left-0 w-full z-50 bg-white border-t border-gray-200 px-4 py-3 shadow-2xl md:static md:shadow-none md:border-0" style="backdrop-filter: blur(8px);">
-                                      <h2 class="uppercase text-center text-gray-800 font-bold text-xl mb-6 tracking-wider">Order Summary</h2>
+                                    <h2 class="uppercase text-center text-gray-800 font-bold text-xl mb-6 tracking-wider">Order Summary</h2>
                                     <div class="space-y-3 text-gray-700">
                                         <div class="flex justify-between">
                                             <span>Items:</span>
@@ -438,20 +178,20 @@
                                         >
                                         Purchase
                                     </button>
-                               
+
+                                </div>
                             </div>
-                        </div>
-                    </c:when>
-                    <c:otherwise>
-                        <div class="empty-cart text-center py-20 bg-white rounded-2xl shadow-md">
-                            <div class="empty-cart-icon text-7xl opacity-30">🛒</div>
-                            <h3 class="text-3xl text-gray-700 font-semibold mt-4 mb-2">Your cart is empty!</h3>
-                            <p class="text-gray-500 mb-8">Looks like you haven't added anything to your cart yet.</p>
-                            <a href="/" class="continue-shopping inline-block px-8 py-3 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 text-white font-semibold shadow-lg hover:scale-105 transition-transform duration-300">Continue Shopping</a>
-                        </div>
-                    </c:otherwise>
-                </c:choose>
-            </div>
+                        </c:when>
+                        <c:otherwise>
+                            <div class="empty-cart text-center py-20 bg-white rounded-2xl shadow-md">
+                                <div class="empty-cart-icon text-7xl opacity-30">🛒</div>
+                                <h3 class="text-3xl text-gray-700 font-semibold mt-4 mb-2">Your cart is empty!</h3>
+                                <p class="text-gray-500 mb-8">Looks like you haven't added anything to your cart yet.</p>
+                                <a href="/" class="continue-shopping inline-block px-8 py-3 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 text-white font-semibold shadow-lg hover:scale-105 transition-transform duration-300">Continue Shopping</a>
+                            </div>
+                        </c:otherwise>
+                    </c:choose>
+                </div>
         </main>
 
         <jsp:include page="../common/footer.jsp" />
@@ -607,12 +347,10 @@
                             const confirmedQty = parseInt(data.quantity, 10);
                             const serverMax = data.maxQuantity != null ? parseInt(data.maxQuantity, 10) : maxVal;
 
-                            // Update DOM
                             qtyEl.textContent = confirmedQty;
                             group.dataset.max = serverMax;
                             syncQtyButtons(cartId, confirmedQty, min, serverMax);
 
-                            // Update global cartItems
                             const found = cartItems.find(it => String(it.id) === cartId);
                             if (found) {
                                 found.quantity = confirmedQty;
@@ -633,7 +371,7 @@
                         .catch(error => {
                             console.error('Update failed:', error);
                             if (window.Swal)
-                                Swal.fire('Lỗi', 'Quantity not updated', 'error');
+                                Swal.fire('Error', 'Quantity not updated', 'error');
                         });
             }
 
@@ -641,11 +379,11 @@
             function removeFromCart(cartId) {
                 cartId = Number(cartId);
                 const found = cartItems.find(it => it.id === cartId);
-                const title = found ? found.title : '';
+
                 if (window.Swal) {
                     Swal.fire({
                         title: 'Remove item?',
-                        text: title ? `Remove "${title}" from your cart?` : 'Remove this item from your cart?',
+                        text: 'Remove this item from your cart?',
                         icon: 'warning',
                         showCancelButton: true,
                         confirmButtonText: 'Yes, remove',
@@ -664,7 +402,6 @@
             }
 
 
-            // * request remove server.
             function doRemoveCartItem(cartId) {
                 setRemoveLoading(cartId, true);
                 fetch('/cart?action=remove', {
@@ -740,7 +477,7 @@
 
 
 
-            // recalc summary and toggle checkout button
+            // recalc summary 
             function recalc() {
                 let itemCount = 0;
                 let total = 0;

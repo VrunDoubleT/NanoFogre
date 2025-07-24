@@ -53,7 +53,7 @@ public class CartServlet extends HttpServlet {
         List<Cart> cartItems = dao.getCartItemsByUserId(customerId);
         request.setAttribute("cartItems", cartItems);
         VoucherDAO voucherDAO = new VoucherDAO();
-        request.getRequestDispatcher("/WEB-INF/customers/pages/Cart.jsp")
+        request.getRequestDispatcher("/WEB-INF/customers/pages/cart.jsp")
                 .forward(request, response);
 
     }
@@ -217,7 +217,7 @@ public class CartServlet extends HttpServlet {
 
                 if (cartIdsJson == null || cartIdsJson.isEmpty()) {
                     request.setAttribute("errorMessage", "No items selected for purchase.");
-                    request.getRequestDispatcher("/WEB-INF/customers/pages/Purchase.jsp").forward(request, response);
+                    request.getRequestDispatcher("/WEB-INF/customers/pages/purchase.jsp").forward(request, response);
                     return;
                 }
 
@@ -256,7 +256,7 @@ public class CartServlet extends HttpServlet {
                 request.setAttribute("selectedItems", selectedItems);
                 request.setAttribute("cartIdsJson", cartIdsJson);
 
-                request.getRequestDispatcher("/WEB-INF/customers/pages/Purchase.jsp").forward(request, response);
+                request.getRequestDispatcher("/WEB-INF/customers/pages/purchase.jsp").forward(request, response);
                 return;
 
             case "updateCustomerInfo":
