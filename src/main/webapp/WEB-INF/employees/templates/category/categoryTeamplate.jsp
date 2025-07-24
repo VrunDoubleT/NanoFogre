@@ -49,7 +49,6 @@
                 <% }%>
             </td>
 
-            <!-- End status -->
             <td class="px-4 py-4 whitespace-nowrap text-sm font-medium">
                 <div class="flex items-center justify-center space-x-4">
 

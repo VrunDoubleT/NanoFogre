@@ -234,15 +234,6 @@
                     box-shadow: 0 0 30px rgba(99,102,241,0.5);
                 }
             }
-            .animate-fade-in-up {
-                animation: fadeInUp 0.8s ease-out;
-            }
-            .animate-slide-in   {
-                animation: slideIn 0.6s ease-out;
-            }
-            .animate-pulse-glow {
-                animation: pulse-glow 2s infinite;
-            }
 
             .btn-modern {
                 position: relative;
@@ -399,9 +390,7 @@
 
             <div class="grid grid-cols-1 xl:grid-cols-3 gap-8">
 
-                <!-- Left Column - Customer Info & Products -->
                 <div class="xl:col-span-2 space-y-8">
-                    <!-- Customer Information Section -->
                     <!-- Fixed Purchase.jsp HTML Structure -->
                     <section id="customerInfoSection" class="modern-card glass-card p-8 animate-slide-in">
                         <!-- Header -->
@@ -441,7 +430,6 @@
                             </div>
 
                             <!-- Fixed Currently Selected Address -->
-
                             <div id="selectedAddressCard"
                                  class="glass-card p-4 rounded-2xl border border-gray-200 transition-shadow hover:shadow-lg flex justify-between items-start bg-white/80 backdrop-blur-sm">
                                 <% if (address != null) {%>
@@ -451,10 +439,10 @@
                                            type="checkbox"
                                            name="selectedAddress"
                                            value="<%= address.getId()%>"
-                                           checked
+                                           hidden=""
                                            class="h-5 w-5 text-indigo-600 accent-indigo-500 mt-1"
                                            onchange="if (this.checked)
-                         selectAddress(this.value)" />
+                                                       selectAddress(this.value)" />
                                     <div>
                                         <p id="selectedAddressName" class="font-semibold text-gray-800 text-lg">
                                             <%= address.getName()%>
@@ -569,7 +557,7 @@
 
 
                     <!-- Product Details -->
-                    <section class="modern-card glass-card p-8 animate-slide-in">
+                    <section class="modern-card glass-card p-8 ">
                         <div class="flex items-center mb-6">
                             <div class="w-12 h-12 bg-gradient-to-br from-green-500 to-teal-600 rounded-full flex items-center justify-center mr-4">
                                 <i class="fas fa-shopping-bag text-white text-lg"></i>
@@ -616,7 +604,7 @@
                     </section>
 
                     <!-- Payment Method -->
-                    <section class="modern-card glass-card p-8 animate-slide-in">
+                    <section class="modern-card glass-card p-8">
                         <div class="flex items-center mb-6">
                             <div class="w-12 h-12 bg-gradient-to-br from-yellow-500 to-orange-600 rounded-full flex items-center justify-center mr-4">
                                 <i class="fas fa-credit-card text-white text-lg"></i>
@@ -640,7 +628,6 @@
                     </section>
                 </div>
 
-                <!-- Right Column - Order Summary & Vouchers -->
                 <div class="xl:col-span-1">
                     <div class="modern-card glass-card p-8 sticky top-24 animate-fade-in-up">
                         <!-- Voucher Section -->
@@ -790,7 +777,7 @@
         <div id="confirmModal"
              class="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center opacity-0 pointer-events-none transition-opacity duration-300 z-50">
             <div class="bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl w-full max-w-lg p-6 animate-fade-in-up">
-                <h3 class="text-2xl font-bold text-gray-800 mb-4 flex items-center animate-slide-in">
+                <h3 class="text-2xl font-bold text-gray-800 mb-4 flex items-center ">
                     <i class="fas fa-check-circle text-green-500 mr-2"></i>
                     Confirm Your Order
                 </h3>
@@ -1180,8 +1167,6 @@
                             if (action === 'addAddress') {
                                 appendAddressItem(addr);
                                 document.getElementById('addressesSection').classList;
-                                updateAddressListSelection(addr.id);
-                                renderSelectedAddressCard(addr);
                             } else {
                                 updateAddressItem(addr);
                             }

@@ -95,7 +95,6 @@
         <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold border-2 <%="Delivered".equals(order.getOrderStatus().getName()) ? "bg-green-50 text-green-700 border-green-200"
                 : "Processing".equals(order.getOrderStatus().getName()) ? "bg-blue-50 text-blue-700 border-blue-200"
                 : "Shipping".equals(order.getOrderStatus().getName()) ? "bg-purple-50 text-purple-700 border-purple-200"
-                : "Cancelled".equals(order.getOrderStatus().getName()) ? "bg-red-50 text-red-700 border-red-200"
                 : "bg-gray-50 text-gray-700 border-gray-200"%>">
             <% if ("Delivered".equals(order.getOrderStatus().getName())) { %>
             <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
@@ -130,17 +129,23 @@
     <!-- Voucher Code-->
     <td class="px-4 py-5 whitespace-nowrap text-center">
         <% if (order.getVoucher() != null && order.getVoucher().getCode() != null) {%>
-        <span class="inline-flex items-center px-3 py-1 rounded-lg text-sm font-mono font-semibold bg-gradient-to-r from-purple-100 to-pink-100 text-purple-800 border border-purple-200">
-            <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
-            <path fill-rule="evenodd" d="M5 5a3 3 0 015-2.236A3 3 0 0114.83 6H16a2 2 0 110 4h-5V9a1 1 0 10-2 0v1H4a2 2 0 110-4h1.17C5.06 5.687 5 5.35 5 5zm4 1V5a1 1 0 10-1 1h1zm3 0a1 1 0 10-1-1v1h1z" clip-rule="evenodd"/>
-            <path d="M9 11H3v5a2 2 0 002 2h4v-7zM11 18h4a2 2 0 002-2v-5h-6v7z"/>
+        <span class="inline-flex items-center gap-1 px-3 py-1 rounded-lg text-sm font-mono font-semibold
+              bg-gradient-to-r from-purple-100 to-pink-100 text-purple-800 border border-purple-200">
+            <svg class="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M7 7h.01M7 3h5c.512 0 1.024.195 
+                  1.414.586l7 7a2 2 0 010 2.828l-7 7
+                  a2 2 0 01-2.828 0l-7-7
+                  A1.994 1.994 0 013 12V7a4 4 0 014-4z"/>
             </svg>
             <%= order.getVoucher().getCode()%>
         </span>
         <% } else { %>
-        <span class="inline-flex items-center px-3 py-1 rounded-lg text-sm text-gray-500 bg-gray-50 border border-gray-200">
-            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+        <span class="inline-flex items-center gap-1 px-3 py-1 rounded-lg text-sm
+              text-gray-500 bg-gray-50 border border-gray-200">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M6 18L18 6M6 6l12 12"/>
             </svg>
             No voucher
         </span>

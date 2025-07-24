@@ -30,10 +30,6 @@
                 transition: all 0.3s ease;
             }
 
-            .cart-item:hover {
-                border-color: rgba(255, 255, 255, 0.2);
-                transform: translateY(-2px);
-            }
 
             .quantity-controls button {
                 background: rgba(255, 255, 255, 0.1);
@@ -81,11 +77,6 @@
                 margin-top: 8px;
             }
 
-            .remove-btn:hover {
-                background: linear-gradient(135deg, #ff3838, #ff2f2f);
-                transform: translateY(-1px);
-                box-shadow: 0 4px 12px rgba(255, 71, 87, 0.4);
-            }
 
             .checkbox-custom {
                 appearance: none;
@@ -140,10 +131,6 @@
                 transition: all 0.3s ease;
             }
 
-            .checkout-btn:hover {
-                transform: translateY(-2px);
-                box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
-            }
 
             .continue-shopping {
                 background: var(--tech-gradient);
@@ -152,10 +139,6 @@
                 transition: all 0.3s ease;
             }
 
-            .continue-shopping:hover {
-                transform: translateY(-2px);
-                box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
-            }
 
             .loading {
                 opacity: 0.6;
@@ -199,9 +182,6 @@
                 transition: transform 0.3s ease;
             }
 
-            .modal-overlay.active .modal-content {
-                transform: scale(1);
-            }
 
             .product-card {
                 background: rgba(255, 255, 255, 0.05);
@@ -210,11 +190,7 @@
                 transition: all 0.3s ease;
             }
 
-            .product-card:hover {
-                transform: translateY(-4px);
-                border-color: rgba(255, 255, 255, 0.2);
-                box-shadow: 0 8px 32px rgba(102, 126, 234, 0.2);
-            }
+
 
             .add-to-cart-btn {
                 background: var(--tech-gradient);
@@ -229,10 +205,6 @@
                 width: 100%;
             }
 
-            .add-to-cart-btn:hover {
-                transform: translateY(-1px);
-                box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
-            }
 
             .add-to-cart-btn:disabled {
                 background: rgba(255, 255, 255, 0.1);
@@ -270,10 +242,7 @@
                 border: 1px solid #e2e8f0;
                 transition: all 0.3s ease;
             }
-            .product-card:hover {
-                box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
-                transform: translateY(-2px);
-            }
+
             .voucher-suggestion {
                 cursor: pointer;
                 outline: none;
@@ -353,7 +322,7 @@
                                 <div id="cart-list">
                                     <c:forEach var="item" items="${cartItems}" varStatus="status">
 
-                                        <div class="product-card cart-product flex flex-col sm:flex-row items-center bg-white rounded-2xl mt-[15px] p-5 shadow-lg gap-6 transition-all duration-300 hover:shadow-xl hover:ring-2 hover:ring-purple-400 group"
+                                        <div class="product-card cart-product flex flex-col sm:flex-row items-center bg-white rounded-2xl mt-[15px] p-5 shadow-lg gap-6 transition-all duration-300"
                                              id="cart-item-${item.cartId}"
                                              style="${status.index >= 5 ? 'display:none;' : ''}"
                                              data-idx="${status.index}">
@@ -464,7 +433,7 @@
                                     <button
                                         id="purchaseBtn"
                                         type="button"
-                                        class="checkout-btn w-full mt-6 py-3 rounded-xl bg-gradient-to-r from-purple-500 to-pink-500 font-bold text-lg text-white shadow-lg hover:scale-105 transition-transform duration-300 opacity-50 cursor-not-allowed"
+                                        class="checkout-btn w-full mt-6 py-3 rounded-xl bg-gradient-to-r from-purple-500 to-pink-500 font-bold text-lg text-white shadow-lg duration-300 opacity-50 cursor-not-allowed"
                                         disabled
                                         >
                                         Purchase

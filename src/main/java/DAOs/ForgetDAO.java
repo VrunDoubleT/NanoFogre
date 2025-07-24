@@ -20,7 +20,6 @@ public class ForgetDAO extends DB.DBContext {
                 + "FROM VerifyCodeEmployees "
                 + "WHERE employeeId = ? "
                 + "  AND code = ? "
-                + "  AND isVerified = 0 "
                 + "  AND expiredAt > ?";
         Object[] params = {
             employeeId,
@@ -31,40 +30,6 @@ public class ForgetDAO extends DB.DBContext {
             if (rs.next()) {
                 return rs.getInt("count") > 0;
             }
-        } catch (SQLException ex) {
-            ex.printStackTrace();
-        }
-        return false;
-    }
-
-    public boolean markCodeAsUsedEmployee(int employeeId, String code) {
-        String sql = ""
-                + "UPDATE VerifyCodeEmployees "
-                + "SET isVerified = 1 "
-                + "WHERE employeeId = ? AND code = ?";
-        try {
-            int rows = this.execQuery(sql, new Object[]{employeeId, code});
-            return rows > 0;
-        } catch (SQLException ex) {
-            ex.printStackTrace();
-        }
-        return false;
-    }
-
-    public boolean insertCodeEmployee(int employeeId, String code, LocalDateTime expiredAt) {
-        String sql = ""
-                + "INSERT INTO VerifyCodeEmployees "
-                + "(employeeId, code, isVerified, createdAt, expiredAt) "
-                + "VALUES (?, ?, 0, ?, ?)";
-        Object[] params = {
-            employeeId,
-            code,
-            Timestamp.valueOf(LocalDateTime.now()),
-            Timestamp.valueOf(expiredAt)
-        };
-        try {
-            int result = this.execQuery(sql, params);
-            return result > 0;
         } catch (SQLException ex) {
             ex.printStackTrace();
         }
@@ -102,7 +67,7 @@ public class ForgetDAO extends DB.DBContext {
     public Employee findByEmail(String email) {
         String sql = ""
                 + "SELECT * FROM Employees "
-                + "WHERE employeeEmail = ? AND isBlock = 0 AND _destroy = 0";
+                + "WHERE employeeEmail = ? AND roleId = 2 AND isBlock = 0 AND _destroy = 0";
         try ( ResultSet rs = this.execSelectQuery(sql, new Object[]{email})) {
             if (rs.next()) {
                 Employee emp = new Employee();
@@ -114,6 +79,83 @@ public class ForgetDAO extends DB.DBContext {
             ex.printStackTrace();
         }
         return null;
+    }
+
+    public enum SendResult {
+        OK, TOO_MANY_REQUESTS, DB_ERROR
+    }
+
+    public SendResult upsertCodeEmployee(int employeeId, String code, LocalDateTime expiredAt) {
+        String sel = "SELECT requestCount, createdAt FROM VerifyCodeEmployees WHERE employeeId = ?";
+        try ( ResultSet rs = execSelectQuery(sel, new Object[]{employeeId})) {
+            LocalDateTime now = LocalDateTime.now();
+            if (rs.next()) {
+                int count = rs.getInt("requestCount");
+                LocalDateTime created = rs.getTimestamp("createdAt").toLocalDateTime();
+
+                boolean olderThanDay = created.isBefore(now.minusHours(24));
+                if (!olderThanDay && count >= 3) {
+                    return SendResult.TOO_MANY_REQUESTS;
+                }
+
+                String upd = "UPDATE VerifyCodeEmployees SET "
+                        + "code = ?, createdAt = ?, expiredAt = ?, "
+                        + "requestCount = ?, failedCount = 0"
+                        + "WHERE employeeId = ?";
+                int newCount = olderThanDay ? 1 : count + 1;
+                int rows = execQuery(upd, new Object[]{
+                    code,
+                    Timestamp.valueOf(now),
+                    Timestamp.valueOf(expiredAt),
+                    newCount,
+                    employeeId
+                });
+                return rows > 0 ? SendResult.OK : SendResult.DB_ERROR;
+            } else {
+
+                String ins = "INSERT INTO VerifyCodeEmployees "
+                        + "(employeeId, code, createdAt, expiredAt, requestCount, failedCount) "
+                        + "VALUES (?, ?, ?, ?, 1, 0)";
+                int rows = execQuery(ins, new Object[]{
+                    employeeId,
+                    code,
+                    Timestamp.valueOf(now),
+                    Timestamp.valueOf(expiredAt)
+                });
+                return rows > 0 ? SendResult.OK : SendResult.DB_ERROR;
+            }
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+            return SendResult.DB_ERROR;
+        }
+    }
+
+    public void incrementFailedCount(int employeeId) throws SQLException {
+        String sql = "UPDATE VerifyCodeEmployees SET failedCount = failedCount + 1 WHERE employeeId = ?";
+        execQuery(sql, new Object[]{employeeId});
+    }
+
+    public int getFailedCount(int employeeId) {
+        String sql = "SELECT failedCount FROM VerifyCodeEmployees WHERE employeeId = ?";
+        try ( ResultSet rs = execSelectQuery(sql, new Object[]{employeeId})) {
+            if (rs.next()) {
+                return rs.getInt("FailedCount");
+            }
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        }
+        return 0;
+    }
+
+    public boolean deleteCodeEmployee(int employeeId) {
+        String sql = "DELETE FROM VerifyCodeEmployees where employeeId = ? ";
+        try {
+            int row = execQuery(sql, new Object[]{employeeId});
+            return row > 0;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
     }
 
     // ======= CUSTOMER =======

@@ -21,8 +21,6 @@ import java.util.List;
 
 public class CartDAO extends DB.DBContext {
 
-    
-
     public int countCartItems(int customerId) {
         String sql = "SELECT COUNT(*) FROM Carts WHERE customerId = ?";
         Object[] params = {customerId};
@@ -105,51 +103,6 @@ public class CartDAO extends DB.DBContext {
         return list;
     }
 
-    public boolean addOrUpdateCartItem(int customerId, int productId, int quantity) {
-        try {
-
-            String checkProductSql = "SELECT quantity FROM Products WHERE productId = ?";
-            Object[] checkProductParams = {productId};
-            try ( ResultSet productRs = execSelectQuery(checkProductSql, checkProductParams)) {
-                if (!productRs.next()) {
-                    System.out.println("Product not found: " + productId);
-                    return false;
-                }
-                int availableQuantity = productRs.getInt("quantity");
-                if (availableQuantity <= 0) {
-                    System.out.println("Product out of stock: " + productId);
-                    return false;
-                }
-            }
-
-            String checkSql = "SELECT cartId, cartQuantity FROM Carts WHERE customerId = ? AND productId = ?";
-            Object[] checkParams = {customerId, productId};
-            try ( ResultSet rs = execSelectQuery(checkSql, checkParams)) {
-                if (rs.next()) {
-
-                    int currentQuantity = rs.getInt("cartQuantity");
-                    int newQuantity = currentQuantity + quantity;
-                    String updateSql = "UPDATE Carts SET cartQuantity = ? WHERE customerId = ? AND productId = ?";
-                    Object[] updateParams = {newQuantity, customerId, productId};
-                    int result = execQuery(updateSql, updateParams);
-                    System.out.println("Updated cart item, rows affected: " + result);
-                    return result > 0;
-                } else {
-
-                    String insertSql = "INSERT INTO Carts (customerId, productId, cartQuantity) VALUES (?, ?, ?)";
-                    Object[] insertParams = {customerId, productId, quantity};
-                    int result = execQuery(insertSql, insertParams);
-                    System.out.println("Inserted new cart item, rows affected: " + result);
-                    return result > 0;
-                }
-            }
-        } catch (Exception e) {
-            System.out.println("Error in addOrUpdateCartItem: " + e.getMessage());
-            e.printStackTrace();
-            return false;
-        }
-    }
-
     public boolean updateCartItemQuantity(int cartId, int quantity) {
         String sql
                 = "UPDATE Carts "
@@ -167,22 +120,6 @@ public class CartDAO extends DB.DBContext {
         }
     }
 
-    public int insertCartItemReturningId(int customerId, int productId, int qty) throws SQLException {
-        String sql = "INSERT INTO Carts (customerId, productId, cartQuantity) VALUES (?, ?, ?);";
-        try ( Connection cn = getConnection();  PreparedStatement ps = cn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-            ps.setInt(1, customerId);
-            ps.setInt(2, productId);
-            ps.setInt(3, qty);
-            ps.executeUpdate();
-            try ( ResultSet rs = ps.getGeneratedKeys()) {
-                if (rs.next()) {
-                    return rs.getInt(1);
-                }
-            }
-        }
-        return -1;
-    }
-
     public boolean removeCartItem(int cartId) {
         try {
             String sql = "DELETE FROM Carts WHERE cartId = ?";
@@ -193,71 +130,6 @@ public class CartDAO extends DB.DBContext {
             e.printStackTrace();
             return false;
         }
-    }
-
-    public List<Product> getRelatedProducts(int excludeProductId, int brandId, int categoryId) {
-        List<Product> list = new ArrayList<>();
-
-        String sql
-                = "SELECT p.productId, p.productTitle, p.productPrice, p.productQuantity, "
-                + "       pi.url AS imageUrl "
-                + "FROM Products p "
-                + "JOIN ( "
-                + "    SELECT productId, url "
-                + "    FROM ( "
-                + "        SELECT productId, url, "
-                + "               ROW_NUMBER() OVER (PARTITION BY productId ORDER BY imageId) AS rn "
-                + "        FROM ProductImages "
-                + "    ) t "
-                + "    WHERE rn = 1 "
-                + ") pi ON pi.productId = p.productId "
-                + "WHERE p.productId <> ? "
-                + "  AND p.brandId = ? "
-                + "UNION "
-                + "SELECT p.productId, p.productTitle, p.productPrice, p.productQuantity, pi.url AS imageUrl "
-                + "FROM Products p "
-                + "JOIN ( "
-                + "    SELECT productId, url "
-                + "    FROM ( "
-                + "        SELECT productId, url, "
-                + "               ROW_NUMBER() OVER (PARTITION BY productId ORDER BY imageId) AS rn "
-                + "        FROM ProductImages "
-                + "    ) t "
-                + "    WHERE rn = 1 "
-                + ") pi ON pi.productId = p.productId "
-                + "WHERE p.productId <> ? "
-                + "  AND p.categoryId = ? "
-                + "ORDER BY productId DESC";
-
-        Object[] params = {
-            excludeProductId,
-            brandId,
-            excludeProductId,
-            categoryId
-        };
-
-        try ( ResultSet rs = execSelectQuery(sql, params)) {
-            while (rs.next()) {
-                Product prod = new Product();
-                prod.setProductId(rs.getInt("productId"));
-                prod.setTitle(rs.getString("productTitle"));
-                prod.setPrice(rs.getDouble("productPrice"));
-                prod.setQuantity(rs.getInt("productQuantity"));
-
-                List<String> urls = new ArrayList<>();
-                String imgUrl = rs.getString("imageUrl");
-                if (imgUrl != null && !imgUrl.isEmpty()) {
-                    urls.add(imgUrl);
-                }
-                prod.setUrls(urls);
-
-                list.add(prod);
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-
-        return list;
     }
 
     public boolean insertCartItem(int customerId, int productId, int quantity) {
@@ -293,17 +165,6 @@ public class CartDAO extends DB.DBContext {
         return 0;
     }
 
-    public boolean existsCartItem(int customerId, int productId) {
-        String sql = "SELECT 1 FROM Carts WHERE customerId = ? AND productId = ?";
-        Object[] params = {customerId, productId};
-        try ( ResultSet rs = execSelectQuery(sql, params)) {
-            return rs.next();
-        } catch (Exception e) {
-            e.printStackTrace();
-            return false;
-        }
-    }
-
     public Cart getCartItemById(int cartId) {
         Cart cart = null;
         String sql
@@ -333,7 +194,6 @@ public class CartDAO extends DB.DBContext {
                     product.setPrice(rs.getDouble("productPrice"));
                     product.setQuantity(rs.getInt("productQuantity"));
 
-                    // brand & category
                     Brand brand = new Brand();
                     brand.setId(rs.getInt("brandId"));
                     product.setBrand(brand);
@@ -449,11 +309,7 @@ public class CartDAO extends DB.DBContext {
         }
     }
 
-    public boolean updateDefaultAddress(int customerId,
-            String details,
-            String name,
-            String phone,
-            String recipient) throws SQLException {
+    public boolean updateDefaultAddress(int customerId, String details, String name, String phone, String recipient) throws SQLException {
         String sql = "UPDATE Address "
                 + "SET addressDetails = ?, addressName = ?, addressPhone = ?, recipientName = ? "
                 + "WHERE customerId = ? AND isDefault = 1";
@@ -494,21 +350,6 @@ public class CartDAO extends DB.DBContext {
         }
     }
 
-    public double calculateSubtotalFromJson(String cartIdsJson) {
-        Gson gson = new Gson();
-        Type listType = new TypeToken<List<Integer>>() {
-        }.getType();
-        List<Integer> ids = gson.fromJson(cartIdsJson, listType);
-        double subtotal = 0;
-        for (Integer cartId : ids) {
-            Cart c = getCartItemById(cartId);
-            if (c != null && c.getProduct() != null) {
-                subtotal += c.getQuantity() * c.getProduct().getPrice();
-            }
-        }
-        return subtotal;
-    }
-
     public Voucher getVoucherById(int id) {
         String query = "SELECT * FROM Vouchers WHERE voucherId = ?";
         Object[] params = {id};
@@ -533,223 +374,6 @@ public class CartDAO extends DB.DBContext {
             e.printStackTrace();
         }
         return null;
-    }
-
-    public boolean createOrderFromCart(String cartIdsJson, int customerId, String voucherIdStr) throws Exception {
-        Connection conn = null;
-        PreparedStatement psOrder = null, psOrderDetail = null, psUpdateProduct = null, psRemoveCart = null;
-        ResultSet rs = null;
-        boolean success = false;
-        try {
-            if (cartIdsJson == null || cartIdsJson.trim().isEmpty() || cartIdsJson.equals("[]")) {
-                throw new Exception("CartIds is empty, nothing to order.");
-            }
-
-            List<Integer> cartIds = new ArrayList<>();
-            try {
-                Gson gson = new Gson();
-                Type listType = new TypeToken<List<Integer>>() {
-                }.getType();
-                cartIds = gson.fromJson(cartIdsJson, listType);
-            } catch (Exception ex) {
-                throw new Exception("Invalid cart data format: " + ex.getMessage());
-            }
-
-            if (cartIds == null || cartIds.isEmpty()) {
-                throw new Exception("No valid cart item id to process.");
-            }
-
-            List<Cart> selectedCarts = getCartItemById(cartIds);
-            if (selectedCarts == null || selectedCarts.isEmpty()) {
-                throw new Exception("Could not find cart items for selected cart ids.");
-            }
-
-            double subtotal = 0;
-            for (Cart cart : selectedCarts) {
-                subtotal += cart.getQuantity() * cart.getProduct().getPrice();
-            }
-
-            double discount = 0;
-            Integer voucherId = null;
-            if (voucherIdStr != null && !voucherIdStr.isEmpty()) {
-                voucherId = Integer.parseInt(voucherIdStr);
-                Voucher voucher = getVoucherById(voucherId);
-                if (voucher != null) {
-                    if ("percentage".equalsIgnoreCase(voucher.getType())) {
-                        discount = subtotal * (voucher.getValue() / 100.0);
-                        if (voucher.getMaxValue() > 0 && discount > voucher.getMaxValue()) {
-                            discount = voucher.getMaxValue();
-                        }
-                    } else {
-                        discount = voucher.getValue();
-                    }
-                } else {
-                    throw new Exception("Voucher not found.");
-                }
-            }
-            double totalAmount = subtotal - discount;
-            if (totalAmount < 0) {
-                totalAmount = 0;
-            }
-
-            Address address = getDefaultAddressByCustomerId(customerId);
-            if (address == null) {
-                throw new Exception("No default delivery address for customer. Please add/select an address.");
-            }
-
-            for (Cart cart : selectedCarts) {
-                int stock = cart.getProduct().getQuantity();
-                if (cart.getQuantity() > stock) {
-                    throw new Exception("Not enough stock for product: " + cart.getProduct().getTitle());
-                }
-            }
-
-            int paymentMethodId = 1;
-            int paymentStatusId = 1;
-            int statusId = 1;
-            double shippingFee = 0;
-
-            conn = getConnection();
-            conn.setAutoCommit(false);
-
-            String sqlOrder = "INSERT INTO Orders (employeeId, customerId, totalAmount, shippingFee, paymentMethodId, paymentStatusId, statusId, voucherId, addressId, createdAt, updatedAt) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, GETDATE(), GETDATE())";
-            psOrder = conn.prepareStatement(sqlOrder, Statement.RETURN_GENERATED_KEYS);
-            psOrder.setNull(1, Types.INTEGER);
-            psOrder.setInt(2, customerId);
-            psOrder.setBigDecimal(3, BigDecimal.valueOf(totalAmount));
-            psOrder.setBigDecimal(4, BigDecimal.valueOf(shippingFee));
-            psOrder.setInt(5, paymentMethodId);
-            psOrder.setInt(6, paymentStatusId);
-            psOrder.setInt(7, statusId);
-            if (voucherId != null) {
-                psOrder.setInt(8, voucherId);
-            } else {
-                psOrder.setNull(8, Types.INTEGER);
-            }
-            psOrder.setInt(9, address.getId());
-            psOrder.executeUpdate();
-
-            rs = psOrder.getGeneratedKeys();
-            int orderId = -1;
-            if (rs.next()) {
-                orderId = rs.getInt(1);
-            }
-            if (orderId == -1) {
-                throw new SQLException("Cannot get orderId after insert.");
-            }
-
-            String sqlDetail = "INSERT INTO OrderDetails (orderId, productId, quantity, price, createdAt, updatedAt) VALUES (?, ?, ?, ?, GETDATE(), GETDATE())";
-            String sqlUpdateProduct = "UPDATE Products SET productQuantity = productQuantity - ? WHERE productId = ? AND productQuantity >= ?";
-            psOrderDetail = conn.prepareStatement(sqlDetail);
-            psUpdateProduct = conn.prepareStatement(sqlUpdateProduct);
-
-            for (Cart cart : selectedCarts) {
-                int productId = cart.getProduct().getProductId();
-                int qty = cart.getQuantity();
-                double price = cart.getProduct().getPrice();
-
-                psUpdateProduct.setInt(1, qty);
-                psUpdateProduct.setInt(2, productId);
-                psUpdateProduct.setInt(3, qty);
-                int affected = psUpdateProduct.executeUpdate();
-                if (affected == 0) {
-                    throw new SQLException("Insufficient stock for productId: " + productId + " (" + cart.getProduct().getTitle() + ")");
-                }
-
-                psOrderDetail.setInt(1, orderId);
-                psOrderDetail.setInt(2, productId);
-                psOrderDetail.setInt(3, qty);
-                psOrderDetail.setBigDecimal(4, BigDecimal.valueOf(price));
-                psOrderDetail.addBatch();
-            }
-            psOrderDetail.executeBatch();
-
-            String sqlRemove = "DELETE FROM Cart WHERE id = ?";
-            psRemoveCart = conn.prepareStatement(sqlRemove);
-            for (Cart cart : selectedCarts) {
-                psRemoveCart.setInt(1, cart.getCartId());
-                psRemoveCart.addBatch();
-            }
-            psRemoveCart.executeBatch();
-
-            conn.commit();
-            success = true;
-
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            if (conn != null) try {
-                conn.rollback();
-            } catch (SQLException ignore) {
-            }
-            throw ex;
-        } finally {
-            try {
-                if (rs != null) {
-                    rs.close();
-                }
-            } catch (Exception ignore) {
-            }
-            try {
-                if (psOrder != null) {
-                    psOrder.close();
-                }
-            } catch (Exception ignore) {
-            }
-            try {
-                if (psOrderDetail != null) {
-                    psOrderDetail.close();
-                }
-            } catch (Exception ignore) {
-            }
-            try {
-                if (psUpdateProduct != null) {
-                    psUpdateProduct.close();
-                }
-            } catch (Exception ignore) {
-            }
-            try {
-                if (psRemoveCart != null) {
-                    psRemoveCart.close();
-                }
-            } catch (Exception ignore) {
-            }
-            try {
-                if (conn != null) {
-                    conn.setAutoCommit(true);
-                }
-            } catch (Exception ignore) {
-            }
-            try {
-                if (conn != null) {
-                    conn.close();
-                }
-            } catch (Exception ignore) {
-            }
-        }
-        return success;
-    }
-
-    public boolean removeCartItems(List<Integer> cartIds) {
-        if (cartIds == null || cartIds.isEmpty()) {
-            return false;
-        }
-
-        StringBuilder placeholders = new StringBuilder();
-        for (int i = 0; i < cartIds.size(); i++) {
-            placeholders.append("?");
-            if (i < cartIds.size() - 1) {
-                placeholders.append(",");
-            }
-        }
-        String sql = "DELETE FROM Carts WHERE cartId IN (" + placeholders.toString() + ")";
-
-        try {
-            Object[] params = cartIds.toArray();
-            return execQuery(sql, params) > 0;
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return false;
-        }
     }
 
 }

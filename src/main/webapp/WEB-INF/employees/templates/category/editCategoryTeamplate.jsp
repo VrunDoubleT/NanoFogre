@@ -207,10 +207,8 @@
     }
 </style>
 
-<!-- Modal Background -->
 <div class="custom-card bg-gray-100 w-[1000px] mx-auto h-[90vh] flex flex-col bg-white shadow-2xl overflow-hidden">
 
-    <!--     Header Section     -->
     <div class=" bg-gradient-to-r from-blue-600 to-purple-600 px-8 py-4 flex justify-between items-center rounded-t-xl">
 
         <div>
@@ -231,7 +229,6 @@
 
     </div>
 
-    <!-- Form Section -->
     <div class="p-8 h-full w-full overflow-y-auto bg-gradient-to-r ">
 
         <!-- Hidden Input -->
@@ -318,7 +315,6 @@
                 <input type="hidden" name="attributeId" value="<%= attr.getId()%>"/>
 
 
-                <!-- Category Basic Info -->
                 <div class="flex items-center gap-8 mb-4">
                     <!-- Attribute Name -->
                     <div class="flex-1">
@@ -458,22 +454,16 @@
             <span>Add Attribute Product</span>
         </button>
 
-        <!-- Attributes Container -->
         <div id="attributes-container" class="mt-4 space-y-4">
             <c:forEach var="attr" items="${attributes}">
 
             </c:forEach>
         </div>
 
-        <!-- TEMPLATE COUNT -->
         <div id="attributes-container-template" class="hidden">
 
-
-
-            <!-- TEMPLATE ITEM -->
             <div id="attribute-item-template" class="hidden">
                 <div id="main-attribute-item" class="custom-attr-item">
-                    <!--  hidden input cho attributeId -->
                     <input type="hidden" name="attributeId" value="0"/>
 
 

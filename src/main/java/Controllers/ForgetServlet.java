@@ -6,7 +6,6 @@ package Controllers;
 
 import DAOs.ForgetDAO;
 import Models.Employee;
-import Models.Customer;
 import Utils.Common;
 import java.io.IOException;
 import java.io.IOException;
@@ -16,6 +15,9 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import java.sql.SQLException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -74,11 +76,16 @@ public class ForgetServlet extends HttpServlet {
 
                 String code = String.valueOf((int) ((Math.random() * 900000) + 100000));
                 java.time.LocalDateTime expiredAt = java.time.LocalDateTime.now().plusMinutes(5);
-                boolean saved = dao.insertCodeEmployee(emp.getId(), code, expiredAt);
 
-                if (!saved) {
-                    response.getWriter().write("{\"success\":false,\"message\":\"System error, please try again!\"}");
+                ForgetDAO.SendResult res = dao.upsertCodeEmployee(emp.getId(), code, expiredAt);
+                if (res == ForgetDAO.SendResult.TOO_MANY_REQUESTS) {
+                    response.getWriter().write("{\"success\":false,\"message\":\"You have requested too many codes today. Please wait 24h before retry.\"}");
                     return;
+
+                } else if (res == ForgetDAO.SendResult.DB_ERROR) {
+                    response.getWriter().write("{\"success\":false,\"message\":\"System error, please try again later!\"}");
+                    return;
+
                 }
 
                 String subject = "Your password reset code";
@@ -111,18 +118,43 @@ public class ForgetServlet extends HttpServlet {
                     if (valid) {
                         out.write("{\"success\":true}");
                     } else {
-                        out.write("{\"success\":false,\"message\":\"Verification code is invalid or expired.\"}");
+                        try {
+                            dao.incrementFailedCount(emp.getId());
+                            int fails = dao.getFailedCount(emp.getId());
+                            if (fails >= 3) {
+                                out.write("{\"success\":false"
+                                        + ",\"message\":\"Code locked after 3 failed attempts. Please resend.\"}");
+                            } else {
+                                out.write("{\"success\":false"
+                                        + ",\"message\":\"Verification code is invalid or expired.\"}");
+                            }
+
+                        } catch (SQLException ex) {
+                            Logger.getLogger(ForgetServlet.class.getName()).log(Level.SEVERE, null, ex);
+                        }
                     }
                     return;
                 }
 
-                Customer cus = dao.findCustomerByEmail(email.trim());
-                if (cus != null) {
-                    boolean valid = dao.checkVerifyCodeCustomer(cus.getId(), code.trim());
+                Employee empl = dao.findByEmail(email.trim());
+                if (empl != null) {
+                    boolean valid = dao.checkVerifyCodeEmployee(empl.getId(), code.trim());
                     if (valid) {
                         out.write("{\"success\":true}");
                     } else {
-                        out.write("{\"success\":false,\"message\":\"Verification code is invalid or expired.\"}");
+                        try {
+                            dao.incrementFailedCount(empl.getId());
+                        } catch (SQLException ex) {
+                            Logger.getLogger(ForgetServlet.class.getName()).log(Level.SEVERE, null, ex);
+                        }
+                        int fails = dao.getFailedCount(empl.getId());
+                        if (fails >= 3) {
+                            out.write("{\"success\":false"
+                                    + ",\"message\":\"Code locked after 3 failed attempts. Please resend.\"}");
+                        } else {
+                            out.write("{\"success\":false"
+                                    + ",\"message\":\"Verification code is invalid or expired.\"}");
+                        }
                     }
                     return;
                 }
@@ -160,7 +192,7 @@ public class ForgetServlet extends HttpServlet {
                 boolean updated = dao.confirmResetPassword(emp.getId(), hashed);
 
                 if (updated) {
-                    dao.markCodeAsUsedEmployee(emp.getId(), code.trim());
+                    dao.deleteCodeEmployee(emp.getId());
                     response.getWriter().write("{\"success\":true,\"message\":\"Password changed successfully.\"}");
                 } else {
                     response.getWriter().write("{\"success\":false,\"message\":\"Failed to update password.\"}");

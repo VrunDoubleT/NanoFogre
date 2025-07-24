@@ -41,7 +41,6 @@ public class CartServlet extends HttpServlet {
         HttpSession session = request.getSession(false);
         Customer customer = (session != null) ? (Customer) session.getAttribute("customer") : null;
         if (customer == null) {
-
             response.sendRedirect(request.getContextPath() + "/auth?action=login");
             return;
         }
@@ -80,14 +79,6 @@ public class CartServlet extends HttpServlet {
                 try ( PrintWriter out = response.getWriter()) {
                     int pId = Integer.parseInt(request.getParameter("productId"));
                     int qtyA = Integer.parseInt(request.getParameter("quantity"));
-
-                    if (dao.existsCartItem(customerId, pId)) {
-                        out.print("{"
-                                + "\"success\":false,"
-                                + "\"message\":\"This product is already in your cart.\""
-                                + "}");
-                        return;
-                    }
 
                     dao.insertCartItem(customerId, pId, qtyA);
 

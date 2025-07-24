@@ -270,13 +270,24 @@
                     transform: rotate(360deg);
                 }
             }
+
+            input[type="password"]::-ms-reveal,
+            input[type="password"]::-ms-clear,
+            input[type="password"]::-webkit-textfield-decoration-button {
+                display: none;
+            }
+
+            .input-valid {
+                border-color: #27ae60 !important;
+                box-shadow: 0 0 0 3px rgba(39, 174, 96, 0.3);
+            }
         </style>
     </head>
     <body>
         <div class="forgot-container">
             <div class="forgot-header">
                 <h2>Forgot Password?</h2>
-                <p>Don't worry, we'll help you reset it</p>
+
             </div>
             <div class="step-indicator">
                 <div class="step-dot active" id="step-dot-1"></div>
@@ -319,25 +330,146 @@
 
                 <!-- Step 3: Enter New Passwords -->
                 <div id="step-password" class="form-step">
-                    <div class="forgot-form-group">
+                    <!-- New Password -->
+                    <div class="forgot-form-group" style="position: relative; width: 100%;">
                         <label for="new-password">New Password</label>
                         <input id="new-password" type="password" placeholder="Enter new password" required />
+                        <span id="toggle-new-pass"
+                              style="position: absolute; right: 12px; top: 38px; cursor: pointer; user-select: none;">
+                            👁️
+                        </span>
+                        <div id="new-password-error" class="error-message" style="font-size:0.85rem; margin-top:4px;"></div>
                     </div>
-                    <div class="forgot-form-group">
+
+                    <!-- Confirm New Password -->
+                    <div class="forgot-form-group" style="position: relative; width: 100%;">
                         <label for="confirm-password">Confirm New Password</label>
                         <input id="confirm-password" type="password" placeholder="Confirm new password" required />
+                        <span id="toggle-confirm-pass"
+                              style="position: absolute; right: 12px; top: 38px; cursor: pointer; user-select: none;">
+                            👁️
+                        </span>
+                        <div id="confirm-password-error" class="error-message" style="font-size:0.85rem; margin-top:4px;"></div>
                     </div>
+
                     <div class="button-group">
                         <button class="back-btn" onclick="goBackToCodeStep()">Back</button>
                         <button id="change-password-btn" class="forgot-btn" onclick="changePassword()">Change Password</button>
                     </div>
                 </div>
+
+
             </div>
             <div id="forgot-error" class="forgot-error"></div>
         </div>
+
         <script>
-            let wrongOTPCount = 0;
-            const MAX_WRONG_OTP = 3;
+
+            function setupPasswordToggles() {
+                const toggles = [
+                    {btnId: 'toggle-new-pass', inputId: 'new-password'},
+                    {btnId: 'toggle-confirm-pass', inputId: 'confirm-password'}
+                ];
+
+                toggles.forEach(({btnId, inputId}) => {
+                    const btn = document.getElementById(btnId);
+                    const input = document.getElementById(inputId);
+
+                    btn.addEventListener('click', () => {
+                        if (input.type === 'password') {
+                            input.type = 'text';
+                            btn.textContent = '🙈';
+                        } else {
+                            input.type = 'password';
+                            btn.textContent = '👁️';
+                        }
+                    });
+                });
+            }
+
+            function setupNoSpaceInputs() {
+                ['new-password', 'confirm-password'].forEach(id => {
+                    const input = document.getElementById(id);
+                    input.addEventListener('input', function () {
+                        const clean = this.value.replace(/\s/g, '');
+                        if (this.value !== clean)
+                            this.value = clean;
+                    });
+                });
+            }
+            function setFieldError(elId, msg) {
+                document.getElementById(elId).textContent = msg;
+            }
+            function clearFieldError(elId) {
+                document.getElementById(elId).textContent = '';
+            }
+
+            function validatePasswords() {
+                const newInput = document.getElementById('new-password');
+                const confirmInput = document.getElementById('confirm-password');
+                const newPass = newInput.value;
+                const confirmPass = confirmInput.value;
+                let ok = true;
+
+                if (newPass.length > 0 && newPass.length < 6) {
+                    setFieldError('new-password-error', 'At least 6 characters.');
+                    ok = false;
+                } else {
+                    clearFieldError('new-password-error');
+                }
+
+                if (/\s/.test(newPass)) {
+                    setFieldError('new-password-error', 'Cannot contain spaces.');
+                    ok = false;
+                }
+
+                if (confirmPass && newPass !== confirmPass) {
+                    setFieldError('confirm-password-error', "Passwords don't match.");
+                    ok = false;
+                } else {
+                    clearFieldError('confirm-password-error');
+                }
+
+                if (newPass && confirmPass && newPass === confirmPass && newPass.length >= 6 && !/\s/.test(newPass)) {
+                    newInput.classList.add('input-valid');
+                    confirmInput.classList.add('input-valid');
+                } else {
+                    newInput.classList.remove('input-valid');
+                    confirmInput.classList.remove('input-valid');
+                }
+
+                document.getElementById('change-password-btn').disabled = !ok;
+            }
+            ['new-password', 'confirm-password'].forEach(id => {
+                document.getElementById(id)
+                        .addEventListener('input', validatePasswords);
+            });
+
+            window.addEventListener('DOMContentLoaded', () => {
+                setupPasswordToggles();
+                setupNoSpaceInputs();
+
+                const savedEmail = sessionStorage.getItem('forgotEmail');
+                if (savedEmail) {
+                    document.getElementById('forgot-email').value = savedEmail;
+                }
+                document.querySelectorAll('.form-step').forEach(s => s.classList.remove('active'));
+                document.querySelectorAll('.step-dot').forEach(d => d.classList.remove('active', 'completed'));
+                if (savedEmail) {
+                    document.getElementById('step-code').classList.add('active');
+                    document.getElementById('step-dot-1').classList.add('completed');
+                    document.getElementById('step-dot-2').classList.add('active');
+                    enableOTPInputs();
+                } else {
+                    document.getElementById('step-email').classList.add('active');
+                    document.getElementById('step-dot-1').classList.add('active');
+                }
+
+                document.getElementById('change-password-btn').disabled = true;
+            });
+
+
+
             function disableOTPInputs() {
                 document.querySelectorAll('.otp-input').forEach(i => {
                     i.disabled = true;
@@ -398,6 +530,10 @@
                                     document.getElementById('step-dot-1').classList.add('completed');
                                     document.getElementById('step-dot-2').classList.add('active');
                                     document.getElementById('forgot-error').textContent = '';
+
+                                    sessionStorage.setItem('forgotEmail', email);
+
+
                                 }, 1200);
                             } else {
                                 showError(data.message || "Failed to send verification code. Please try again.");
@@ -412,7 +548,6 @@
                         });
             }
 
-            let verifiedOTP = false;
             document.querySelectorAll('.otp-input').forEach((input, idx, arr) => {
                 input.addEventListener('input', function () {
                     this.value = this.value.replace(/[^0-9]/g, '');
@@ -459,43 +594,31 @@
                 fetch('forget', {
                     method: 'POST',
                     headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-                    body: 'email=' + encodeURIComponent(email) + '&code=' + encodeURIComponent(code) + '&action=checkCode'
+                    body: 'email=' + encodeURIComponent(email)
+                            + '&code=' + encodeURIComponent(code)
+                            + '&action=checkCode'
                 })
                         .then(r => r.json())
                         .then(data => {
                             if (data.success) {
-                                wrongOTPCount = 0;
-                                showSuccess("Verification code is correct! ");
-                                setTimeout(() => {
-                                    document.getElementById('forgot-error').textContent = '';
-                                }, 1000);
-                                document.getElementById('new-password').focus();
-                                document.querySelectorAll('.otp-input').forEach(i => i.classList.remove('error'));
-                                verifiedOTP = true;
-                                document.getElementById('verify-code-btn').disabled = false;
-                                if (typeof callback === "function")
-                                    callback(true);
+                                showSuccess("Verification code is correct!");
+                                setTimeout(() => document.getElementById('forgot-error').textContent = '', 1000);
+                                callback && callback(true);
                             } else {
-                                wrongOTPCount++;
+
                                 showError(data.message || "Verification code is invalid or expired.");
-                                document.querySelectorAll('.otp-input').forEach(i => i.classList.add('error'));
-                                verifiedOTP = false;
-                                document.getElementById('verify-code-btn').disabled = true;
-                                if (wrongOTPCount >= MAX_WRONG_OTP) {
-                                    showError("You have entered the wrong code too many times. Please request a new code.");
+
+                                if (data.message && data.message.toLowerCase().includes("locked")) {
                                     disableOTPInputs();
                                 }
-                                if (typeof callback === "function")
-                                    callback(false);
+                                callback && callback(false);
                             }
                         })
                         .catch(() => {
                             showError("Network error. Please try again.");
-                            if (typeof callback === "function")
-                                callback(false);
+                            callback && callback(false);
                         });
             }
-
 
             function changePassword() {
                 const email = document.getElementById('forgot-email').value.trim();
@@ -558,22 +681,11 @@
                 document.getElementById('step-dot-2').classList.add('active');
                 document.getElementById('step-dot-2').classList.remove('completed');
                 document.getElementById('step-dot-3').classList.remove('active');
-                clearMessage();
+
 
                 document.getElementById('new-password').value = '';
                 document.getElementById('confirm-password').value = '';
             }
-
-            document.getElementById('confirm-password').addEventListener('input', function () {
-                const newPassword = document.getElementById('new-password').value;
-                const confirmPassword = this.value;
-
-                if (confirmPassword && newPassword !== confirmPassword) {
-                    this.style.borderColor = '#e74c3c';
-                } else {
-                    this.style.borderColor = '#e1e5e9';
-                }
-            });
 
             function verifyOTPCode() {
                 const code = Array.from(document.querySelectorAll('.otp-input')).map(i => i.value).join('');
@@ -593,6 +705,8 @@
             }
 
             function goBackToEmailStep() {
+                sessionStorage.removeItem('forgotEmail');
+
                 document.getElementById('step-email').classList.add('active');
                 document.getElementById('step-code').classList.remove('active');
                 document.getElementById('step-dot-1').classList.add('active');
