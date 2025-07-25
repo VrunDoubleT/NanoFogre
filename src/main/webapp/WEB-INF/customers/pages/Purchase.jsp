@@ -454,9 +454,6 @@
                                 <c:choose>
                                     <c:when test="${empty availableAddresses}">
                                         <p class="text-gray-600">Please add delivery address.</p>
-                                        <button id="addAddressBtn" class="btn-success inline-flex items-center px-4 py-2 rounded-lg" type="button">
-                                            <i class="fas fa-plus mr-2"></i>Add New
-                                        </button>
                                     </c:when>
                                     <c:otherwise>
                                         <c:forEach var="addr" items="${availableAddresses}">

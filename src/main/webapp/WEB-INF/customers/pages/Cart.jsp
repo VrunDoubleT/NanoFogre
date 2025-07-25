@@ -62,9 +62,9 @@
                                 <div id="cart-list">
                                     <c:forEach var="item" items="${cartItems}" varStatus="status">
 
-                                        <div class="product-card cart-product flex flex-col border sm:flex-row items-center bg-white rounded-2xl mb-5 p-5 gap-6 transition-all duration-300"
+                                        <div class="product-card cart-product flex flex-col sm:flex-row items-center bg-white rounded-2xl mt-[15px] p-5 shadow-lg gap-6 transition-all duration-300"
                                              id="cart-item-${item.cartId}"
-                                             style="${status.index >= 5 ? 'display:none;' : ''}"
+
                                              data-idx="${status.index}">
                                             <!-- Checkbox -->
                                             <input 
@@ -77,7 +77,7 @@
                                                     >
                                                 <!-- Image -->
                                                 <img src="${not empty item.product.urls ? item.product.urls[0] : 'default.png'}"
-                                                 alt="${item.product.title}" class="w-[146px] ${item.product.quantity <= 0 ? 'out-of-stock' : ''} h-[146px] object-cover rounded-lg border-2 border-gray-200" />
+                                                 alt="${item.product.title}" class="w-[146px] ${item.product.quantity <= 0 ? 'out-of-stock' : ''} h-auto object-cover rounded-lg border-2 border-gray-200" />
                                             <!-- Info -->
                                             <div class="flex-1 ml-0 sm:ml-6 w-full ${item.product.quantity <= 0 ? 'out-of-stock' : ''}">
                                                 <h2 class="font-bold text-lg text-gray-800 leading-tight line-clamp-2 hover:text-purple-600 transition-colors cursor-pointer">${item.product.title}</h2>
@@ -144,20 +144,20 @@
                                         </div>
                                     </c:forEach>
                                 </div>
-                                <c:if test="${fn:length(cartItems) > 5}">
-                                    <div id="loadMoreDots" class="text-center my-8 hidden">
-                                        <span class="inline-block px-4 py-2 rounded-full bg-white border border-gray-200">
-                                            <img src="https://res.cloudinary.com/dd9jweqlv/image/upload/v1753013466/Ellipsis_1x-1.5s-200px-200px_qwtjaq.svg" alt="Loading..." style="width:60px; height:30px; display:inline-block;" />
-                                        </span>
-                                    </div>
-                                </c:if>
+
+                                <div id="loadMoreDots" class="text-center my-8 hidden">
+                                    <span class="inline-block px-4 py-2 rounded-full bg-white border border-gray-200">
+                                        <img src="https://res.cloudinary.com/dd9jweqlv/image/upload/v1753013466/Ellipsis_1x-1.5s-200px-200px_qwtjaq.svg" alt="Loading..." style="width:60px; height:30px; display:inline-block;" />
+                                    </span>
+                                </div>
+
                             </div>
 
 
                             <!-- Summary -->
-                            <div class="cart-summary border border-gray-200 rounded-2xl p-8 flex flex-col h-fit sticky top-24">
+                            <div class="cart-summary bg-slate-50 border border-gray-200 rounded-2xl p-8 flex flex-col shadow-lg h-fit sticky top-24">
 
-                                <div class="fixed bottom-0 left-0 w-full z-50 bg-white border-t border-gray-200 shadow-2xl md:static md:shadow-none md:border-0" style="backdrop-filter: blur(8px);">
+                                <div class="fixed bottom-0 left-0 w-full z-50 bg-white border-t border-gray-200 px-4 py-3 shadow-2xl md:static md:shadow-none md:border-0" style="backdrop-filter: blur(8px);">
                                     <h2 class="uppercase text-center text-gray-800 font-bold text-xl mb-6 tracking-wider">Order Summary</h2>
                                     <div class="space-y-3 text-gray-700">
                                         <div class="flex justify-between">
@@ -209,57 +209,158 @@
         <!-- JavaScript -->
         <script>
 
+            let currentPage = ${currentPage};
+            const totalPages = ${totalPages};
+            let isLoading = false;
 
-            document.addEventListener('DOMContentLoaded', function () {
-                let loadedCount = 5;
-                const items = document.querySelectorAll('#cart-list .cart-product');
-                const totalCount = items.length;
-                const dots = document.getElementById('loadMoreDots');
-                for (let i = loadedCount; i < items.length; ++i) {
-                    items[i].style.display = 'none';
+            window.addEventListener('scroll', function () {
+                if (isLoading || currentPage >= totalPages)
+                    return;
+
+                if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight - 100) {
+                    setTimeout(() => {
+                        loadMoreItems();
+                    }, 500);
                 }
+            });
 
-                let dotsShown = false;
-                window.addEventListener('scroll', function () {
-                    if (!dots || dotsShown || loadedCount >= totalCount)
-                        return;
-                    const idxToCheck = Math.max(0, totalCount - 5);
-                    if (items[idxToCheck]) {
-                        const rect = items[idxToCheck].getBoundingClientRect();
-                        if (rect.top < window.innerHeight) {
-                            dots.classList.remove('hidden');
-                            dotsShown = true;
-                            setTimeout(() => {
-                                showMoreItems();
-                            }, 1200);
-                        }
-                    }
+            function loadMoreItems() {
+
+                console.log('loadMoreItems triggered');
+                isLoading = true;
+                currentPage++;
+
+                const dots = document.getElementById('loadMoreDots');
+                dots.classList.remove('hidden');
+
+                fetch('${cartUrl}?action=loadMore&page=' + currentPage)
+                        .then(resp => resp.json())
+                        .then(data => {
+                            if (data.length === 0) {
+                                currentPage--;
+                                return;
+                            }
+                            appendCartItems(data);
+                        })
+                        .catch(err => {
+                            console.error(err);
+                            currentPage--;
+                        })
+                        .finally(() => {
+                            dots.classList.add('hidden');
+                            isLoading = false;
+                        });
+            }
+
+            function appendCartItems(items) {
+                const cartList = document.getElementById('cart-list');
+
+                items.forEach(item => {
+                    cartItems.push({
+                        id: item.cartId,
+                        productId: item.product.productId,
+                        price: item.product.price,
+                        quantity: item.quantity,
+                        stock: item.product.quantity,
+                        title: item.product.title
+                    });
+
+                    const inStock = item.product.quantity > 0;
+                    const disableCheckbox = !inStock ? 'disabled' : '';
+                    const checkboxClass = !inStock ? 'opacity-50 cursor-not-allowed' : '';
+
+                    const disableMinus = item.quantity <= 1 || !inStock ? 'disabled' : '';
+                    const disablePlus = item.quantity >= item.product.quantity || !inStock ? 'disabled' : '';
+
+                    const itemHtml = `
+<div class="product-card cart-product flex flex-col sm:flex-row items-center bg-white rounded-2xl mt-[15px] p-5 shadow-lg gap-6 transition-all duration-300"
+     id="cart-item-\${item.cartId}">
+
+    <input type="checkbox"
+           class="item-checkbox accent-purple-500 w-5 h-5 mt-1 mr-0 cursor-pointer \${checkboxClass}"
+           data-id="\${item.cartId}" \${disableCheckbox} />
+
+    <img src="\${item.product.urls[0] || 'default.png'}"
+         alt="\${item.product.title}"
+         class="w-[146px] \${!inStock ? 'out-of-stock' : ''} h-auto object-cover rounded-lg border-2 border-gray-200" />
+
+    <div class="flex-1 ml-0 sm:ml-6 w-full \${!inStock ? 'out-of-stock' : ''}">
+        <h2 class="font-bold text-lg text-gray-800 leading-tight line-clamp-2 hover:text-purple-600 transition-colors cursor-pointer">
+            \${item.product.title}
+        </h2>
+
+        <div class="flex items-center flex-wrap gap-2 mt-2 text-sm">
+            <span class="px-2 py-1 rounded-full \${inStock ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'} font-semibold">
+                \${inStock ? 'In Stock' : 'Out of Stock'}
+            </span>
+            <span class="px-2 py-1 rounded-full bg-blue-100 text-blue-800">\${item.product.brand.name}</span>
+            <span class="px-2 py-1 rounded-full bg-pink-100 text-pink-800">\${item.product.category.name}</span>
+            
+\${item.product.averageStar > 0 ? `
+    <span class="flex items-center gap-1 text-yellow-500 font-bold">
+        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+        </svg>
+        \${item.product.averageStar}
+    </span>
+` : ''}
+
+        </div>
+
+        <p class="text-gray-500 mt-2">
+            Price: <span class="font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+                \${formatCurrencyVND(item.product.price)}
+            </span>
+        </p>
+
+        <div class="flex items-center gap-3 mt-3" id="qty-group-\${item.cartId}" data-min="1" data-max="\${item.product.quantity}">
+            <button type="button" class="w-8 h-8 rounded-full bg-gray-200 text-gray-800 flex items-center justify-center font-bold hover:bg-gray-300 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                    onclick="updateQuantity(\${item.cartId}, -1)" id="decrease-\${item.cartId}" \${disableMinus}>–</button>
+
+            <span id="qty-\${item.cartId}" class="w-8 text-center font-bold text-gray-900">\${item.quantity}</span>
+
+            <button type="button" class="w-8 h-8 rounded-full bg-gray-200 text-gray-800 flex items-center justify-center font-bold hover:bg-gray-300 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                    onclick="updateQuantity(\${item.cartId}, 1)" id="increase-\${item.cartId}" \${disablePlus}>+</button>
+        </div>
+    </div>
+
+    <div class="flex flex-col items-end gap-2 w-full sm:w-40 text-right sm:text-left mt-4 sm:mt-0">
+        <div id="lineTotal-\${item.cartId}" class="text-2xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+            \${formatCurrencyVND(item.product.price * item.quantity)}
+        </div>
+        <button type="button" class="remove-btn w-full py-1.5 rounded-md text-white bg-gradient-to-r from-rose-500 to-rose-600 hover:from-rose-600 hover:to-rose-700 text-sm"
+                onclick="removeFromCart(\${item.cartId})">🗑 Remove</button>
+    </div>
+</div>`;
+
+
+
+                    cartList.insertAdjacentHTML('beforeend', itemHtml);
                 });
 
-                function showMoreItems() {
-                    let showCount = 0;
-                    for (let i = loadedCount; i < items.length && showCount < 5; ++i, ++showCount) {
-                        items[i].style.display = '';
-                    }
-                    loadedCount += showCount;
-                    dots.classList.add('hidden');
-                    dotsShown = false;
-                    if (loadedCount < totalCount) {
-                    } else {
-                        window.removeEventListener('scroll', arguments.callee, false);
-                    }
-                }
+                attachCheckboxEvent();
+                updateCartLineCount();
+                recalc();
+            }
 
-                restoreChecked();
+
+
+            function attachCheckboxEvent() {
                 document.querySelectorAll('.item-checkbox').forEach(ch => {
+                    ch.removeEventListener('change', saveChecked);
                     ch.addEventListener('change', () => {
                         saveChecked();
                         recalc();
                     });
                 });
-                updateCartLineCount();
+            }
+
+            document.addEventListener("DOMContentLoaded", function () {
+                restoreChecked();
+                attachCheckboxEvent();
                 recalc();
             });
+
 
             const baseUrl = '${cartUrl}';
             const cartItems = [];
