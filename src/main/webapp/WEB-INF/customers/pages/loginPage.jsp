@@ -14,18 +14,22 @@
         <script src="https://cdn.tailwindcss.com"></script>
         <!-- Import Inter + Orbitron -->
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Orbitron:wght@600&display=swap" rel="stylesheet">
+        <style>
+            input[type="password"]::-ms-reveal,
+            input[type="password"]::-ms-clear,
+            input[type="password"]::-webkit-textfield-decoration-button {
+                display: none;
+            }
+        </style>
     </head>
     <body class="bg-gradient-to-br from-gray-900 to-gray-800 min-h-screen flex items-center justify-center" style="font-family: 'Inter', sans-serif;">
         <form id="loginForm" action="${pageContext.request.contextPath}/auth" method="post"
               class="bg-white/10 backdrop-blur-md shadow-xl p-8 rounded-2xl w-full max-w-md border border-white/20 space-y-6 text-white">
             <input type="hidden" name="action" value="login" />
-            <!-- Heading dùng Orbitron -->
             <h2 class="text-3xl font-bold text-center text-blue-400" style="font-family: 'Orbitron', sans-serif;">Login</h2>
-
             <c:if test="${not empty error}">
                 <div id="backend-error" class="text-red-500 hidden">${error}</div>
             </c:if>
-
             <div>
                 <input type="email" name="email" id="login-email"
                        placeholder="Email"
@@ -40,7 +44,6 @@
                        class="w-full px-4 py-2 bg-white/20 text-white border border-white/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder-gray-300" />
                 <p class="mt-1 text-sm text-red-500 hidden" id="error-email"></p>
             </div>
-
             <div class="relative mt-2">
                 <input type="password" name="password" id="login-password"
                        placeholder="Password"
@@ -49,7 +52,6 @@
                         class="absolute right-2 top-2 text-xl hover:text-blue-400">👁</button>
                 <p class="mt-1 text-sm text-red-500 hidden" id="error-password"></p>
             </div>
-
             <div class="flex justify-between text-sm text-gray-300">
                 <label>
                     <input type="checkbox" name="remember" class="mr-1"
