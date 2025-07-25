@@ -9,7 +9,7 @@
 <%@ taglib uri="http://java.sun.com/jsp/jstl/fmt"       prefix="fmt"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn"  %>
 
-<div class="w-full border border-gray-200 bg-white rounded-xl p-8">
+<div class="w-full bg-white rounded-2xl shadow-xl p-8">
     <h2 class="flex items-center gap-2 text-2xl font-bold mb-6">
         <i data-lucide="shopping-bag" class="w-6 h-6"></i>
         Your Orders
@@ -90,5 +90,3 @@
         border-radius: 8px;
     }
 </style>
-
-

@@ -44,7 +44,6 @@ public class OrdersDAO {
                 + "v.voucherId, v.voucherCode, v.value, "
                 + "a.addressId, a.recipientName, a.addressDetails, a.addressPhone "
                 + "FROM Orders o "
-                + "LEFT JOIN Employees e ON o.employeeId = e.employeeId "
                 + "JOIN OrderStatus os ON o.statusId = os.statusId "
                 + "JOIN PaymentMethods pm ON o.paymentMethodId = pm.paymentMethodId "
                 + "JOIN PaymentStatus ps ON o.paymentStatusId = ps.paymentStatusId "
@@ -83,6 +82,7 @@ public class OrdersDAO {
         ps.setName(rs.getString("paymentStatusName"));
         order.setPaymentStatus(ps);
 
+        // Voucher
         if (rs.getObject("voucherId") != null) {
             Voucher v = new Voucher();
             v.setId(rs.getInt("voucherId"));
@@ -97,6 +97,8 @@ public class OrdersDAO {
         addr.setDetails(rs.getString("addressDetails"));
         addr.setPhone(rs.getString("addressPhone"));
         order.setAddress(addr);
+
+        // Details
         order.setDetails(getOrderDetails(orderId, customerId));
 
         rs.getStatement().getConnection().close();
@@ -131,6 +133,8 @@ public class OrdersDAO {
             }
             p.setUrls(urls);
             d.setProduct(p);
+
+            // Check reviewed
             d.setReviewed(isProductReviewed(customerId, p.getProductId()));
             Models.Review review = reviewDAO.getReviewByCustomerAndProduct(customerId, p.getProductId());
             if (review != null) {
@@ -276,4 +280,5 @@ public class OrdersDAO {
         rs.getStatement().getConnection().close();
         return history;
     }
+
 }

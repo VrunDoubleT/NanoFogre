@@ -41,7 +41,6 @@
                     <i data-lucide="eye" class="transition-transform group-hover:scale-110"></i>
                     Details
                 </button>
-                <!-- KHÔNG còn nút Cancel -->
             </div>
         </div>
         <!-- Products in order -->
@@ -97,5 +96,3 @@
         </div>
     </div>
 </c:forEach>
-
-

@@ -220,7 +220,7 @@ public class CustomerDAO extends DB.DBContext {
                 if (ts != null) {
                     c.setCreatedAt(ts.toLocalDateTime());
                 }
-                c.setIsBlock(rs.getInt("isBlock") == 1);
+                c.setIsBlock(rs.getBoolean("isBlock"));
                 c.setIsVerify(rs.getInt("isVerify") == 1);
                 return c;
             }
@@ -233,7 +233,6 @@ public class CustomerDAO extends DB.DBContext {
     public boolean updateCustomer(int customerId, String name, String phone, String avatarUrl) {
         String query = "UPDATE Customers SET customerName = ?, customerPhone = ?, customerAvatar = ? WHERE customerId = ?";
         Object[] params = {name, phone, avatarUrl, customerId};
-
         try {
             int updated = execQuery(query, params);
             return updated > 0;
@@ -244,7 +243,7 @@ public class CustomerDAO extends DB.DBContext {
     }
 
     public boolean checkEmailExists(String email) {
-        String sql = "SELECT 1 FROM Customers WHERE customerEmail=? AND _destroy=0";
+        String sql = "SELECT 1 FROM Customers WHERE customerEmail=? AND isVerify=1 AND _destroy=0";
         Object[] params = {email};
         try ( ResultSet rs = this.execSelectQuery(sql, params)) {
             return rs.next();
@@ -324,6 +323,69 @@ public class CustomerDAO extends DB.DBContext {
             ex.printStackTrace();
         }
         return false;
+    }
+
+    public Customer findUnverifiedCustomerByEmail(String email) {
+        String sql = "SELECT * FROM Customers WHERE customerEmail=? AND isVerify=0 AND _destroy=0";
+        Object[] params = {email};
+        try ( ResultSet rs = this.execSelectQuery(sql, params)) {
+            if (rs.next()) {
+                Customer c = new Customer();
+                c.setId(rs.getInt("customerId"));
+                c.setEmail(rs.getString("customerEmail"));
+                c.setPassword(rs.getString("customerPassword"));
+                c.setName(rs.getString("customerName"));
+                c.setAvatar(rs.getString("customerAvatar"));
+                c.setPhone(rs.getString("customerPhone"));
+                java.sql.Timestamp ts = rs.getTimestamp("createdAt");
+                if (ts != null) {
+                    c.setCreatedAt(ts.toLocalDateTime());
+                }
+                c.setIsBlock(rs.getBoolean("isBlock"));
+                c.setIsVerify(false);
+                return c;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public boolean updateUnverifiedCustomer(String email, String name, String hashedPassword) {
+        String sql = "UPDATE Customers SET customerName=?, customerPassword=?, customerNewPassword=NULL, customerAvatar=NULL, customerPhone=NULL, isBlock=0, _destroy=0, createdAt=?, isVerify=0 WHERE customerEmail=? AND isVerify=0 AND _destroy=0";
+        try {
+            int rows = execQuery(sql, new Object[]{name, hashedPassword, new Timestamp(System.currentTimeMillis()), email});
+            return rows > 0;
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        }
+        return false;
+    }
+
+    public Customer findVerifiedCustomerByEmail(String email) {
+        String sql = "SELECT * FROM Customers WHERE customerEmail=? AND isVerify=1 AND _destroy=0";
+        Object[] params = {email};
+        try ( ResultSet rs = this.execSelectQuery(sql, params)) {
+            if (rs.next()) {
+                Customer c = new Customer();
+                c.setId(rs.getInt("customerId"));
+                c.setEmail(rs.getString("customerEmail"));
+                c.setPassword(rs.getString("customerPassword"));
+                c.setName(rs.getString("customerName"));
+                c.setAvatar(rs.getString("customerAvatar"));
+                c.setPhone(rs.getString("customerPhone"));
+                java.sql.Timestamp ts = rs.getTimestamp("createdAt");
+                if (ts != null) {
+                    c.setCreatedAt(ts.toLocalDateTime());
+                }
+                c.setIsBlock(rs.getBoolean("isBlock"));
+                c.setIsVerify(true);
+                return c;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
     public List<Address> getAddressesByCustomerId(int customerId) {

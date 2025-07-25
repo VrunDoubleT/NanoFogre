@@ -159,7 +159,6 @@ public class ForgetDAO extends DB.DBContext {
     }
 
     // ======= CUSTOMER =======
-
     public SendResult upsertCodeCustomer(int customerId, String code, LocalDateTime expiredAt, boolean isRegister) {
         if (isRegister) {
             String ins = "INSERT INTO VerifyCodes (userType, customerId, code, createdAt, expiredAt, requestCount, failedCount) VALUES (0, ?, ?, ?, ?, 0, 0)";
@@ -181,13 +180,17 @@ public class ForgetDAO extends DB.DBContext {
                     LocalDateTime created = rs.getTimestamp("createdAt").toLocalDateTime();
                     boolean olderThanDay = created.isBefore(now.minusHours(24));
                     if (!olderThanDay && count >= 3) {
+                        blockCustomer(customerId);
                         return SendResult.TOO_MANY_REQUESTS;
                     }
-                    String upd = "UPDATE VerifyCodes SET code=?, createdAt=?, expiredAt=?, requestCount=?, failedCount=0 WHERE userType=0 AND customerId=?";
+                    String upd = "UPDATE VerifyCodes SET code=?, createdAt=?, expiredAt=?, requestCount=? WHERE userType=0 AND customerId=?";
                     int newCount = olderThanDay ? 1 : count + 1;
                     int rows = execQuery(upd, new Object[]{
                         code, Timestamp.valueOf(now), Timestamp.valueOf(expiredAt), newCount, customerId
                     });
+                    if (!olderThanDay && newCount >= 3) {
+                        blockCustomer(customerId);
+                    }
                     return rows > 0 ? SendResult.OK : SendResult.DB_ERROR;
                 } else {
                     String ins = "INSERT INTO VerifyCodes (userType, customerId, code, createdAt, expiredAt, requestCount, failedCount) VALUES (0, ?, ?, ?, ?, 1, 0)";
@@ -230,6 +233,15 @@ public class ForgetDAO extends DB.DBContext {
     public void incrementFailedCountForCustomer(int customerId) throws SQLException {
         String sql = "UPDATE VerifyCodes SET failedCount = failedCount + 1 WHERE userType = 0 AND customerId = ?";
         execQuery(sql, new Object[]{customerId});
+
+        String sel = "SELECT failedCount FROM VerifyCodes WHERE userType = 0 AND customerId = ? ORDER BY createdAt DESC LIMIT 1";
+        try ( ResultSet rs = execSelectQuery(sel, new Object[]{customerId})) {
+            if (rs.next() && rs.getInt("failedCount") >= 5) {
+                blockCustomer(customerId);
+            }
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        }
     }
 
     public int getLatestFailedCount(int customerId) {
@@ -257,16 +269,16 @@ public class ForgetDAO extends DB.DBContext {
     }
 
     public Customer findCustomerByEmail(String email) {
-        String sql = "SELECT * FROM Customers WHERE customerEmail = ? AND isBlock = 0 AND _destroy = 0";
+        String sql = "SELECT * FROM Customers WHERE customerEmail = ? AND isVerify = 1 AND isBlock = 0 AND _destroy = 0";
         try ( ResultSet rs = this.execSelectQuery(sql, new Object[]{email})) {
             if (rs.next()) {
                 Customer c = new Customer();
                 c.setId(rs.getInt("customerId"));
                 c.setEmail(rs.getString("customerEmail"));
+                c.setPassword(rs.getString("customerPassword"));
                 c.setName(rs.getString("customerName"));
                 c.setAvatar(rs.getString("customerAvatar"));
                 c.setPhone(rs.getString("customerPhone"));
-                c.setIsBlock(rs.getBoolean("isBlock"));
                 return c;
             }
         } catch (SQLException ex) {
@@ -308,4 +320,49 @@ public class ForgetDAO extends DB.DBContext {
             ex.printStackTrace();
         }
     }
+
+    public void blockCustomer(int customerId) {
+        String sql = "UPDATE Customers SET isBlock = 1 WHERE customerId = ?";
+        try {
+            execQuery(sql, new Object[]{customerId});
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        }
+    }
+
+// Unblock account
+    public void unblockCustomer(int customerId) {
+        String sql = "UPDATE Customers SET isBlock = 0 WHERE customerId = ?";
+        try {
+            execQuery(sql, new Object[]{customerId});
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        }
+    }
+
+    public void autoUnblockIfNeeded(int customerId) {
+        String sql = "SELECT TOP 1 createdAt FROM VerifyCodes WHERE customerId = ? AND (requestCount >= 3 OR failedCount >= 5) ORDER BY createdAt DESC";
+        try ( ResultSet rs = execSelectQuery(sql, new Object[]{customerId})) {
+            if (rs.next()) {
+                LocalDateTime created = rs.getTimestamp("createdAt").toLocalDateTime();
+                if (created.plusHours(24).isBefore(LocalDateTime.now())) {
+                    unblockCustomer(customerId);
+                }
+            }
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        }
+    }
+
+    public boolean isCustomerBlockedByFailedCount(int customerId) {
+        String sql = "SELECT 1 FROM VerifyCodes WHERE userType=0 AND customerId=? AND failedCount >= 5 AND createdAt >= ?";
+        Timestamp since = Timestamp.valueOf(LocalDateTime.now().minusHours(24));
+        try ( ResultSet rs = execSelectQuery(sql, new Object[]{customerId, since})) {
+            return rs.next();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
 }

@@ -117,11 +117,29 @@ document.addEventListener("DOMContentLoaded", function () {
                     } else {
                         Swal.fire({icon: "error", title: "Error", text: data.message})
                                 .then(() => {
-                                    if (data.message && data.message.toLowerCase().includes("maximum number of resend attempts")) {
+                                    codeInputs.forEach(i => {
+                                        i.value = "";
+                                        i.blur();
+                                    });
+                                    pwdInput.value = "";
+                                    confirmInput.value = "";
+                                    codeError.classList.add("hidden");
+                                    pwdError.classList.add("hidden");
+                                    confirmError.classList.add("hidden");
+                                    if (data.message && (
+                                            data.message.toLowerCase().includes("too many times") ||
+                                            data.message.toLowerCase().includes("request a new code") ||
+                                            data.message.toLowerCase().includes("blocked for 24 hours")
+                                            )) {
                                         step2.classList.add("hidden");
                                         step1.classList.remove("hidden");
                                         localStorage.removeItem("forgotStep");
                                         localStorage.removeItem("forgotEmail");
+                                        emailInput.value = "";
+                                        emailInput.focus();
+                                    } else {
+                                        if (codeInputs.length > 0)
+                                            codeInputs[0].focus();
                                     }
                                 });
                     }
@@ -202,22 +220,29 @@ document.addEventListener("DOMContentLoaded", function () {
                     } else {
                         Swal.fire({icon: "error", title: "Error", text: data.message})
                                 .then(() => {
+                                    codeInputs.forEach(i => i.value = "");
+                                    pwdInput.value = "";
+                                    confirmInput.value = "";
                                     if (data.message && (
                                             data.message.toLowerCase().includes("too many times") ||
                                             data.message.toLowerCase().includes("request a new code")
                                             )) {
                                         step2.classList.add("hidden");
                                         step1.classList.remove("hidden");
-                                        codeInputs.forEach(i => i.value = ""); // clear code input
                                         localStorage.removeItem("forgotStep");
                                         localStorage.removeItem("forgotEmail");
+                                        emailInput.focus();
+                                    } else {
+                                        if (codeInputs.length > 0)
+                                            codeInputs[0].focus();
                                     }
                                 });
                     }
-                }).catch(() => {
-            btnChangePassword.disabled = false;
-            Swal.fire({icon: "error", text: "Could not send request."});
-        });
+                })
+                .catch(() => {
+                    btnChangePassword.disabled = false;
+                    Swal.fire({icon: "error", text: "Could not send request."});
+                });
     });
 
     btnBack.addEventListener("click", () => {
