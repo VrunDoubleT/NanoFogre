@@ -4,19 +4,9 @@
     Author     : Duong Tran Ngoc Chau - CE181040
 --%>
 
-<%@page import="Models.Category"%>
-<%@page import="java.util.List"%>
-<%@page import="Models.Voucher"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
-<%
-    Voucher voucher = (Voucher) request.getAttribute("voucher");
-    java.time.format.DateTimeFormatter formatter = java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
-    String validFromFormatted = voucher.getValidFrom().format(formatter);
-    String validToFormatted = voucher.getValidTo().format(formatter);
-    List<Category> categories = (List<Category>) request.getAttribute("categories");
-%>
-
+<%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
 
 <div class="w-[600px] mx-auto h-auto flex flex-col bg-white shadow-2xl overflow-hidden rounded-xl">
     <!-- Header -->
@@ -29,21 +19,29 @@
         <!-- Voucher Code + Value -->
         <div class="relative mx-auto max-w-[280px] min-h-[80px] bg-indigo-100 border border-dashed border-indigo-600 rounded-xl flex items-center justify-center shadow-md">
             <p class="text-2xl font-mono font-bold tracking-[0.3em] text-indigo-700 uppercase">
-                <%= voucher.getCode()%>
+                ${voucher.code}
             </p>
 
             <!-- Value -->
             <div class="absolute bottom-0 right-4 translate-y-1/2 bg-yellow-500 text-white font-bold px-3 py-1 rounded-full shadow text-xs">
-                - <%= voucher.getType().equals("PERCENTAGE")
-                        ? ((int) voucher.getValue()) + "%"
-                        : String.format("%,.0f VND", voucher.getValue())%>
+                - 
+                <c:choose>
+                    <c:when test="${voucher.type eq 'PERCENTAGE'}">
+                        <fmt:formatNumber value="${voucher.value}" type="number" maxFractionDigits="0"/>%
+                    </c:when>
+                    <c:otherwise>
+                        <fmt:formatNumber value="${voucher.value}" type="number" groupingUsed="true" maxFractionDigits="0"/>
+                        VND
+                    </c:otherwise>
+                </c:choose>
             </div>
+
         </div>
 
         <!-- Description -->
         <div class="relative bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded-md shadow-sm border-b border-gray-200">
             <p class="text-sm italic text-yellow-800 break-words">
-                "<%= voucher.getDescription()%>"
+                "${voucher.description}"
             </p>
         </div>
 
@@ -57,24 +55,24 @@
                     <div>
                         <p class="text-sm text-gray-500">Minimum Order</p>
                         <p class="text-base font-semibold text-gray-800">
-                            <%= String.format("%,.0f VND", voucher.getMinValue())%>
+                            <fmt:formatNumber value="${voucher.minValue}" type="number" groupingUsed="true"/> VND
                         </p>
                     </div>
                 </div>
 
-                <% if (voucher.getType().equals("PERCENTAGE")) {%>
-                <div class="bg-gray-50 border border-gray-200 rounded-lg p-4 shadow-sm flex items-center gap-3">
-                    <div class="w-10 h-10 bg-blue-100 flex items-center justify-center rounded-lg">
-                        <i data-lucide="badge-percent" class="w-5 h-5 text-blue-600"></i>
+                <c:if test="${voucher.type eq 'PERCENTAGE'}">
+                    <div class="bg-gray-50 border border-gray-200 rounded-lg p-4 shadow-sm flex items-center gap-3">
+                        <div class="w-10 h-10 bg-blue-100 flex items-center justify-center rounded-lg">
+                            <i data-lucide="badge-percent" class="w-5 h-5 text-blue-600"></i>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-500">Maximum Discount</p>
+                            <p class="text-base font-semibold text-gray-800">
+                                <fmt:formatNumber value="${voucher.maxValue}" type="number" groupingUsed="true"/> VND
+                            </p>
+                        </div>
                     </div>
-                    <div>
-                        <p class="text-sm text-gray-500">Maximum Discount</p>
-                        <p class="text-base font-semibold text-gray-800">
-                            <%= String.format("%,.0f VND", voucher.getMaxValue())%>
-                        </p>
-                    </div>
-                </div>
-                <% }%>
+                </c:if>
             </div>
 
             <!-- Applicable Category -->
@@ -84,9 +82,16 @@
                 </div>
                 <div>
                     <p class="text-sm text-gray-500">Applicable Category</p>
-                    <% for (Category cat : categories) {%>
-                    <p class="text-base font-semibold text-gray-800 mt-1"><%= cat.getName()%></p>
-                    <% }%>
+                    <c:choose>
+                        <c:when test="${isAllSelected}">
+                            <p class="text-base font-semibold text-gray-800 mt-1">All Categories</p>
+                        </c:when>
+                        <c:otherwise>
+                            <c:forEach var="cat" items="${categories}">
+                                <p class="text-base font-semibold text-gray-800 mt-1">${cat.name}</p>
+                            </c:forEach>
+                        </c:otherwise>
+                    </c:choose>
                 </div>
             </div>
 
@@ -98,7 +103,10 @@
                 <div>
                     <p class="text-sm text-gray-500">Total Usage Limit</p>
                     <p class="text-base font-semibold text-gray-800 mt-1">
-                        <%= voucher.getTotalUsageLimit() == null ? "Unlimited" : voucher.getTotalUsageLimit()%> use
+                        <c:choose>
+                            <c:when test="${voucher.totalUsageLimit == null}">Unlimited</c:when>
+                            <c:otherwise>${voucher.totalUsageLimit} use</c:otherwise>
+                        </c:choose>
                     </p>
                 </div>
             </div>
@@ -111,28 +119,32 @@
                 <div>
                     <p class="text-sm text-gray-500">User Usage Limit</p>
                     <p class="text-base font-semibold text-gray-800 mt-1">
-                        <%= voucher.getUserUsageLimit() == null ? "Unlimited" : voucher.getUserUsageLimit()%> use
+                        <c:choose>
+                            <c:when test="${voucher.userUsageLimit == null}">Unlimited</c:when>
+                            <c:otherwise>${voucher.userUsageLimit} use</c:otherwise>
+                        </c:choose>
                     </p>
                 </div>
             </div>
 
             <!-- Status -->
+            <c:set var="isActive" value="${voucher.isActive}" />
             <div class="bg-gray-50 border border-gray-200 rounded-lg p-4 shadow-sm flex items-center justify-between">
                 <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 bg-<%= voucher.isIsActive() ? "green" : "red"%>-100 flex items-center justify-center rounded-lg">
-                        <i data-lucide="<%= voucher.isIsActive() ? "check-circle" : "x-circle"%>" class="w-5 h-5 text-<%= voucher.isIsActive() ? "green" : "red"%>-600"></i>
+                    <div class="w-10 h-10 bg-${isActive ? 'green' : 'red'}-100 flex items-center justify-center rounded-lg">
+                        <i data-lucide="${isActive ? 'check-circle' : 'x-circle'}" class="w-5 h-5 text-${isActive ? 'green' : 'red'}-600"></i>
                     </div>
                     <div>
                         <p class="text-sm text-gray-500">Status</p>
-                        <p class="text-base font-semibold text-<%= voucher.isIsActive() ? "green" : "red"%>-600">
-                            <%= voucher.isIsActive() ? "Active" : "Inactive"%>
+                        <p class="text-base font-semibold text-${isActive ? 'green' : 'red'}-600">
+                            ${isActive ? 'Active' : 'Inactive'}
                         </p>
                     </div>
                 </div>
                 <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium
-                      <%= voucher.isIsActive() ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"%>">
-                    <span class="w-2 h-2 mr-2 rounded-full <%= voucher.isIsActive() ? "bg-green-400" : "bg-red-400"%>"></span>
-                    <%= voucher.isIsActive() ? "Active" : "Inactive"%>
+                      ${isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}">
+                    <span class="w-2 h-2 mr-2 rounded-full ${isActive ? 'bg-green-400' : 'bg-red-400'}"></span>
+                    ${isActive ? 'Active' : 'Inactive'}
                 </span>
             </div>
 
@@ -144,13 +156,10 @@
                 <div>
                     <p class="text-sm text-gray-500">Valid Time</p>
                     <p class="text-base font-semibold text-gray-800">
-                        <%= validFromFormatted%> - <%= validToFormatted%>
+                        ${validFromFormatted} - ${validToFormatted}
                     </p>
                 </div>
             </div>
         </div>
     </div>
 </div>
-
-
-

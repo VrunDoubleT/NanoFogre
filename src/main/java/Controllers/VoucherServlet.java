@@ -58,8 +58,16 @@ public class VoucherServlet extends HttpServlet {
                 int did = Integer.parseInt(request.getParameter("id"));
                 Voucher item = vDao.getVoucherById(did);
                 List<Category> clist = vDao.getCategoriesByVoucherId(did);
+                List<Category> allCategories = cDao.getCategories();
+                boolean isAllSelected = clist.size() == allCategories.size();
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
+                String validFromFormatted = item.getValidFrom() != null ? item.getValidFrom().format(formatter) : "";
+                String validToFormatted = item.getValidTo() != null ? item.getValidTo().format(formatter) : "";
                 request.setAttribute("voucher", item);
                 request.setAttribute("categories", clist);
+                request.setAttribute("isAllSelected", isAllSelected);
+                request.setAttribute("validFromFormatted", validFromFormatted);
+                request.setAttribute("validToFormatted", validToFormatted);
                 request.getRequestDispatcher("/WEB-INF/employees/templates/vouchers/voucherDetailsTemplate.jsp").forward(request, response);
                 break;
             case "pagination":
@@ -112,10 +120,13 @@ public class VoucherServlet extends HttpServlet {
                 Voucher voucherToUpdate = vDao.getVoucherById(id);
                 boolean isUsed = vDao.hasUsage(id);
                 String status = voucherToUpdate.getStatus();
+                List<Category> selectedCategories = vDao.getCategoriesByVoucherId(id);
+                DateTimeFormatter formatterToUpdate = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm");
+                request.setAttribute("validFromFormatted", voucherToUpdate.getValidFrom().format(formatterToUpdate));
+                request.setAttribute("validToFormatted", voucherToUpdate.getValidTo().format(formatterToUpdate));
                 request.setAttribute("voucher", voucherToUpdate);
                 request.setAttribute("voucherStatus", status);
                 request.setAttribute("voucherIsUsed", isUsed);
-                List<Category> selectedCategories = vDao.getCategoriesByVoucherId(id);
                 request.setAttribute("selectedCategories", selectedCategories);
                 request.setAttribute("categoryList", cDao.getCategories());
                 request.getRequestDispatcher("/WEB-INF/employees/templates/vouchers/updateVoucherTemplate.jsp").forward(request, response);
@@ -143,17 +154,13 @@ public class VoucherServlet extends HttpServlet {
                 double value = Converter.parseDouble(request.getParameter("value"), 0);
                 double minValue = Converter.parseDouble(request.getParameter("minValue"), 0);
                 Double maxValue = Converter.parseNullableDouble(request.getParameter("maxValue"));
-                Integer totalLimit = Converter.parseNullableInt(request.getParameter("totalLimit"));
+                Integer totalLimit = Converter.parseNullableInt(request.getParameter("totalUsageLimit"));
                 Integer userLimit = Converter.parseNullableInt(request.getParameter("userUsageLimit"));
                 LocalDateTime validFrom = Converter.parseLocalDateTime(request.getParameter("validFrom"));
                 LocalDateTime validTo = Converter.parseLocalDateTime(request.getParameter("validTo"));
                 boolean isActive = (isActiveParam != null);
                 String[] categoryIds = request.getParameterValues("categoryIds");
-                if (categoryIds != null) {
-                    for (String catIdStr : categoryIds) {
-                        int catId = Integer.parseInt(catIdStr);
-                    }
-                }
+
                 voucher.setCode(code);
                 voucher.setType(voucherType);
                 voucher.setValue(value);

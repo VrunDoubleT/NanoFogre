@@ -182,8 +182,6 @@ public class VoucherDAO extends DB.DBContext {
 
         String insertSQL = "INSERT INTO VoucherCategories (voucherId, categoryId) VALUES (?, ?)";
         int totalInserted = 0;
-        System.out.println("Voucher ID: " + voucherId);
-        System.out.println("Category IDs: " + Arrays.toString(categoryIds));
 
         for (String catId : categoryIds) {
             Object[] params = {voucherId, Integer.parseInt(catId)};
@@ -191,21 +189,6 @@ public class VoucherDAO extends DB.DBContext {
         }
 
         return totalInserted == categoryIds.length;
-    }
-
-    public List<Integer> getCategoryIdByVoucherId(int voucherId) {
-        String query = "SELECT categoryId FROM VoucherCategories WHERE voucherId = ?";
-        List<Integer> categoryIds = new ArrayList<>();
-        Object[] params = {voucherId};
-
-        try ( ResultSet rs = execSelectQuery(query, params)) {
-            while (rs.next()) {
-                categoryIds.add(rs.getInt("categoryId"));
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return categoryIds;
     }
 
     public boolean deleteVoucherById(int id) {
