@@ -379,6 +379,7 @@
             </div>
         </div>
         <jsp:include page="../common/footer.jsp" />
+        <<script src="../../../js/header.js"></script>
         <script>
             // Initialize Lucide icons
             lucide.createIcons();
@@ -414,6 +415,7 @@
 
             document.addEventListener("DOMContentLoaded", function () {
                 loadCategories();
+                reloadCart()
             });
 
             document.getElementById("loadCategoriesBtn").onclick = () => {

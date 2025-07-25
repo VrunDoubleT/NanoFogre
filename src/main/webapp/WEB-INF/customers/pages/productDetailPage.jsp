@@ -18,7 +18,6 @@
         <script src="https://cdn.tailwindcss.com"></script>
         <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
         <style>
             .star-filled {
                 color: #fbbf24;
@@ -147,15 +146,15 @@
                                     <label class="font-medium text-gray-700">Quantity:</label>
                                     <div class="flex items-center border border-gray-300 rounded-md">
                                         <button type="button" 
-                                                class="px-3 py-2 hover:bg-gray-50 transition-colors border-r border-gray-300" 
-                                                onclick="decreaseQuantity()">
+                                                id="decreaseQuantityBtn"
+                                                class="px-3 py-2 hover:bg-gray-50 transition-colors border-r border-gray-300">
                                             <i data-lucide="minus" class="w-4 h-4 text-gray-600"></i>
                                         </button>
-                                        <input type="number" id="quantity" value="1" min="1" max="${product.quantity}" 
+                                        <input type="number" id="quantity" value="0" min="1" max="${product.quantity}" 
                                                class="w-16 bg-transparent text-center border-0 focus:ring-0 focus:outline-none py-2 font-medium appearance-none [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none">
                                         <button type="button" 
                                                 class="px-3 py-2 hover:bg-gray-50 transition-colors border-l border-gray-300" 
-                                                onclick="increaseQuantity()">
+                                                id="increaseQuantityBtn">
                                             <i data-lucide="plus" class="w-4 h-4 text-gray-600"></i>
                                         </button>
                                     </div>
@@ -280,6 +279,7 @@
 
         <jsp:include page="../common/footer.jsp" />
 
+        <script src="../../../js/header.js"></script>
         <script>
             // Initialize Lucide icons
             lucide.createIcons();
@@ -298,23 +298,7 @@
                 event.target.closest('[onclick*="changeMainImage"]').classList.remove('border-gray-200');
             }
 
-            // Quantity controls
-            function increaseQuantity() {
-                const input = document.getElementById('quantity');
-                const max = parseInt(input.getAttribute('max'));
-                const current = parseInt(input.value);
-                if (current < max) {
-                    input.value = current + 1;
-                }
-            }
 
-            function decreaseQuantity() {
-                const input = document.getElementById('quantity');
-                const current = parseInt(input.value);
-                if (current > 1) {
-                    input.value = current - 1;
-                }
-            }
 
             function getUrlParam(name) {
                 const urlParams = new URLSearchParams(window.location.search);
@@ -374,11 +358,6 @@
                         });
             }
 
-            document.addEventListener("DOMContentLoaded", function () {
-                const productId = getUrlParam("pId") || 0
-                loadReviewAndPagination(productId, 0, 1)
-            });
-
             function handleFilterReview(event, star) {
                 const element = event.currentTarget;
                 document.querySelectorAll(".filterReview").forEach((elm) => {
@@ -393,38 +372,118 @@
                 loadReviewAndPagination(productId, star, 1)
             }
 
+            const getQuantityOfProduct = async () => {
+                const productId = getUrlParam("pId");
+                try {
+                    const res = await fetch('/carts?type=quantity&productId=' + productId);
+                    const data = await res.json();
+                    return data.quantity;
+                } catch (err) {
+                    console.error(err);
+                    return 0;
+                }
+            };
+
+            let quantity = 1;
+
+            const loadQuantity = (value) => {
+                document.getElementById("quantity").value = value
+            }
+
+            document.getElementById("increaseQuantityBtn").onclick = async  () => {
+                const quantityOfProduct = await getQuantityOfProduct();
+                if (quantity < quantityOfProduct) {
+                    quantity++;
+                    loadQuantity(quantity)
+                }
+                console.log(quantityOfProduct);
+            }
+
+            document.getElementById("decreaseQuantityBtn").onclick = async  () => {
+                if (quantity > 1) {
+                    quantity--;
+                    loadQuantity(quantity)
+                }
+            }
+
+            const quantityInput = document.getElementById("quantity");
+            let isFocused = false
+            quantityInput.addEventListener("focus", () => {
+                isFocused = true;
+            });
+            quantityInput.addEventListener("blur", () => {
+                isFocused = false;
+                if (!quantityInput.value) {
+                    loadQuantity(quantity)
+                } else {
+                    quantity = parseInt(quantityInput.value)
+                }
+            });
+
+            quantityInput.addEventListener("input", async (e) => {
+                if (isFocused) {
+                    const quantityOfProduct = await getQuantityOfProduct();
+                    const valueStr = e.target.value;
+                    if (valueStr === "") {
+                        return;
+                    }
+
+                    const value = parseInt(valueStr);
+
+                    if (isNaN(value) || value < 1 || value > quantityOfProduct) {
+                        if (value < 1) {
+                            loadQuantity(1)
+                        } else {
+                            loadQuantity(quantityOfProduct)
+                        }
+                    } else {
+                        console.log("Giá trị hợp lệ:", value);
+                    }
+                }
+            });
+
+            document.addEventListener("DOMContentLoaded", function () {
+                const productId = getUrlParam("pId") || 0
+                loadReviewAndPagination(productId, 0, 1)
+                loadQuantity(quantity)
+                reloadCart()
+            });
+
+
             function addToCart() {
-                const qty = parseInt(document.getElementById('quantity').value, 10);
                 const productId = getUrlParam('pId');
 
-                fetch('/cart', {
+                fetch('/carts', {
                     method: 'POST',
                     headers: {'Content-Type': 'application/x-www-form-urlencoded'},
                     body: new URLSearchParams({
-                        action: 'add',
+                        type: 'add',
                         productId: productId,
-                        quantity: qty    
+                        quantity: quantity
                     })
                 })
-                        .then(res => res.json()) 
+                        .then(res => res.json())
                         .then(data => {
-                            if (data.success) {
-                               
-                                const badge = document.querySelector('.cart-badge');
-                                if (badge)
-                                    badge.textContent = data.cartQuantity;
-                               
-                                const cartCountEl = document.getElementById('cartCount');
-                                if (cartCountEl)
-                                    cartCountEl.textContent = data.cartQuantity;
-                                Swal.fire('Added!', 'Product has been added to your cart.', 'success');
-                            } else {
-                                Swal.fire('Error', data.message || 'Could not add to cart!', 'error');
-                            }
+                            quantity = 1
+                            loadQuantity(quantity)
+                            Swal.fire(data.isSuccess ? 'Added' : 'Error', data.message, data.isSuccess ? 'success' : 'error');
+                            reloadCart();
+//                            if (data.success) {
+//
+//                                const badge = document.querySelector('.cart-badge');
+//                                if (badge)
+//                                    badge.textContent = data.cartQuantity;
+//
+//                                const cartCountEl = document.getElementById('cartCount');
+//                                if (cartCountEl)
+//                                    cartCountEl.textContent = data.cartQuantity;
+//                                
+//                            } else {
+//                                Swal.fire('Error', data.message || 'Could not add to cart!', 'error');
+//                            }
                         })
                         .catch(err => {
-                            console.error('Add to cart failed:', err);
-                            Swal.fire('Error', 'Could not add to cart!', 'error');
+                            window.location.href = "/auth?action=login";
                         });
             }
 

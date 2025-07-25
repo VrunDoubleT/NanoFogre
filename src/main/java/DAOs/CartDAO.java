@@ -22,6 +22,37 @@ import java.util.List;
 
 public class CartDAO extends DB.DBContext {
 
+    public int getCountQuantityByCustomerAndProduct(int customerId, int productId) {
+        int totalQuantity = 0;
+        String sql = "SELECT SUM(cartQuantity) FROM Carts WHERE customerId = ? AND productId = ?";
+        Object[] params = new Object[]{customerId, productId};
+
+        try ( ResultSet rs = execSelectQuery(sql, params)) {
+            if (rs.next()) {
+                totalQuantity = rs.getInt(1);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return totalQuantity;
+    }
+
+    public boolean updateCartQuantityByCustomerAndProduct(int customerId, int productId, int newQuantity) {
+        String sql = "UPDATE Carts SET cartQuantity = ? WHERE customerId = ? AND productId = ?";
+        Object[] params = new Object[]{newQuantity, customerId, productId};
+
+        try {
+            int rowEffect = execQuery(sql, params);
+            if (rowEffect > 0) {
+                return true;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
     public List<Cart> getCartItemsByUserId(int customerId) {
         List<Cart> list = new ArrayList<>();
         String sql
@@ -366,84 +397,86 @@ public class CartDAO extends DB.DBContext {
         return null;
     }
 /////////new cart
+
     /**
- * Lấy danh sách Cart của user phân trang với OFFSET/FETCH (SQL Server).
- * Nếu bạn dùng MySQL, chuyển thành "LIMIT ? OFFSET ?".
- *
- * @param customerId  ID của customer
- * @param offset      số bản ghi bỏ qua
- * @param limit       số bản ghi lấy về
- * @return            List<Cart> được load kèm Product, Brand, Category, ảnh đại diện và avgStar
- */
-public List<Cart> getCartItemsByUserIdPaginated(int customerId, int offset, int limit) {
-    List<Cart> list = new ArrayList<>();
-    String sql =
-        "SELECT c.cartId, c.customerId, c.cartQuantity,  " +
-        "       p.productId, p.productTitle, p.productPrice, p.productQuantity,  " +
-        "       pi.imageUrl, ISNULL(r.avgStar,0) AS avgStar,  " +
-        "       b.brandId, b.brandName,  " +
-        "       cat.categoryId, cat.categoryName  " +
-        "FROM Carts c  " +
-        "JOIN Products p ON c.productId = p.productId  " +
-        "LEFT JOIN (  " +
-        "    SELECT productId, url AS imageUrl  " +
-        "    FROM ProductImages  " +
-        "    WHERE imageId IN (SELECT MIN(imageId) FROM ProductImages GROUP BY productId)  " +
-        ") pi ON p.productId = pi.productId  " +
-        "LEFT JOIN (  " +
-        "    SELECT productId, AVG(CAST(star AS FLOAT)) AS avgStar  " +
-        "    FROM Reviews  " +
-        "    GROUP BY productId  " +
-        ") r ON p.productId = r.productId  " +
-        "LEFT JOIN Brands b    ON p.brandId    = b.brandId  " +
-        "LEFT JOIN Categories cat ON p.categoryId = cat.categoryId  " +
-        "WHERE c.customerId = ?  " +
-        "ORDER BY c.cartId DESC  " +
-        "OFFSET ? ROWS FETCH NEXT ? ROWS ONLY;";
+     * Lấy danh sách Cart của user phân trang với OFFSET/FETCH (SQL Server). Nếu
+     * bạn dùng MySQL, chuyển thành "LIMIT ? OFFSET ?".
+     *
+     * @param customerId ID của customer
+     * @param offset số bản ghi bỏ qua
+     * @param limit số bản ghi lấy về
+     * @return List<Cart> được load kèm Product, Brand, Category, ảnh đại diện
+     * và avgStar
+     */
+    public List<Cart> getCartItemsByUserIdPaginated(int customerId, int offset, int limit) {
+        List<Cart> list = new ArrayList<>();
+        String sql
+                = "SELECT c.cartId, c.customerId, c.cartQuantity,  "
+                + "       p.productId, p.productTitle, p.productPrice, p.productQuantity,  "
+                + "       pi.imageUrl, ISNULL(r.avgStar,0) AS avgStar,  "
+                + "       b.brandId, b.brandName,  "
+                + "       cat.categoryId, cat.categoryName  "
+                + "FROM Carts c  "
+                + "JOIN Products p ON c.productId = p.productId  "
+                + "LEFT JOIN (  "
+                + "    SELECT productId, url AS imageUrl  "
+                + "    FROM ProductImages  "
+                + "    WHERE imageId IN (SELECT MIN(imageId) FROM ProductImages GROUP BY productId)  "
+                + ") pi ON p.productId = pi.productId  "
+                + "LEFT JOIN (  "
+                + "    SELECT productId, AVG(CAST(star AS FLOAT)) AS avgStar  "
+                + "    FROM Reviews  "
+                + "    GROUP BY productId  "
+                + ") r ON p.productId = r.productId  "
+                + "LEFT JOIN Brands b    ON p.brandId    = b.brandId  "
+                + "LEFT JOIN Categories cat ON p.categoryId = cat.categoryId  "
+                + "WHERE c.customerId = ?  "
+                + "ORDER BY c.cartId DESC  "
+                + "OFFSET ? ROWS FETCH NEXT ? ROWS ONLY;";
 
-    Object[] params = { customerId, offset, limit };
-    try (ResultSet rs = execSelectQuery(sql, params)) {
-        while (rs.next()) {
-            Cart cart = new Cart();
-            cart.setCartId(rs.getInt("cartId"));
-            cart.setCustomerId(rs.getInt("customerId"));
-            cart.setQuantity(rs.getInt("cartQuantity"));
+        Object[] params = {customerId, offset, limit};
+        try ( ResultSet rs = execSelectQuery(sql, params)) {
+            while (rs.next()) {
+                Cart cart = new Cart();
+                cart.setCartId(rs.getInt("cartId"));
+                cart.setCustomerId(rs.getInt("customerId"));
+                cart.setQuantity(rs.getInt("cartQuantity"));
 
-            // Map Product
-            Product p = new Product();
-            p.setProductId(rs.getInt("productId"));
-            p.setTitle(rs.getString("productTitle"));
-            p.setPrice(rs.getDouble("productPrice"));
-            p.setQuantity(rs.getInt("productQuantity"));
-            p.setAverageStar(rs.getDouble("avgStar"));
+                // Map Product
+                Product p = new Product();
+                p.setProductId(rs.getInt("productId"));
+                p.setTitle(rs.getString("productTitle"));
+                p.setPrice(rs.getDouble("productPrice"));
+                p.setQuantity(rs.getInt("productQuantity"));
+                p.setAverageStar(rs.getDouble("avgStar"));
 
-            // Ảnh đại diện
-            String img = rs.getString("imageUrl");
-            List<String> urls = (List<String>) ((img != null && !img.isEmpty())
-                    ? Collections.singletonList(img)
-                    : Collections.emptyList());
-            p.setUrls(urls);
+                // Ảnh đại diện
+                String img = rs.getString("imageUrl");
+                List<String> urls = (List<String>) ((img != null && !img.isEmpty())
+                        ? Collections.singletonList(img)
+                        : Collections.emptyList());
+                p.setUrls(urls);
 
-            // Brand
-            Brand b = new Brand();
-            b.setId(rs.getInt("brandId"));
-            b.setName(rs.getString("brandName"));
-            p.setBrand(b);
+                // Brand
+                Brand b = new Brand();
+                b.setId(rs.getInt("brandId"));
+                b.setName(rs.getString("brandName"));
+                p.setBrand(b);
 
-            // Category
-            Category cat = new Category();
-            cat.setId(rs.getInt("categoryId"));
-            cat.setName(rs.getString("categoryName"));
-            p.setCategory(cat);
+                // Category
+                Category cat = new Category();
+                cat.setId(rs.getInt("categoryId"));
+                cat.setName(rs.getString("categoryName"));
+                p.setCategory(cat);
 
-            cart.setProduct(p);
-            list.add(cart);
+                cart.setProduct(p);
+                list.add(cart);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
-    } catch (SQLException e) {
-        e.printStackTrace();
+        return list;
     }
-    return list;
-}
 
     public int countCartItems(int customerId) {
         String sql = "SELECT COUNT(*) FROM Carts WHERE customerId = ?";
@@ -457,6 +490,5 @@ public List<Cart> getCartItemsByUserIdPaginated(int customerId, int offset, int 
         }
         return 0;
     }
-    
-    
+
 }
