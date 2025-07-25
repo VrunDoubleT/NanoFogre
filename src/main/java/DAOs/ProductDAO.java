@@ -912,4 +912,19 @@ public class ProductDAO extends DB.DBContext {
         return product;
     }
 
+    public int getQuantityByProductId(int productId) {
+        String select = "select p.productQuantity\n"
+                + "from Products p\n"
+                + "where p.productId = ?";
+        Object[] params = new Object[]{productId};
+        try (ResultSet rs = execSelectQuery(select, params);) {
+            if(rs.next()){
+                return rs.getInt("productQuantity");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return 0;
+        }
+        return 0;
+    }
 }
