@@ -19,26 +19,26 @@ import java.util.List;
 public class AddressDAO extends DB.DBContext {
 
     public List<Address> getAddressesByCustomerId(int customerId) {
-        List<Address> list = new ArrayList<>();
-        String sql = "SELECT addressId, addressName, recipientName, addressDetails, addressPhone, isDefault "
-                + "FROM Address WHERE customerId = ?";
+        List<Address> addresses = new ArrayList<>();
+        String query = "SELECT * FROM Address WHERE customerId = ? AND _destroy = 0";
         Object[] params = {customerId};
-        try ( ResultSet rs = execSelectQuery(sql, params)) {
+
+        try ( ResultSet rs = execSelectQuery(query, params)) {
             while (rs.next()) {
-                Address a = new Address();
-                a.setId(rs.getInt("addressId"));
-                a.setName(rs.getString("addressName"));
-                a.setRecipientName(rs.getString("recipientName"));
-                a.setDetails(rs.getString("addressDetails"));
-                a.setPhone(rs.getString("addressPhone"));
-                a.setIsDefault(rs.getBoolean("isDefault"));
-                a.setCustomerId(customerId);
-                list.add(a);
+                Address address = new Address();
+                address.setId(rs.getInt("addressId"));
+                address.setName(rs.getString("addressName"));
+                address.setRecipientName(rs.getString("recipientName"));
+                address.setDetails(rs.getString("addressDetails"));
+                address.setPhone(rs.getString("addressPhone"));
+                address.setIsDefault(rs.getBoolean("isDefault"));
+                address.setCustomerId(rs.getInt("customerId"));
+                addresses.add(address);
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        return list;
+        return addresses;
     }
 
     public int insert(Address a) throws SQLException {
@@ -83,6 +83,40 @@ public class AddressDAO extends DB.DBContext {
             }
         }
         return null;
+    }
+    
+    public boolean addAddress(String addressName, String recipientName, String addressDetails,
+            String addressPhone, boolean isDefault, int customerId) throws SQLException {
+        if (isDefault) {
+            String resetDefault = "UPDATE Address SET isDefault = 0 WHERE customerId = ?";
+            execQuery(resetDefault, new Object[]{customerId});
+        }
+        String query = "INSERT INTO Address (addressName, recipientName, addressDetails, addressPhone, isDefault, customerId, _destroy) "
+                + "VALUES (?, ?, ?, ?, ?, ?, 0)";
+
+        Object[] params = {
+            addressName,
+            recipientName,
+            addressDetails,
+            addressPhone,
+            isDefault,
+            customerId
+        };
+
+        int rows = execQuery(query, params);
+        return rows > 0;
+    }
+    
+    public boolean deleteAddressById(int addressId) {
+        String query = "UPDATE Address SET _destroy = 1 WHERE addressId = ?";
+        Object[] params = {addressId};
+        try {
+            int rowsAffected = execQuery(query, params);
+            return rowsAffected > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
     }
 
     public Address getDefaultAddress(int customerId) {
