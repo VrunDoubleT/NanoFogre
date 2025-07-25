@@ -6,20 +6,14 @@ package Controllers;
 
 import DAOs.AddressDAO;
 import DAOs.CartDAO;
-import DAOs.OrderDAO;
 import DAOs.VoucherDAO;
 import Models.Address;
 import Models.Cart;
 import Models.Customer;
-import Models.OrderStatus;
-import Models.PaymentMethod;
-import Models.PaymentStatus;
 import Models.Voucher;
-import Utils.CurrencyFormatter;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import java.io.IOException;
-import java.io.PrintWriter;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -27,16 +21,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import java.lang.reflect.Type;
-import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.cloudinary.json.JSONArray;
-import org.cloudinary.json.JSONObject;
 
 /**
  *

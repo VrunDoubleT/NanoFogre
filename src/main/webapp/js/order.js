@@ -94,7 +94,7 @@ const loadOrderContentAndEvent = (page) => {
                 if (!result.isConfirmed)
                     return;
 
-                fetch('/order/view', {
+                fetch('/order/views', {
                     method: 'POST',
                     headers: {'Content-Type': 'application/x-www-form-urlencoded'},
                     body: new URLSearchParams({
