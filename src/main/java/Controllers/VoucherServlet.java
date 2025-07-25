@@ -4,9 +4,13 @@
  */
 package Controllers;
 
+import DAOs.CategoryDAO;
 import DAOs.VoucherDAO;
+import Models.Category;
 import Models.Voucher;
 import Utils.Converter;
+import static Utils.Converter.parseNullableDouble;
+import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
@@ -38,31 +42,45 @@ public class VoucherServlet extends HttpServlet {
             throws ServletException, IOException {
         int limit = 5;
         VoucherDAO vDao = new VoucherDAO();
-        String type = request.getParameter("type") != null ? request.getParameter("type") : "vlist";
+        CategoryDAO cDao = new CategoryDAO();
+        String type = request.getParameter("type") != null ? request.getParameter("type") : "list";
+        int categoryId = Converter.parseOption(request.getParameter("categoryId"), 0);
         switch (type) {
             case "list":
                 int page = Converter.parseOption(request.getParameter("page"), 1);
-                List<Voucher> vouchers = vDao.getAllVouchers(page, limit);
-                request.setAttribute("vlist", vouchers);
+                List<Voucher> vouchers = vDao.vouchers(categoryId, page, limit);
                 request.setAttribute("page", page);
                 request.setAttribute("limit", limit);
+                request.setAttribute("vlist", vouchers);
                 request.getRequestDispatcher("/WEB-INF/employees/templates/vouchers/voucherTemplate.jsp").forward(request, response);
                 break;
             case "detail":
                 int did = Integer.parseInt(request.getParameter("id"));
                 Voucher item = vDao.getVoucherById(did);
+                List<Category> clist = vDao.getCategoriesByVoucherId(did);
+                List<Category> allCategories = cDao.getCategories();
+                boolean isAllSelected = clist.size() == allCategories.size();
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
+                String validFromFormatted = item.getValidFrom() != null ? item.getValidFrom().format(formatter) : "";
+                String validToFormatted = item.getValidTo() != null ? item.getValidTo().format(formatter) : "";
                 request.setAttribute("voucher", item);
+                request.setAttribute("categories", clist);
+                request.setAttribute("isAllSelected", isAllSelected);
+                request.setAttribute("validFromFormatted", validFromFormatted);
+                request.setAttribute("validToFormatted", validToFormatted);
                 request.getRequestDispatcher("/WEB-INF/employees/templates/vouchers/voucherDetailsTemplate.jsp").forward(request, response);
                 break;
             case "pagination":
                 int p = Converter.parseOption(request.getParameter("page"), 1);
-                int t = vDao.countVouchers();
+                int t = vDao.countVouchersByCategory(categoryId);
                 request.setAttribute("total", t);
                 request.setAttribute("limit", limit);
                 request.setAttribute("page", p);
                 request.getRequestDispatcher("/WEB-INF/employees/common/paginationTeamplate.jsp").forward(request, response);
                 break;
             case "create":
+                List<Category> categoryList = cDao.getCategories();
+                request.setAttribute("categoryList", categoryList);
                 request.getRequestDispatcher("/WEB-INF/employees/templates/vouchers/createVoucherTemplate.jsp").forward(request, response);
                 break;
             case "checkVoucherCode":
@@ -79,15 +97,40 @@ public class VoucherServlet extends HttpServlet {
                 response.setContentType("text/plain");
                 response.getWriter().write(String.valueOf(exist));
                 break;
+            case "checkTotalLimit":
+                String vIdForTotal = request.getParameter("id");
+                int idForTotal = vIdForTotal != null ? Integer.parseInt(vIdForTotal) : -1;
+                int totalLimit = Integer.parseInt(request.getParameter("totalUsageLimit"));
+                boolean validTotal = vDao.isValidTotalUsageLimit(idForTotal, totalLimit);
+                response.setContentType("text/plain");
+                response.setCharacterEncoding("UTF-8");
+                response.getWriter().write(String.valueOf(validTotal));
+                break;
+            case "checkUserLimit":
+                String vIdForUser = request.getParameter("id");
+                int idForUser = vIdForUser != null ? Integer.parseInt(vIdForUser) : -1;
+                int userLimit = Integer.parseInt(request.getParameter("userUsageLimit"));
+                boolean validUser = vDao.isValidUserUsageLimit(idForUser, userLimit);
+                response.setContentType("text/plain");
+                response.setCharacterEncoding("UTF-8");
+                response.getWriter().write(String.valueOf(validUser));
+                break;
             case "update":
-                try {
                 int id = Integer.parseInt(request.getParameter("id"));
                 Voucher voucherToUpdate = vDao.getVoucherById(id);
+                boolean isUsed = vDao.hasUsage(id);
+                String status = voucherToUpdate.getStatus();
+                List<Category> selectedCategories = vDao.getCategoriesByVoucherId(id);
+                DateTimeFormatter formatterToUpdate = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm");
+                request.setAttribute("validFromFormatted", voucherToUpdate.getValidFrom().format(formatterToUpdate));
+                request.setAttribute("validToFormatted", voucherToUpdate.getValidTo().format(formatterToUpdate));
                 request.setAttribute("voucher", voucherToUpdate);
+                request.setAttribute("voucherStatus", status);
+                request.setAttribute("voucherIsUsed", isUsed);
+                request.setAttribute("selectedCategories", selectedCategories);
+                request.setAttribute("categoryList", cDao.getCategories());
                 request.getRequestDispatcher("/WEB-INF/employees/templates/vouchers/updateVoucherTemplate.jsp").forward(request, response);
-            } catch (Exception e) {
-                response.setStatus(500);
-            }
+                break;
             default:
                 break;
         }
@@ -102,27 +145,35 @@ public class VoucherServlet extends HttpServlet {
             case "create":
                 Voucher voucher = new Voucher();
                 String code = request.getParameter("code");
+                if (code != null) {
+                    code = code.trim().toUpperCase();
+                }
                 String voucherType = request.getParameter("voucherType");
                 String description = request.getParameter("description");
                 String isActiveParam = request.getParameter("active");
                 double value = Converter.parseDouble(request.getParameter("value"), 0);
                 double minValue = Converter.parseDouble(request.getParameter("minValue"), 0);
-                double maxValue = Converter.parseDouble(request.getParameter("maxValue"), 0);
+                Double maxValue = Converter.parseNullableDouble(request.getParameter("maxValue"));
+                Integer totalLimit = Converter.parseNullableInt(request.getParameter("totalUsageLimit"));
+                Integer userLimit = Converter.parseNullableInt(request.getParameter("userUsageLimit"));
                 LocalDateTime validFrom = Converter.parseLocalDateTime(request.getParameter("validFrom"));
                 LocalDateTime validTo = Converter.parseLocalDateTime(request.getParameter("validTo"));
                 boolean isActive = (isActiveParam != null);
+                String[] categoryIds = request.getParameterValues("categoryIds");
 
                 voucher.setCode(code);
                 voucher.setType(voucherType);
                 voucher.setValue(value);
                 voucher.setMinValue(minValue);
                 voucher.setMaxValue(maxValue);
+                voucher.setTotalUsageLimit(totalLimit);
+                voucher.setUserUsageLimit(userLimit);
                 voucher.setDescription(description);
                 voucher.setValidFrom(validFrom);
                 voucher.setValidTo(validTo);
                 voucher.setIsActive(isActive);
 
-                boolean created = vDao.createVoucher(voucher);
+                boolean created = vDao.createVoucher(voucher, categoryIds);
                 response.setStatus(created ? 200 : 500);
                 break;
             case "delete":
@@ -149,16 +200,26 @@ public class VoucherServlet extends HttpServlet {
                 String typeToUpdate = obj.get("voucherType").getAsString();
                 double valueToUpdate = obj.get("value").getAsDouble();
                 double minValueToUpdate = obj.get("minValue").getAsDouble();
-                double maxValueToUpdate = obj.has("maxValue") && !obj.get("maxValue").isJsonNull() ? obj.get("maxValue").getAsDouble() : 0;
+                Double maxValueToUpdate = Converter.parseNullableDouble(obj.has("maxValue") ? obj.get("maxValue").getAsString() : null);
+                Integer totalUsageLimit = Converter.parseNullableInt(obj.has("totalUsageLimit") ? obj.get("totalUsageLimit").getAsString() : null);
+                Integer userUsageLimit = Converter.parseNullableInt(obj.has("userUsageLimit") ? obj.get("userUsageLimit").getAsString() : null);
                 String descriptionToUpdate = obj.get("description").getAsString();
                 String validFromStr = obj.get("validFrom").getAsString();
                 String validToStr = obj.get("validTo").getAsString();
                 LocalDateTime validFromToUpdate = Converter.parseLocalDateTime(validFromStr);
                 LocalDateTime validToToUpdate = Converter.parseLocalDateTime(validToStr);
-                String status = obj.get("status").getAsString();
+                String status = obj.get("isActive").getAsString();
                 boolean isActiveToUpdate = "Active".equalsIgnoreCase(status);
-
-                boolean updated = vDao.updateVoucher(voucherId, codeToUpdate, typeToUpdate, valueToUpdate, minValueToUpdate, maxValueToUpdate, descriptionToUpdate, validFromToUpdate, validToToUpdate, isActiveToUpdate);
+                String[] categoryIdToUpdate = new String[0];
+                if (obj.has("categoryIds") && obj.get("categoryIds").isJsonArray()) {
+                    JsonArray arr = obj.getAsJsonArray("categoryIds");
+                    categoryIdToUpdate = new String[arr.size()];
+                    for (int i = 0; i < arr.size(); i++) {
+                        categoryIdToUpdate[i] = String.valueOf(arr.get(i).getAsInt());
+                    }
+                }
+                boolean updated = vDao.updateVoucher(voucherId, codeToUpdate, typeToUpdate, valueToUpdate, minValueToUpdate, maxValueToUpdate, totalUsageLimit, userUsageLimit, descriptionToUpdate, validFromToUpdate, validToToUpdate, isActiveToUpdate);
+                boolean updatedCategory = vDao.updateVoucherCategory(voucherId, categoryIdToUpdate);
                 response.setStatus(updated ? 200 : 500);
             } catch (Exception e) {
                 e.printStackTrace();

@@ -48,8 +48,19 @@ function loadCreateStaffEvent() {
     document.getElementById("passwordDisplay").textContent = password;
     const nameInput = document.getElementById("name");
     const emailInput = document.getElementById("email");
+    const citizenIdInput = document.getElementById("citizenId");
+    const phoneInput = document.getElementById("phone");
+    const dobInput = document.getElementById("dob");
+    const genderSelect = document.getElementById("gender");
+    const addressInput = document.getElementById("address");
+
     const nameError = document.getElementById("nameError");
     const emailError = document.getElementById("emailError");
+    const citizenIdError = document.getElementById("citizenIdError");
+    const phoneError = document.getElementById("phoneError");
+    const dobError = document.getElementById("dobError");
+    const genderError = document.getElementById("genderError");
+    const addressError = document.getElementById("addressError");
 
     // Validate name
     function validateName() {
@@ -100,6 +111,107 @@ function loadCreateStaffEvent() {
         return true;
     }
 
+    // Validate Citizen ID
+    async function validateCitizenId() {
+        const citizenId = citizenIdInput.value.trim();
+        const regex = /^\d{12}$/;
+        if (citizenId === "") {
+            citizenIdError.textContent = "Citizen ID is required";
+            citizenIdInput.classList.add("border-red-500");
+            return false;
+        }
+        if (!regex.test(citizenId)) {
+            citizenIdError.textContent = "Citizen ID must be exactly 12 digits";
+            citizenIdInput.classList.add("border-red-500");
+            return false;
+        }
+        try {
+            const res = await fetch(`/staff/action?type=checkCitizenId&citizenId=${encodeURIComponent(citizenId)}`);
+            const exists = await res.text();
+            if (exists === "true") {
+                citizenIdError.textContent = "Citizen ID already exists";
+                citizenIdInput.classList.add("border-red-500");
+                return false;
+            }
+        } catch (e) {
+            citizenIdError.textContent = "Error checking Citizen ID";
+            citizenIdInput.classList.add("border-red-500");
+            return false;
+        }
+        citizenIdError.textContent = "";
+        citizenIdInput.classList.remove("border-red-500");
+        citizenIdInput.classList.add("ring-1", "ring-green-500");
+        return true;
+    }
+
+    // Validate Phone
+    async function validatePhone() {
+        const phone = phoneInput.value.trim();
+        const phoneRegex = /^\+?\d{8,15}$/;
+        if (phone === "") {
+            phoneError.textContent = "Phone number is required";
+            phoneInput.classList.add("border-red-500");
+            return false;
+        }
+        if (!phoneRegex.test(phone)) {
+            phoneError.textContent = "Invalid phone number";
+            phoneInput.classList.add("border-red-500");
+            return false;
+        }
+        try {
+            const res = await fetch(`/staff/action?type=checkPhone&phone=${encodeURIComponent(phone)}`);
+            const exists = await res.text();
+            if (exists === "true") {
+                phoneError.textContent = "Phone number already exists";
+                phoneInput.classList.add("border-red-500");
+                return false;
+            }
+        } catch (e) {
+            phoneError.textContent = "Error checking phone number";
+            phoneInput.classList.add("border-red-500");
+            return false;
+        }
+        phoneError.textContent = "";
+        phoneInput.classList.remove("border-red-500");
+        phoneInput.classList.add("ring-1", "ring-green-500");
+        return true;
+    }
+
+    // Validate DOB
+    function validateDob() {
+        const dob = dobInput.value;
+        if (dob === "") {
+            dobError.textContent = "Date of birth is required";
+            dobInput.classList.add("border-red-500");
+            return false;
+        }
+        const selectedDate = new Date(dob);
+        const today = new Date();
+        if (selectedDate > today) {
+            dobError.textContent = "Date of birth cannot be in the future";
+            dobInput.classList.add("border-red-500");
+            return false;
+        }
+        dobError.textContent = "";
+        dobInput.classList.remove("border-red-500");
+        dobInput.classList.add("ring-1", "ring-green-500");
+        return true;
+    }
+
+    // Validate address
+    function validateAddress() {
+        const address = addressInput.value.trim();
+        if (address === "") {
+            addressError.textContent = "Address is required";
+            addressInput.classList.add("border-red-500");
+            return false;
+        }
+        addressError.textContent = "";
+        addressInput.classList.remove("border-red-500");
+        addressInput.classList.add("ring-1", "ring-green-500");
+        return true;
+    }
+
     nameInput.onblur = validateName;
     nameInput.oninput = () => {
         nameError.textContent = "";
@@ -111,20 +223,54 @@ function loadCreateStaffEvent() {
         emailError.textContent = "";
         emailInput.classList.remove("border-red-500", "ring-1", "ring-green-500");
     };
+
+    citizenIdInput.onblur = validateCitizenId;
+    citizenIdInput.oninput = () => {
+        citizenIdError.textContent = "";
+        citizenIdInput.classList.remove("border-red-500", "ring-1", "ring-green-500");
+    };
+
+    phoneInput.onblur = validatePhone;
+    phoneInput.oninput = () => {
+        phoneError.textContent = "";
+        phoneInput.classList.remove("border-red-500", "ring-1", "ring-green-500");
+    };
+
+    dobInput.onblur = validateDob;
+    dobInput.oninput = () => {
+        dobError.textContent = "";
+        dobInput.classList.remove("border-red-500", "ring-1", "ring-green-500");
+    };
+
+    addressInput.onblur = validateAddress;
+    addressInput.oninput = () => {
+        addressError.textContent = "";
+        addressInput.classList.remove("border-red-500", "ring-1", "ring-green-500");
+    };
+
     document.getElementById("create-staff-btn").onclick = async () => {
         const isNameValid = validateName();
         const isEmailValid = await validateEmail();
-        if (!isNameValid || !isEmailValid)
+        const isCitizenIdValid = await validateCitizenId();
+        const isPhoneValid = await validatePhone();
+        const isDOBValid = validateDob();
+        const isAddressValid = validateAddress();
+
+        if (!isNameValid || !isEmailValid || !isCitizenIdValid || !isPhoneValid || !isDOBValid || !isAddressValid)
             return;
         const formData = new URLSearchParams();
         formData.append("type", "create");
         formData.append("name", nameInput.value.trim());
         formData.append("email", emailInput.value.trim());
         formData.append("password", password);
+        formData.append("citizenIdentityId", citizenIdInput.value.trim());
+        formData.append("phoneNumber", phoneInput.value.trim());
+        formData.append("dateOfBirth", dobInput.value);
+        formData.append("gender", genderSelect.value);
+        formData.append("address", addressInput.value.trim());
         if (document.getElementById("block").checked) {
             formData.append("block", "on");
         }
-
         showLoading();
         fetch("/staff", {
             method: "POST",
@@ -255,8 +401,19 @@ document.addEventListener("click", async function (e) {
             const form = modalContent.querySelector("form");
             const nameInput = document.getElementById("name");
             const emailInput = document.getElementById("email");
+            const citizenIdInput = document.getElementById("citizenId");
+            const phoneInput = document.getElementById("phone");
+            const dobInput = document.getElementById("dob");
+            const genderSelect = document.getElementById("gender");
+            const addressInput = document.getElementById("address");
+
             const nameError = document.getElementById("nameError");
             const emailError = document.getElementById("emailError");
+            const citizenIdError = document.getElementById("citizenIdError");
+            const phoneError = document.getElementById("phoneError");
+            const dobError = document.getElementById("dobError");
+            const genderError = document.getElementById("genderError");
+            const addressError = document.getElementById("addressError");
 
             // Validate name
             function validateName() {
@@ -307,6 +464,107 @@ document.addEventListener("click", async function (e) {
                 return true;
             }
 
+            // Validate Citizen ID
+            async function validateCitizenId() {
+                const citizenId = citizenIdInput.value.trim();
+                const regex = /^\d{12}$/;
+                if (citizenId === "") {
+                    citizenIdError.textContent = "Citizen ID is required";
+                    citizenIdInput.classList.add("border-red-500");
+                    return false;
+                }
+                if (!regex.test(citizenId)) {
+                    citizenIdError.textContent = "Citizen ID must be exactly 12 digits";
+                    citizenIdInput.classList.add("border-red-500");
+                    return false;
+                }
+                try {
+                    const res = await fetch(`/staff/action?type=checkCitizenIdExceptOwn&citizenId=${encodeURIComponent(citizenId)}&id=${id}`);
+                    const exists = await res.text();
+                    if (exists === "true") {
+                        citizenIdError.textContent = "Citizen ID already exists";
+                        citizenIdInput.classList.add("border-red-500");
+                        return false;
+                    }
+                } catch (e) {
+                    citizenIdError.textContent = "Error checking Citizen ID";
+                    citizenIdInput.classList.add("border-red-500");
+                    return false;
+                }
+                citizenIdError.textContent = "";
+                citizenIdInput.classList.remove("border-red-500");
+                citizenIdInput.classList.add("ring-1", "ring-green-500");
+                return true;
+            }
+
+            // Validate Phone
+            async function validatePhone() {
+                const phone = phoneInput.value.trim();
+                const phoneRegex = /^\+?\d{8,15}$/;
+                if (phone === "") {
+                    phoneError.textContent = "Phone number is required";
+                    phoneInput.classList.add("border-red-500");
+                    return false;
+                }
+                if (!phoneRegex.test(phone)) {
+                    phoneError.textContent = "Invalid phone number";
+                    phoneInput.classList.add("border-red-500");
+                    return false;
+                }
+                try {
+                    const res = await fetch(`/staff/action?type=checkPhoneExceptOwn&phone=${encodeURIComponent(phone)}&id=${id}`);
+                    const exists = await res.text();
+                    if (exists === "true") {
+                        phoneError.textContent = "Phone number already exists";
+                        phoneInput.classList.add("border-red-500");
+                        return false;
+                    }
+                } catch (e) {
+                    phoneError.textContent = "Error checking phone number";
+                    phoneInput.classList.add("border-red-500");
+                    return false;
+                }
+                phoneError.textContent = "";
+                phoneInput.classList.remove("border-red-500");
+                phoneInput.classList.add("ring-1", "ring-green-500");
+                return true;
+            }
+
+            // Validate DOB
+            function validateDob() {
+                const dob = dobInput.value;
+                if (dob === "") {
+                    dobError.textContent = "Date of birth is required";
+                    dobInput.classList.add("border-red-500");
+                    return false;
+                }
+                const selectedDate = new Date(dob);
+                const today = new Date();
+                if (selectedDate > today) {
+                    dobError.textContent = "Date of birth cannot be in the future";
+                    dobInput.classList.add("border-red-500");
+                    return false;
+                }
+                dobError.textContent = "";
+                dobInput.classList.remove("border-red-500");
+                dobInput.classList.add("ring-1", "ring-green-500");
+                return true;
+            }
+
+            // Validate address
+            function validateAddress() {
+                const address = addressInput.value.trim();
+                if (address === "") {
+                    addressError.textContent = "Address is required";
+                    addressInput.classList.add("border-red-500");
+                    return false;
+                }
+                addressError.textContent = "";
+                addressInput.classList.remove("border-red-500");
+                addressInput.classList.add("ring-1", "ring-green-500");
+                return true;
+            }
+
             nameInput.onblur = validateName;
             nameInput.oninput = () => {
                 nameError.textContent = "";
@@ -319,19 +577,55 @@ document.addEventListener("click", async function (e) {
                 emailInput.classList.remove("border-red-500", "ring-1", "ring-green-500");
             };
 
+            citizenIdInput.onblur = validateCitizenId;
+            citizenIdInput.oninput = () => {
+                citizenIdError.textContent = "";
+                citizenIdInput.classList.remove("border-red-500", "ring-1", "ring-green-500");
+            };
+
+            phoneInput.onblur = validatePhone;
+            phoneInput.oninput = () => {
+                phoneError.textContent = "";
+                phoneInput.classList.remove("border-red-500", "ring-1", "ring-green-500");
+            };
+
+            dobInput.onblur = validateDob;
+            dobInput.oninput = () => {
+                dobError.textContent = "";
+                dobInput.classList.remove("border-red-500", "ring-1", "ring-green-500");
+            };
+
+            addressInput.onblur = validateAddress;
+            addressInput.oninput = () => {
+                addressError.textContent = "";
+                addressInput.classList.remove("border-red-500", "ring-1", "ring-green-500");
+            };
+
             if (form) {
                 form.addEventListener("submit", async function (event) {
                     event.preventDefault();
+
                     const isNameValid = validateName();
                     const isEmailValid = await validateEmail();
-                    if (!isNameValid || !isEmailValid)
+                    const isCitizenIdValid = await validateCitizenId();
+                    const isPhoneValid = await validatePhone();
+                    const isDOBValid = validateDob();
+                    const isAddressValid = validateAddress();
+
+                    if (!isNameValid || !isEmailValid || !isCitizenIdValid || !isPhoneValid || !isDOBValid || !isAddressValid)
                         return;
+
                     const formData = new FormData(form);
                     const id = formData.get("id");
                     const name = formData.get("name");
                     const email = formData.get("email");
+                    const citizenId = formData.get("citizenId");
+                    const phone = formData.get("phone");
+                    const dob = formData.get("dob");
+                    const gender = formData.get("gender");
+                    const address = formData.get("address");
                     const status = formData.get("status");
-                    const isBlock = status === "Block";
+
                     try {
                         const res = await fetch("/staff/action?type=update", {
                             method: "POST",
@@ -342,9 +636,15 @@ document.addEventListener("click", async function (e) {
                                 id: id,
                                 name: name,
                                 email: email,
-                                status: isBlock ? 'Block' : 'Active'
+                                citizenIdentityId: citizenId,
+                                phoneNumber: phone,
+                                dob: dob,
+                                gender: gender,
+                                address: address,
+                                status: status
                             })
                         });
+
                         if (res.ok) {
                             Toastify({
                                 text: "Staff updated successfully!",

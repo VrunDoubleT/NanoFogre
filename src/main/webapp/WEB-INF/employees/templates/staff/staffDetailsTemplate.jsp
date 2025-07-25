@@ -12,10 +12,11 @@
     Employee staff = (Employee) request.getAttribute("staff");
     DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd/MM/yyyy");
     String formattedDate = staff.getCreatedAt() != null ? staff.getCreatedAt().format(dtf) : "N/A";
+    String formattedDob = staff.getDateOfBirth() != null ? staff.getDateOfBirth().format(dtf) : "N/A";
 %>
 
 <div class="bg-gray-100">
-    <div class="w-4x1 mx-auto h-auto flex flex-col bg-white shadow-2xl overflow-hidden">
+    <div class="w-4x1 min-w-[680px] h-[90vh] max-h-full mx-auto flex flex-col bg-white shadow-2xl overflow-hidden">
         <!-- Header -->
         <div class="bg-gradient-to-r from-indigo-500 via-purple-500 to-blue-600 px-6 py-5 flex items-center gap-3">
             <i data-lucide="file-text" class="w-6 h-6 text-white"></i>
@@ -23,13 +24,12 @@
         </div>
 
         <!-- Body -->
-        <div class="px-8 py-8 space-y-6">
+        <div class="px-8 flex-1 overflow-y-auto py-8 space-y-6">
             <!-- Avatar -->
             <div class="flex justify-center">
                 <div class="relative">
                     <img src="<%= staff.getAvatar() != null && !staff.getAvatar().isEmpty() ? staff.getAvatar() : "/default-avatar.png"%>"
                          class="w-28 h-28 rounded-full object-cover border-4 border-white shadow-lg ring-2 ring-gray-200">
-                    <div class="absolute bottom-1 right-1 w-5 h-5 bg-green-400 rounded-full border-2 border-white"></div>
                 </div>
             </div>
 
@@ -40,6 +40,17 @@
 
             <!-- Info Cards -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <!-- Citizen ID -->
+                <div class="flex items-center bg-gray-50 border border-gray-200 rounded-lg p-4 shadow-sm">
+                    <div class="w-10 h-10 flex items-center justify-center bg-yellow-100 rounded-lg mr-3">
+                        <i data-lucide="id-card" class="text-yellow-600 w-5 h-5"></i>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-500">Citizen ID</p>
+                        <p class="font-semibold text-gray-800"><%= staff.getCitizenIdentityId() != null ? staff.getCitizenIdentityId() : "N/A"%></p>
+                    </div>
+                </div>
+
                 <!-- Email -->
                 <div class="flex items-center bg-gray-50 border border-gray-200 rounded-lg p-4 shadow-sm">
                     <div class="w-10 h-10 flex items-center justify-center bg-blue-100 rounded-lg mr-3">
@@ -54,7 +65,65 @@
                     </div>
                 </div>
 
-                <!-- Role -->
+                <!-- Phone Number -->
+                <div class="flex items-center bg-gray-50 border border-gray-200 rounded-lg p-4 shadow-sm">
+                    <div class="w-10 h-10 flex items-center justify-center bg-emerald-100 rounded-lg mr-3">
+                        <i data-lucide="phone" class="text-emerald-600 w-5 h-5"></i>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-500">Phone</p>
+                        <p class="font-semibold text-gray-800"><%= staff.getPhoneNumber() != null ? staff.getPhoneNumber() : "N/A"%></p>
+                    </div>
+                </div>
+
+                <!-- Address -->
+                <div class="flex items-center bg-gray-50 border border-gray-200 rounded-lg p-4 shadow-sm">
+                    <div class="w-10 h-10 flex items-center justify-center bg-gray-200 rounded-lg mr-3">
+                        <i data-lucide="map-pin" class="text-gray-600 w-5 h-5"></i>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-500">Address</p>
+                        <p class="font-semibold text-gray-800"><%= staff.getAddress() != null ? staff.getAddress() : "N/A"%></p>
+                    </div>
+                </div>
+
+                <!-- Gender -->
+                <div class="flex items-center bg-gray-50 border border-gray-200 rounded-lg p-4 shadow-sm">
+                    <c:choose>
+                        <c:when test="${staff.gender eq 'Male'}">
+                            <div class="w-10 h-10 flex items-center justify-center bg-blue-100 rounded-lg mr-3">
+                                <i data-lucide="mars" class="w-5 h-5 text-blue-600"></i>
+                            </div>
+                        </c:when>
+                        <c:when test="${staff.gender eq 'Female'}">
+                            <div class="w-10 h-10 flex items-center justify-center bg-pink-100 rounded-lg mr-3">
+                                <i data-lucide="venus" class="w-5 h-5 text-pink-600"></i>
+                            </div>
+                        </c:when>
+                        <c:otherwise>
+                            <div class="w-10 h-10 flex items-center justify-center bg-red-100 rounded-lg mr-3">
+                                <i data-lucide="transgender" class="w-5 h-5 text-red-600"></i>
+                            </div>
+                        </c:otherwise>
+                    </c:choose>
+                    <div>
+                        <p class="text-sm text-gray-500">Gender</p>
+                        <p class="font-semibold text-gray-800"><%= staff.getGender() != null ? staff.getGender() : "N/A"%></p>
+                    </div>
+                </div>
+
+                <!-- Date of Birth -->
+                <div class="flex items-center bg-gray-50 border border-gray-200 rounded-lg p-4 shadow-sm">
+                    <div class="w-10 h-10 flex items-center justify-center bg-indigo-100 rounded-lg mr-3">
+                        <i data-lucide="calendar-days" class="text-indigo-600 w-5 h-5"></i>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-500">Date of Birth</p>
+                        <p class="font-semibold text-gray-800"><%= formattedDob%></p>
+                    </div>
+                </div>
+
+                <!-- Order Approved -->
                 <div class="flex items-center bg-gray-50 border border-gray-200 rounded-lg p-4 shadow-sm">
                     <div class="w-10 h-10 flex items-center justify-center bg-purple-100 rounded-lg mr-3">
                         <svg class="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -85,7 +154,7 @@
                 </div>
 
                 <!-- Status -->
-                <div class="flex items-center bg-gray-50 border border-gray-200 rounded-lg p-4 shadow-sm justify-between">
+                <div class="md:col-span-2 flex items-center bg-gray-50 border border-gray-200 rounded-lg p-4 shadow-sm justify-between">
                     <div class="flex items-center">
                         <div class="w-10 h-10 flex items-center justify-center bg-<%= staff.isIsBlock() ? "red" : "green"%>-100 rounded-lg mr-3">
                             <svg class="w-5 h-5 text-<%= staff.isIsBlock() ? "red" : "green"%>-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">

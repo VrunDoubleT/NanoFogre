@@ -9,8 +9,8 @@
     Models.Employee staff = (Models.Employee) request.getAttribute("staff");
 %>
 <div class="bg-gray-100">
-    <div class="w-[80vh] mx-auto h-auto flex flex-col bg-white shadow-2xl overflow-hidden">
-        <form method="post">
+    <div class="w-[800px] h-[90vh] bg-white shadow-2xl overflow-hidden">
+        <form method="post" class="h-full flex flex-col">
             <input type="hidden" name="type" value="update">
             <input type="hidden" name="id" value="<%= staff.getId()%>">
             <!-- Header -->
@@ -25,7 +25,7 @@
             </div>
 
             <!-- Content -->
-            <div class="p-8 w-full h-full overflow-y-auto">
+            <div class="p-8 flex-1 w-full overflow-y-auto">
                 <!-- Details Tab -->
                 <div id="details-content" class="tab-content w-full">
                     <div id="staffForm">
@@ -40,6 +40,14 @@
                                     <span id="nameError" class="text-sm text-red-500 mt-1 block"></span>
                                 </div>
 
+                                <!-- Citizen Identity ID -->
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Citizen ID</label>
+                                    <input type="text" name="citizenId" id="citizenId" value="<%= staff.getCitizenIdentityId()%>"
+                                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none">
+                                    <span id="citizenIdError" class="text-sm text-red-500 mt-1 block"></span>
+                                </div>
+
                                 <!-- Email -->
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
@@ -48,6 +56,42 @@
                                     <span id="emailError" class="text-sm text-red-500 mt-1 block"></span>
                                 </div>
 
+                                <!-- Phone Number -->
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Phone Number</label>
+                                    <input type="text" name="phone" id="phone" value="<%= staff.getPhoneNumber()%>"
+                                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none">
+                                    <span id="phoneError" class="text-sm text-red-500 mt-1 block"></span>
+                                </div>
+
+                                <!-- Date of Birth -->
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Date of Birth</label>
+                                    <input type="date" name="dob" id="dob" value="<%= staff.getDateOfBirth() != null ? staff.getDateOfBirth() : ""%>"
+                                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none">
+                                    <span id="dobError" class="text-sm text-red-500 mt-1 block"></span>
+                                </div>
+
+                                <!-- Gender -->
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Gender</label>
+                                    <select name="gender" id="gender"
+                                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none">
+                                        <option value="Male" <%= "Male".equalsIgnoreCase(staff.getGender()) ? "selected" : ""%>>Male</option>
+                                        <option value="Female" <%= "Female".equalsIgnoreCase(staff.getGender()) ? "selected" : ""%>>Female</option>
+                                        <option value="Other" <%= "Other".equalsIgnoreCase(staff.getGender()) ? "selected" : ""%>>Other</option>
+                                    </select>
+                                    <span id="genderError" class="text-sm text-red-500 mt-1 block"></span>
+                                </div>
+
+                                <!-- Address -->
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Address</label>
+                                    <input type="text" name="address" id="address" value="<%= staff.getAddress() != null ? staff.getAddress() : ""%>"
+                                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none">
+                                    <span id="addressError" class="text-sm text-red-500 mt-1 block"></span>
+                                </div>
+                                           
                                 <!-- Status -->
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700 mb-2">Change Status</label>

@@ -85,6 +85,8 @@ public class AdminViewServerlet extends HttpServlet {
                 break;
             case "voucher":
                 viewPath = "/WEB-INF/employees/components/voucherComponent.jsp";
+                List<Category> categoryList = categoryDao.getCategories();
+                request.setAttribute("categoryList", categoryList);
                 break;
             case "order":
                 viewPath = "/WEB-INF/employees/components/orderComponent.jsp";

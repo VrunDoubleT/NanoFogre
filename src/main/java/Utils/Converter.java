@@ -37,6 +37,14 @@ public class Converter {
         }
     }
 
+    public static int parseInt(String val, int defaultValue) {
+        try {
+            return Integer.parseInt(val);
+        } catch (Exception e) {
+            return defaultValue;
+        }
+    }
+
     public static LocalDateTime parseLocalDateTime(String input) {
         try {
             return LocalDateTime.parse(input);
@@ -44,4 +52,21 @@ public class Converter {
             return null;
         }
     }
+
+    public static Double parseNullableDouble(String input) {
+        try {
+            return (input != null && !input.trim().isEmpty()) ? Double.parseDouble(input.trim()) : null;
+        } catch (NumberFormatException e) {
+            return null;
+        }
+    }
+
+    public static Integer parseNullableInt(String input) {
+        try {
+            return (input != null && !input.trim().isEmpty()) ? Integer.parseInt(input.trim()) : null;
+        } catch (NumberFormatException e) {
+            return null;
+        }
+    }
+
 }
