@@ -72,7 +72,7 @@ public class SearchServlet extends HttpServlet {
                     break;
                 }
                 int page = Converter.parseOption(request.getParameter("page"), 1);
-                List<Product> products = pDao.getProductByKeyword(keywordToSearch, page, limit);
+                List<Product> products = pDao.getActiveProductByKeyword(keywordToSearch, page, limit);
                 request.setAttribute("products", products);
                 request.getRequestDispatcher("/WEB-INF/customers/component/products/products.jsp").forward(request, response);
                 break;
@@ -85,7 +85,7 @@ public class SearchServlet extends HttpServlet {
                     request.setAttribute("page", pageToPagination);
                     request.getRequestDispatcher("/WEB-INF/customers/common/paginationTeamplate.jsp").forward(request, response);
                 }
-                int total = pDao.countProductByKeyword(keyword);
+                int total = pDao.countActiveProductByKeyword(keyword);
                 request.setAttribute("total", total);
                 request.setAttribute("limit", limit);
                 request.setAttribute("page", pageToPagination);
@@ -99,7 +99,7 @@ public class SearchServlet extends HttpServlet {
                     return;
                 }
 
-                List<Product> productsSearch = pDao.getProductByKeyword(keywordSearch, 1, 16);
+                List<Product> productsSearch = pDao.getActiveProductByKeyword(keywordSearch, 1, 16);
                 Gson gson = new Gson();
                 String json = gson.toJson(productsSearch);
                 response.setContentType("application/json");

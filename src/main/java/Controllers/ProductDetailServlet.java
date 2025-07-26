@@ -61,8 +61,9 @@ public class ProductDetailServlet extends HttpServlet {
         ProductDAO pDao = new ProductDAO();
         ReviewDAO rDao = new ReviewDAO();
         int productId = Converter.parseOption(request.getParameter("pId"), 0);
-        Product product = pDao.getProductById(productId);
+        Product product = pDao.getActiveProductById(productId);
         ReviewStats reviewStats = rDao.getReviewStatsByProductId(productId);
+        System.out.println(product);
         request.setAttribute("product", product);
         request.setAttribute("reviewStats", reviewStats);
         request.getRequestDispatcher("/WEB-INF/customers/pages/productDetailPage.jsp").forward(request, response);

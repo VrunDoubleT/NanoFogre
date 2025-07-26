@@ -124,7 +124,7 @@ public class ProductDAO extends DB.DBContext {
         return pros;
     }
 
-    public List<Product> getProductByCategory(int categoryId, List<Integer> brandIds, String sort, int page, int limit) {
+    public List<Product> getActiveProductByCategory(int categoryId, List<Integer> brandIds, String sort, int page, int limit) {
         int row = (page - 1) * limit;
         List<Product> pros = new ArrayList<>();
 
@@ -132,7 +132,7 @@ public class ProductDAO extends DB.DBContext {
                 + "FROM Products p\n"
                 + "LEFT JOIN Categories c ON p.categoryId = c.categoryId\n"
                 + "LEFT JOIN Brands b ON p.brandId = b.brandId\n"
-                + "WHERE p._destroy = 0";
+                + "WHERE p._destroy = 0 AND p.isActive = 1";
 
         if (categoryId > 0) {
             query += " AND p.categoryId = " + categoryId;
@@ -229,7 +229,7 @@ public class ProductDAO extends DB.DBContext {
         return pros;
     }
 
-    public List<Product> getProductByKeyword(String keyword, int page, int limit) {
+    public List<Product> getActiveProductByKeyword(String keyword, int page, int limit) {
         int row = (page - 1) * limit;
         List<Product> pros = new ArrayList<>();
 
@@ -237,7 +237,7 @@ public class ProductDAO extends DB.DBContext {
                 + "FROM Products p\n"
                 + "LEFT JOIN Categories c ON p.categoryId = c.categoryId\n"
                 + "LEFT JOIN Brands b ON p.brandId = b.brandId\n"
-                + "WHERE p._destroy = 0";
+                + "WHERE p._destroy = 0 AND p.isActive = 1";
 
         List<Object> paramList = new ArrayList<>();
         if (keyword != null && !keyword.trim().isEmpty()) {
@@ -310,11 +310,11 @@ public class ProductDAO extends DB.DBContext {
         return pros;
     }
 
-    public int countProductByKeyword(String keyword) {
+    public int countActiveProductByKeyword(String keyword) {
         int count = 0;
 
         String query = "SELECT COUNT(*) AS total FROM Products p "
-                + "WHERE p._destroy = 0";
+                + "WHERE p._destroy = 0 and p.isActive = 1";
 
         List<Object> paramList = new ArrayList<>();
 
@@ -334,11 +334,11 @@ public class ProductDAO extends DB.DBContext {
         return count;
     }
 
-    public int countProductByCategory(int categoryId, List<Integer> brandIds) {
+    public int countActiveProductByCategory(int categoryId, List<Integer> brandIds) {
         int total = 0;
 
         String query = "SELECT COUNT(*) AS total FROM Products p "
-                + "WHERE p._destroy = 0";
+                + "WHERE p._destroy = 0 AND p.isActive = 1";
 
         if (categoryId > 0) {
             query += " AND p.categoryId = " + categoryId;
@@ -395,6 +395,77 @@ public class ProductDAO extends DB.DBContext {
         Object[] obj = {id};
         try ( ResultSet rs = execSelectQuery(query, obj)) {
             if (rs.next()) {
+                int productId = rs.getInt("productId");
+                product.setProductId(productId);
+                product.setTitle(rs.getString("productTitle"));
+                product.setSlug(rs.getString("slug"));
+                product.setDescription(rs.getString("productDescription"));
+                product.setMaterial(rs.getString("material"));
+                product.setPrice(rs.getDouble("productPrice"));
+                product.setQuantity(rs.getInt("productQuantity"));
+                product.setIsActive(rs.getBoolean("isActive"));
+                product.setDestroy(rs.getBoolean("_destroy"));
+                Object brandIdObj = rs.getObject("brandId");
+                if (brandIdObj != null) {
+                    int brandId = (int) brandIdObj;
+                    String brandName = rs.getString("brandName");
+                    product.setBrand(new Brand(brandId, brandName, null));
+                } else {
+                    product.setBrand(null);
+                }
+                Object categoryIdObj = rs.getObject("categoryId");
+                if (categoryIdObj != null) {
+                    int categoryIdRs = (int) categoryIdObj;
+                    String categoryName = rs.getString("categoryName");
+                    product.setCategory(new Category(categoryIdRs, categoryName));
+                } else {
+                    product.setCategory(null);
+                }
+                Object[] params = {productId};
+                ResultSet urlsResult = execSelectQuery("select * from ProductImages pi where pi.productId = ?", params);
+                List<String> urls = new ArrayList<>();
+                while (urlsResult.next()) {
+                    urls.add(urlsResult.getString("url"));
+                }
+                product.setUrls(urls);
+                String reviewStatsQuery = "select COUNT(r.reviewId) as totalReivew, AVG(CAST(r.star AS FLOAT)) as averageStar\n"
+                        + "from Reviews r\n"
+                        + "where r.productId = ?\n"
+                        + "group by r.productId";
+                ResultSet reviewStatsResult = execSelectQuery(reviewStatsQuery, params);
+                if (reviewStatsResult.next()) {
+                    product.setTotalReviews(reviewStatsResult.getInt("totalReivew"));
+                    product.setAverageStar(reviewStatsResult.getDouble("averageStar"));
+                }
+                ResultSet soltResult = execSelectQuery("select SUM(od.detailQuantity) as solt\n"
+                        + "from OrderDetails od\n"
+                        + "where od.productId = ?\n"
+                        + "group by od.productId", params);
+                if (soltResult.next()) {
+                    product.setSold(soltResult.getInt("solt"));
+                }
+                List<ProductAttribute> pas = getAttributesByProductId(productId);
+                product.setAttributes(pas);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return product;
+    }
+    
+    public Product getActiveProductById(int id) {
+        Product product = null;
+        String query = "select p.*, c.categoryName, b.brandName\n"
+                + "from Products p\n"
+                + "left join Categories c\n"
+                + "on p.categoryId = c.categoryId\n"
+                + "left join Brands b\n"
+                + "on p.brandId = b.brandId\n"
+                + "where p.productId = ? and p.isActive = 1 and p._destroy = 0";
+        Object[] obj = {id};
+        try ( ResultSet rs = execSelectQuery(query, obj)) {
+            if (rs.next()) {
+                product = new Product();
                 int productId = rs.getInt("productId");
                 product.setProductId(productId);
                 product.setTitle(rs.getString("productTitle"));
@@ -763,7 +834,7 @@ public class ProductDAO extends DB.DBContext {
                 + "FROM Products p "
                 + "LEFT JOIN Brands b ON p.brandId = b.brandId "
                 + "LEFT JOIN Categories c ON p.categoryId = c.categoryId "
-                + "WHERE p._destroy = 0 "
+                + "WHERE p._destroy = 0 AND p.isActive = 1"
         );
 
         List<Object> params = new ArrayList<>();
@@ -835,7 +906,7 @@ public class ProductDAO extends DB.DBContext {
                 + "LEFT JOIN ProductImages i ON p.productId = i.productId "
                 + "LEFT JOIN Brands b ON p.brandId = b.brandId "
                 + "LEFT JOIN Categories c ON p.categoryId = c.categoryId "
-                + "WHERE (p.productTitle LIKE ? OR b.brandName LIKE ? OR c.categoryName LIKE ?) AND p._destroy = 0";
+                + "WHERE (p.productTitle LIKE ? OR b.brandName LIKE ? OR c.categoryName LIKE ?) AND p._destroy = 0 AND p.isActive = 1";
         Object[] params = {"%" + keyword + "%", "%" + keyword + "%", "%" + keyword + "%"};
 
         try ( ResultSet rs = execSelectQuery(query, params)) {

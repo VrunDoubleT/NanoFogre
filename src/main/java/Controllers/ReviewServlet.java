@@ -70,7 +70,7 @@ public class ReviewServlet extends HttpServlet {
                 int productId = Converter.parseOption(request.getParameter("productId"), 0);
                 int page = Converter.parseOption(request.getParameter("page"), 1);
                 int star = Converter.parseOption(request.getParameter("star"), 0);
-                List<Review> reviews = rDao.getReviewsByProductId(productId, star, page, limit);
+                List<Review> reviews = rDao.getReviewsByActiveProductId(productId, star, page, limit);
                 System.out.println(reviews);
                 request.setAttribute("reviews", reviews);
                 request.getRequestDispatcher("/WEB-INF/customers/component/productDetail/reviews.jsp").forward(request, response);

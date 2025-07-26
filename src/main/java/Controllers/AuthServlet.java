@@ -112,7 +112,7 @@ public class AuthServlet extends HttpServlet {
         if (customer != null && customer.getPassword().equals(Common.hashPassword(password))) {
             if (!customer.isIsVerify()) {
                 response.sendRedirect(request.getContextPath() + "/auth?action=login"
-                        + "&error=" + java.net.URLEncoder.encode("Your email has not been verified! Please check your email and verify your account.", "UTF-8")
+                        + "&error=" + java.net.URLEncoder.encode("Invalid email or password!", "UTF-8")
                         + "&email=" + java.net.URLEncoder.encode(email, "UTF-8"));
                 return;
             }
@@ -257,17 +257,12 @@ public class AuthServlet extends HttpServlet {
         Customer verifiedCustomer = customerDAO.findVerifiedCustomerByEmail(email.trim());
 
         if (verifiedCustomer == null) {
-            Customer anyCustomer = customerDAO.findCustomerByEmail(email.trim());
-            if (anyCustomer != null && !anyCustomer.isIsVerify()) {
-                response.getWriter().write("{\"success\":false,\"message\":\"Your account has not been verified! Please check your email and verify your account before using forgot password.\"}");
-            } else {
-                response.getWriter().write("{\"success\":false,\"message\":\"Email not found!\"}");
-            }
+            response.getWriter().write("{\"success\":false,\"message\":\"Email does not exist!\"}");
             return;
         }
 
         forgetDAO.autoUnblockIfNeeded(verifiedCustomer.getId());
-        verifiedCustomer = customerDAO.findVerifiedCustomerByEmail(email.trim()); // reload trạng thái
+        verifiedCustomer = customerDAO.findVerifiedCustomerByEmail(email.trim());
 
         if (verifiedCustomer.isIsBlock()) {
             response.getWriter().write("{\"success\":false,\"message\":\"Your account is blocked for 24 hours. Please try again later.\"}");
@@ -275,10 +270,7 @@ public class AuthServlet extends HttpServlet {
         }
 
         if (forgetDAO.isCustomerBlockedByFailedCount(verifiedCustomer.getId())) {
-            if (!verifiedCustomer.isIsBlock()) {
-                forgetDAO.blockCustomer(verifiedCustomer.getId());
-            }
-            response.getWriter().write("{\"success\":false,\"message\":\"You have entered the wrong code too many times. Your account is blocked for 24 hours.\"}");
+            response.getWriter().write("{\"success\":false,\"message\":\"You have entered the wrong code too many times. Please try again after 24 hours.\"}");
             return;
         }
 
@@ -287,7 +279,7 @@ public class AuthServlet extends HttpServlet {
 
         ForgetDAO.SendResult result = forgetDAO.upsertCodeCustomer(verifiedCustomer.getId(), code, expiredAt, false);
         if (result == ForgetDAO.SendResult.TOO_MANY_REQUESTS) {
-            response.getWriter().write("{\"success\":false,\"message\":\"You have reached the maximum number of resend attempts today. Your account is blocked for 24 hours.\"}");
+            response.getWriter().write("{\"success\":false,\"message\":\"You have reached the maximum number of resend attempts today. Please try again after 24 hours.\"}");
             return;
         }
         if (result != ForgetDAO.SendResult.OK) {
@@ -334,7 +326,7 @@ public class AuthServlet extends HttpServlet {
 
         int failedCount = forgetDAO.getFailedCountForCustomer(customer.getId());
         if (failedCount >= 5) {
-            response.getWriter().write("{\"success\":false,\"message\":\"You have entered the wrong code too many times. Your account is blocked for 24 hours.\"}");
+            response.getWriter().write("{\"success\":false,\"message\":\"You have entered the wrong code too many times. Please try again after 24 hours.\"}");
             return;
         }
 
@@ -347,7 +339,7 @@ public class AuthServlet extends HttpServlet {
             }
             failedCount = forgetDAO.getFailedCountForCustomer(customer.getId());
             if (failedCount >= 5) {
-                response.getWriter().write("{\"success\":false,\"message\":\"You have entered the wrong code too many times. Your account is blocked for 24 hours.\"}");
+                response.getWriter().write("{\"success\":false,\"message\":\"You have entered the wrong code too many times. Please try again after 24 hours.\"}");
             } else {
                 response.getWriter().write("{\"success\":false,\"message\":\"Invalid or expired code. (" + failedCount + "/5 attempts used)\"}");
             }
@@ -355,10 +347,6 @@ public class AuthServlet extends HttpServlet {
         }
 
         String hashedPwd = Utils.Common.hashPassword(newPassword.trim());
-        if (hashedPwd.equals(customer.getPassword())) {
-            response.getWriter().write("{\"success\":false,\"message\":\"The new password cannot be the same as the old password.\"}");
-            return;
-        }
 
         boolean updated = forgetDAO.confirmResetPasswordCustomer(customer.getId(), hashedPwd);
         if (updated) {

@@ -180,7 +180,7 @@ public class BrandDAO extends DBContext {
                 + "on c.categoryId = p.categoryId\n"
                 + "join Brands b\n"
                 + "on b.brandId = p.brandId\n"
-                + "where c.categoryId = ?\n"
+                + "where c.categoryId = ? AND p.isActive = 1 AND p._destroy = 0 \n"
                 + "group by b.brandId, b.brandName, b.image";
         Object[] params = {categoryId};
         try ( ResultSet rs = execSelectQuery(query, params)) {

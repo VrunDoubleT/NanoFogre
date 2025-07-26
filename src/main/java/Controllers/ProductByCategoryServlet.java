@@ -56,7 +56,7 @@ public class ProductByCategoryServlet extends HttpServlet {
                 String sort = !request.getParameter("sort").trim().isEmpty() ? request.getParameter("sort") : "title";
                 List<Integer> brandIdList = getBrandIdList(request);
                 int page = Converter.parseOption(request.getParameter("page"), 1);
-                List<Product> products = pDao.getProductByCategory(categoryId, brandIdList, sort, page, limit);
+                List<Product> products = pDao.getActiveProductByCategory(categoryId, brandIdList, sort, page, limit);
                 request.setAttribute("products", products);
                 request.getRequestDispatcher("/WEB-INF/customers/component/products/products.jsp").forward(request, response);
                 break;
@@ -64,7 +64,7 @@ public class ProductByCategoryServlet extends HttpServlet {
                 int cId = Converter.parseOption(request.getParameter("categoryId"), 0);
                 int pageToPagination = Converter.parseOption(request.getParameter("page"), 1);
                 List<Integer> brandIdListPagination = getBrandIdList(request);
-                int total = pDao.countProductByCategory(cId, brandIdListPagination);
+                int total = pDao.countActiveProductByCategory(cId, brandIdListPagination);
                 request.setAttribute("total", total);
                 request.setAttribute("limit", limit);
                 request.setAttribute("page", pageToPagination);

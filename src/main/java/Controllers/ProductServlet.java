@@ -7,6 +7,8 @@ import DAOs.ReviewDAO;
 import Models.Attribute;
 import Models.Brand;
 import Models.Category;
+import Models.Customer;
+import Models.Employee;
 import Models.Product;
 import Models.ProductAttribute;
 import Models.ProductImage;
@@ -37,6 +39,7 @@ import java.util.logging.Logger;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
+import jakarta.servlet.http.HttpSession;
 
 import java.lang.reflect.Type;
 import java.util.List;
@@ -208,6 +211,12 @@ public class ProductServlet extends HttpServlet {
         String type = request.getParameter("type") != null ? request.getParameter("type") : "create";
         ProductDAO pDao = new ProductDAO();
         ReviewDAO rDao = new ReviewDAO();
+        HttpSession session = request.getSession(false);
+        Employee employee = (session != null) ? (Employee) session.getAttribute("employee") : null;
+        if (employee == null) {
+            response.sendRedirect(request.getContextPath() + "/admin/auth/login");
+            return;
+        }
         switch (type) {
             case "create":
                 Product product = getProductByRequest(request);
@@ -234,8 +243,7 @@ public class ProductServlet extends HttpServlet {
 
                 int reviewId = json.get("reviewId").getAsInt();
                 String replyText = json.get("replyText").getAsString();
-                int employeeId = json.get("employeeId").getAsInt();
-                
+                int employeeId = employee.getId();
                 boolean isSuccessReply = rDao.addReply(reviewId, employeeId, replyText);
                 if(isSuccessReply){
                     Review newReview = rDao.getReviewById(reviewId);
