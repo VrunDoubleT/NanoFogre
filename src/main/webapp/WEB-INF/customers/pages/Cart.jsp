@@ -17,11 +17,25 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Cart - NanoForge</title>
 
+        <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+
         <script src="https://cdn.tailwindcss.com"></script>
         <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
         <%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>
 
     </head>
+    <style>
+        /* Chrome, Safari, Edge, Opera */
+        input[type="number"]::-webkit-outer-spin-button,
+        input[type="number"]::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        /* Firefox */
+        input[type="number"] {
+            -moz-appearance: textfield;
+        }
+    </style>
 
     <body class="flex flex-col min-h-screen bg-white-900 text-white font-rajdhani">
         <jsp:include page="../common/header.jsp" />
@@ -63,8 +77,7 @@
                                     <c:forEach var="item" items="${cartItems}" varStatus="status">
 
                                         <div class="product-card cart-product flex flex-col border sm:flex-row items-center bg-white rounded-2xl mb-5 p-5 gap-6 transition-all duration-300"
-                                             id="cart-item-${item.cartId}"
-                                             style="${status.index >= 5 ? 'display:none;' : ''}"
+                                             id="cart-item-${item.cartId}"                                           
                                              data-idx="${status.index}">
                                             <!-- Checkbox -->
                                             <input 
@@ -92,14 +105,6 @@
                                                     </c:choose>
                                                     <span class="px-2 py-1 rounded-full bg-blue-100 text-blue-800">${item.product.brand.name}</span>
                                                     <span class="px-2 py-1 rounded-full bg-pink-100 text-pink-800">${item.product.category.name}</span>
-                                                    <c:if test="${item.product.averageStar > 0}">
-                                                        <span class="flex items-center gap-1 text-yellow-500 font-bold">
-                                                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                                                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
-                                                            </svg>
-                                                            ${item.product.averageStar}
-                                                        </span>
-                                                    </c:if>
                                                 </div>
 
                                                 <p class="text-gray-500 mt-2">
@@ -109,29 +114,38 @@
                                                     </span>
                                                 </p>
 
-                                                <div class="flex items-center gap-3 mt-3"
-                                                     id="qty-group-${item.cartId}"
-                                                     data-min="1"
-                                                     data-max="${item.product.quantity}">
+                                                <div class="flex items-center gap-4 mt-3">
+                                                    <label class="font-medium text-gray-700">Quantity:</label>
+                                                    <div class="flex items-center border border-gray-300 rounded-md">
+                                                        <button
+                                                            type="button"
+                                                            class="px-3 py-2 hover:bg-gray-50 transition-colors border-r border-gray-300 decreaseQuantityBtn"
+                                                            data-cartid="${item.cartId}"
+                                                            ${item.product.quantity <= 0 ? 'disabled' : ''}>
+                                                            <i data-lucide="minus" class="w-4 h-4 text-gray-600"></i>
+                                                        </button>
 
-                                                    <button type="button"
-                                                            class="w-8 h-8 rounded-full bg-gray-200 text-gray-800 flex items-center justify-center font-bold hover:bg-gray-300 transition disabled:opacity-50 disabled:cursor-not-allowed"
-                                                            onclick="updateQuantity(${item.cartId}, -1)"
-                                                            id="decrease-${item.cartId}"
-                                                            ${item.quantity <= 1 || item.product.quantity <=0 ? "disabled" : ""}
+                                                        <input
+                                                            type="number"
+                                                            id="quantity-${item.cartId}"
+                                                            value="${item.quantity > 0 ? item.quantity : 1}"
+                                                            min="1"
+                                                            max="${item.product.quantity}"
+                                                            class="w-16 h-10 text-center  bg-transparent text-gray-900 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                                                            ${item.product.quantity <= 0 ? 'disabled' : ''}
+                                                            />
 
-                                                            >–</button>
-
-
-                                                    <span id="qty-${item.cartId}" class="w-8 text-center font-bold text-gray-900">${item.quantity}</span>
-
-                                                    <button type="button"
-                                                            class="w-8 h-8 rounded-full bg-gray-200 text-gray-800 flex items-center justify-center font-bold hover:bg-gray-300 transition disabled:opacity-50 disabled:cursor-not-allowed"
-                                                            onclick="updateQuantity(${item.cartId}, 1)"
-                                                            id="increase-${item.cartId}"
-                                                            ${item.quantity >= item.product.quantity ? "disabled" : ""}>+</button>
-
+                                                        <button
+                                                            type="button"
+                                                            class="px-3 py-2 hover:bg-gray-50 transition-colors border-l border-gray-300 increaseQuantityBtn"
+                                                            data-cartid="${item.cartId}"
+                                                            ${item.product.quantity <= 0 ? 'disabled' : ''}>
+                                                            <i data-lucide="plus" class="w-4 h-4 text-gray-600"></i>
+                                                        </button>
+                                                    </div>
+                                                    <span class="text-sm text-gray-500 ml-2">${item.product.quantity} available</span>
                                                 </div>
+
                                             </div>
                                             <!-- Price & Action -->
                                             <div class="flex flex-col items-end gap-2 w-full sm:w-40 text-right sm:text-left mt-4 sm:mt-0">
@@ -144,13 +158,11 @@
                                         </div>
                                     </c:forEach>
                                 </div>
-                                <c:if test="${fn:length(cartItems) > 5}">
-                                    <div id="loadMoreDots" class="text-center my-8 hidden">
-                                        <span class="inline-block px-4 py-2 rounded-full bg-white border border-gray-200">
-                                            <img src="https://res.cloudinary.com/dd9jweqlv/image/upload/v1753013466/Ellipsis_1x-1.5s-200px-200px_qwtjaq.svg" alt="Loading..." style="width:60px; height:30px; display:inline-block;" />
-                                        </span>
-                                    </div>
-                                </c:if>
+                                <div id="loadMoreDots" class="text-center my-8 hidden">
+                                    <span class="inline-block px-4 py-2 rounded-full bg-white border border-gray-200">
+                                        <img src="https://res.cloudinary.com/dd9jweqlv/image/upload/v1753013466/Ellipsis_1x-1.5s-200px-200px_qwtjaq.svg" alt="Loading..." style="width:60px; height:30px; display:inline-block;" />
+                                    </span>
+                                </div>
                             </div>
 
 
@@ -167,7 +179,7 @@
                                     </div>
                                     <div class="flex justify-between text-lg font-bold border-t border-gray-200 pt-4  text-gray-900">
                                         <span>Total:</span>
-                                        <span class="text-2xl font-extrabold bg-gradient-to-r from-purple-500 to-pink-500 bg-clip-text text-transparent" id="grandTotal">0 ₫</span>
+                                        <span class="text-2xl font-extrabold bg-gradient-to-r from-purple-500 to-pink-500 bg-clip-text text-transparent" id="grandTotal">0đ</span>
                                     </div>
 
                                     <button
@@ -209,57 +221,149 @@
         <!-- JavaScript -->
         <script>
 
+            lucide.createIcons();
+            let currentPage = ${currentPage};
+            const totalPages = ${totalPages};
+            let isLoading = false;
 
-            document.addEventListener('DOMContentLoaded', function () {
-                let loadedCount = 5;
-                const items = document.querySelectorAll('#cart-list .cart-product');
-                const totalCount = items.length;
-                const dots = document.getElementById('loadMoreDots');
-                for (let i = loadedCount; i < items.length; ++i) {
-                    items[i].style.display = 'none';
+            window.addEventListener('scroll', function () {
+                if (isLoading || currentPage >= totalPages)
+                    return;
+
+                if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight - 100) {
+                    setTimeout(() => {
+                        loadMoreItems();
+                    }, 500);
                 }
+            });
 
-                let dotsShown = false;
-                window.addEventListener('scroll', function () {
-                    if (!dots || dotsShown || loadedCount >= totalCount)
-                        return;
-                    const idxToCheck = Math.max(0, totalCount - 5);
-                    if (items[idxToCheck]) {
-                        const rect = items[idxToCheck].getBoundingClientRect();
-                        if (rect.top < window.innerHeight) {
-                            dots.classList.remove('hidden');
-                            dotsShown = true;
-                            setTimeout(() => {
-                                showMoreItems();
-                            }, 1200);
-                        }
-                    }
+            function loadMoreItems() {
+
+                console.log('loadMoreItems triggered');
+                isLoading = true;
+                currentPage++;
+
+                const dots = document.getElementById('loadMoreDots');
+                dots.classList.remove('hidden');
+
+                fetch('${cartUrl}?action=loadMore&page=' + currentPage)
+                        .then(resp => resp.json())
+                        .then(data => {
+                            if (data.length === 0) {
+                                currentPage--;
+                                return;
+                            }
+                            appendCartItems(data);
+                        })
+                        .catch(err => {
+                            console.error(err);
+                            currentPage--;
+                        })
+                        .finally(() => {
+                            dots.classList.add('hidden');
+                            isLoading = false;
+                        });
+            }
+
+
+            function appendCartItems(items) {
+                const cartList = document.getElementById('cart-list');
+
+                items.forEach(item => {
+                    cartItems.push({
+                        id: item.cartId,
+                        productId: item.product.productId,
+                        price: item.product.price,
+                        quantity: item.quantity,
+                        stock: item.product.quantity,
+                        title: item.product.title
+                    });
+
+                    const inStock = item.product.quantity > 0;
+                    const disableCheckbox = !inStock ? 'disabled' : '';
+                    const checkboxClass = !inStock ? 'opacity-50 cursor-not-allowed' : '';
+                    const disableMinus = item.quantity <= 1 || !inStock ? 'disabled' : '';
+                    const disablePlus = item.quantity >= item.product.quantity || !inStock ? 'disabled' : '';
+
+                    const itemHtml = `
+<div class="product-card cart-product flex flex-col sm:flex-row items-center bg-white rounded-2xl mt-[15px] p-5 shadow-lg gap-6 transition-all duration-300"
+     id="cart-item-\${item.cartId}">
+
+    <input type="checkbox"
+           class="item-checkbox accent-purple-500 w-5 h-5 mt-1 mr-0 cursor-pointer \${checkboxClass}"
+           data-id="\${item.cartId}" \${disableCheckbox} />
+
+    <img src="\${item.product.urls[0] || 'default.png'}"
+         alt="\${item.product.title}"
+         class="w-[146px] \${!inStock ? 'out-of-stock' : ''} h-auto object-cover rounded-lg border-2 border-gray-200" />
+
+    <div class="flex-1 ml-0 sm:ml-6 w-full \${!inStock ? 'out-of-stock' : ''}">
+        <h2 class="font-bold text-lg text-gray-800 leading-tight line-clamp-2 hover:text-purple-600 transition-colors cursor-pointer">
+            \${item.product.title}
+        </h2>
+
+        <div class="flex items-center flex-wrap gap-2 mt-2 text-sm">
+            <span class="px-2 py-1 rounded-full \${inStock ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'} font-semibold">
+                \${inStock ? 'In Stock' : 'Out of Stock'}
+            </span>
+            <span class="px-2 py-1 rounded-full bg-blue-100 text-blue-800">\${item.product.brand.name}</span>
+            <span class="px-2 py-1 rounded-full bg-pink-100 text-pink-800">\${item.product.category.name}</span>
+        </div>
+
+        <p class="text-gray-500 mt-2">
+            Price: <span class="font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+                \${formatCurrencyVND(item.product.price)}
+            </span>
+        </p>
+
+        <div class="flex items-center gap-3 mt-3" id="qty-group-\${item.cartId}" data-min="1" data-max="\${item.product.quantity}">
+            <button type="button" class="w-8 h-8 rounded-full bg-gray-200 text-gray-800 flex items-center justify-center font-bold hover:bg-gray-300 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                    onclick="updateQuantity(\${item.cartId}, -1)" id="decrease-\${item.cartId}" \${disableMinus}>–</button>
+
+            <span id="qty-\${item.cartId}" class="w-8 text-center font-bold text-gray-900">\${item.quantity}</span>
+
+            <button type="button" class="w-8 h-8 rounded-full bg-gray-200 text-gray-800 flex items-center justify-center font-bold hover:bg-gray-300 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                    onclick="updateQuantity(\${item.cartId}, 1)" id="increase-\${item.cartId}" \${disablePlus}>+</button>
+        </div>
+    </div>
+
+    <div class="flex flex-col items-end gap-2 w-full sm:w-40 text-right sm:text-left mt-4 sm:mt-0">
+        <div id="lineTotal-\${item.cartId}" class="text-2xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+            \${formatCurrencyVND(item.product.price * item.quantity)}
+        </div>
+        <button type="button" class="remove-btn w-full py-1.5 rounded-md text-white bg-gradient-to-r from-rose-500 to-rose-600 hover:from-rose-600 hover:to-rose-700 text-sm"
+                onclick="removeFromCart(\${item.cartId})">🗑 Remove</button>
+    </div>
+</div>`;
+
+
+
+                    cartList.insertAdjacentHTML('beforeend', itemHtml);
                 });
 
-                function showMoreItems() {
-                    let showCount = 0;
-                    for (let i = loadedCount; i < items.length && showCount < 5; ++i, ++showCount) {
-                        items[i].style.display = '';
-                    }
-                    loadedCount += showCount;
-                    dots.classList.add('hidden');
-                    dotsShown = false;
-                    if (loadedCount < totalCount) {
-                    } else {
-                        window.removeEventListener('scroll', arguments.callee, false);
-                    }
-                }
+                attachCheckboxEvent();
+                updateCartLineCount();
+                recalc();
+            }
 
-                restoreChecked();
+
+
+            function attachCheckboxEvent() {
                 document.querySelectorAll('.item-checkbox').forEach(ch => {
+                    ch.removeEventListener('change', saveChecked);
                     ch.addEventListener('change', () => {
                         saveChecked();
                         recalc();
                     });
                 });
-                updateCartLineCount();
+            }
+
+            document.addEventListener("DOMContentLoaded", function () {
+                restoreChecked();
+                attachCheckboxEvent();
                 recalc();
             });
+
 
             const baseUrl = '${cartUrl}';
             const cartItems = [];
@@ -276,102 +380,110 @@
 
 
             function formatCurrencyVND(amount) {
-                return amount.toLocaleString('vi-VN') + ' ₫';
+                return amount.toLocaleString('vi-VN') + 'đ';
             }
 
-            //* check button quantity
-            function syncQtyButtons(cartId, qty, min, max) {
-                const decBtn = document.getElementById("decrease-" + cartId);
-                const incBtn = document.getElementById("increase-" + cartId);
-                if (!decBtn || !incBtn)
-                    return;
-                const outOfStock = max === 0;
-                decBtn.disabled = outOfStock || qty <= min;
-                incBtn.disabled = outOfStock || qty >= max;
+            //////////quantiry////////////
+            document.addEventListener("DOMContentLoaded", function () {
+                attachQuantityBtnEvent();
+                attachQuantityInputEvent();
+
+                restoreChecked();
+                attachCheckboxEvent();
+                recalc();
+            });
+
+
+            function attachQuantityBtnEvent() {
+                document.querySelectorAll('.increaseQuantityBtn').forEach(btn => {
+                    btn.addEventListener('click', function () {
+                        const cartId = btn.getAttribute('data-cartid');
+                        updateQuantity(cartId, 1);
+
+                    });
+                });
+                document.querySelectorAll('.decreaseQuantityBtn').forEach(btn => {
+                    btn.addEventListener('click', function () {
+                        const cartId = btn.getAttribute('data-cartid');
+                        updateQuantity(cartId, -1);
+                    });
+                });
+            }
+
+            function attachQuantityInputEvent() {
+                document.querySelectorAll('input[id^="quantity-"]').forEach(input => {
+                    input.addEventListener('change', function () {
+                        const cartId = input.id.replace('quantity-', '');
+                        let val = parseInt(input.value);
+                        const max = parseInt(input.max) || 0;
+                        const min = parseInt(input.min) || 1;
+                        if (isNaN(val) || val < min)
+                            val = min;
+                        if (val > max)
+                            val = max;
+                        input.value = val;
+                        updateQuantity(cartId, 0);
+                    });
+                });
             }
 
 
+            function updateQuantity(cartId, change) {
+                const input = document.getElementById('quantity-' + cartId);
+                console.log("debug", input);
 
-            //*  Update total money
-            function updateLineTotal(cartId, qty) {
-                const el = document.getElementById('lineTotal-' + cartId);
-                const item = cartItems.find(it => String(it.id) === String(cartId));
-                if (!el || !item)
-                    return;
-                el.textContent = (item.price * qty).toLocaleString('vi-VN') + ' ₫';
-            }
-
-
-            //*  Update quattiy
-            function updateQuantity(cartId, delta) {
-                cartId = String(cartId);
-
-                const group = document.getElementById('qty-group-' + cartId);
-                const qtyEl = document.getElementById('qty-' + cartId);
-                if (!group || !qtyEl)
+                if (!input || input.disabled)
                     return;
 
-                const min = parseInt(group.dataset.min, 10) || 1;
-                const max = parseInt(group.dataset.max, 10);
-                const maxVal = Number.isNaN(max) ? Infinity : max;
-                const current = parseInt(qtyEl.textContent, 10) || 0;
+                let current = parseInt(input.value) || 0;
+                const max = parseInt(input.max) || 0;
+                const min = parseInt(input.min) || 1;
 
-                let newQty = current + delta;
-                if (newQty < min)
-                    newQty = min;
-                if (newQty > maxVal)
-                    newQty = maxVal;
-
-                if (newQty === current) {
-                    syncQtyButtons(cartId, current, min, maxVal);
+                if (max < min || max === 0) {
+                    input.value = 0;
                     return;
                 }
 
-                fetch('/cart?action=update', {
+                let newVal = current + change;
+                if (change === 0)
+                    newVal = current;
+                if (newVal > max)
+                    newVal = max;
+                if (newVal < min)
+                    newVal = min;
+                if (newVal === current && change !== 0)
+                    return;
+
+                input.value = newVal;
+
+
+                fetch('/carts?type=update', {
                     method: 'POST',
                     headers: {'Content-Type': 'application/x-www-form-urlencoded'},
                     body: new URLSearchParams({
-                        action: 'update',
                         cartId: cartId,
-                        quantity: newQty
-                    }).toString()
+                        quantity: newVal
+                    })
                 })
-                        .then(response => {
-                            if (!response.ok)
-                                throw new Error('Update failed: ' + response.status);
-                            return response.json();
-                        })
+                        .then(resp => resp.json())
                         .then(data => {
-                            console.log('[updateQuantity resp]', data);
+                            if (data.success) {
 
-                            const confirmedQty = parseInt(data.quantity, 10);
-                            const serverMax = data.maxQuantity != null ? parseInt(data.maxQuantity, 10) : maxVal;
+                                const item = cartItems.find(it => it.id == cartId);
+                                if (item)
+                                    item.quantity = newVal;
 
-                            qtyEl.textContent = confirmedQty;
-                            group.dataset.max = serverMax;
-                            syncQtyButtons(cartId, confirmedQty, min, serverMax);
+                                document.getElementById('lineTotal-' + cartId).textContent = formatCurrencyVND(item.price * newVal);
+                                recalc();
+                            } else {
 
-                            const found = cartItems.find(it => String(it.id) === cartId);
-                            if (found) {
-                                found.quantity = confirmedQty;
-                                found.stock = serverMax;
-                                updateLineTotal(cartId, confirmedQty);
-                            }
-
-                            recalc();
-                            if (data.message && window.Swal) {
-                                Swal.fire({
-                                    icon: 'info',
-                                    title: 'Notification',
-                                    text: data.message,
-                                    customClass: {popup: 'bg-gray-800 text-white rounded-lg'}
-                                });
+                                alert(data.message || 'Update failed');
+                                input.value = current;
                             }
                         })
-                        .catch(error => {
-                            console.error('Update failed:', error);
-                            if (window.Swal)
-                                Swal.fire('Error', 'Quantity not updated', 'error');
+                        .catch(() => {
+                            input.value = current;
+                            alert('Could not update quantity, please try again.');
                         });
             }
 
@@ -404,7 +516,7 @@
 
             function doRemoveCartItem(cartId) {
                 setRemoveLoading(cartId, true);
-                fetch('/cart?action=remove', {
+                fetch('/carts?type=remove', {
                     method: 'POST',
                     headers: {'Content-Type': 'application/x-www-form-urlencoded'},
                     body: new URLSearchParams({
@@ -495,7 +607,7 @@
                 });
 
                 document.getElementById('itemCount').textContent = itemCount;
-                document.getElementById('grandTotal').textContent = total.toLocaleString('vi-VN') + ' ₫';
+                document.getElementById('grandTotal').textContent = total.toLocaleString('vi-VN') + 'đ';
 
                 const btn = document.getElementById('purchaseBtn');
                 if (btn) {
@@ -577,11 +689,11 @@
                     return;
                 }
 
-                fetch('/cart', {
+                fetch('/carts', {
                     method: 'POST',
                     headers: {'Content-Type': 'application/x-www-form-urlencoded'},
                     body: new URLSearchParams({
-                        action: 'add',
+                        type: 'add',
                         productId: productId,
                         quantity: 1
                     })

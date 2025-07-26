@@ -68,7 +68,7 @@ const loadCategoryContentAndEvent = (page) => {
                 updateModalContent(`/category/view?type=create`, loadCreateCategoryEvent);
             };
         }
-        
+
         /////hIDE cATEGFORY
         function confirmHideCategory(categoryId) {
             Swal.fire({
@@ -82,7 +82,7 @@ const loadCategoryContentAndEvent = (page) => {
                 cancelButtonText: 'Cancel'
             }).then((result) => {
                 if (result.isConfirmed) {
-                    fetch(`/category/view?type=delete&categoryId=${categoryId}`, {
+                    fetch(`/category/views?type=delete&categoryId=${categoryId}`, {
                         method: 'POST'
                     })
                             .then(response => response.json())
@@ -115,7 +115,7 @@ const loadCategoryContentAndEvent = (page) => {
                 cancelButtonText: 'Cancel'
             }).then((result) => {
                 if (result.isConfirmed) {
-                    fetch(`/category/view?type=enable&categoryId=${categoryId}`, {
+                    fetch(`/category/views?type=enable&categoryId=${categoryId}`, {
                         method: 'POST'
                     })
                             .then(response => response.json())
@@ -668,7 +668,7 @@ function loadEditCategoryEvent(categoryId, currentPage) {
                 const isName = input === nameInput;
                 const fieldLabel = isName ? "Attribute Name" : "Unit";
                 const maxLen = isName ? 50 : 10;
-                const validPattern = /^[A-Za-z0-9 ]+$/;
+
 
                 if (!value) {
                     isValid = false;
@@ -678,11 +678,6 @@ function loadEditCategoryEvent(categoryId, currentPage) {
                 if (value.length > maxLen) {
                     isValid = false;
                     showError(input, `${fieldLabel} must be ≤ ${maxLen} chars.`);
-                    return;
-                }
-                if (!validPattern.test(value)) {
-                    isValid = false;
-                    showError(input, `${fieldLabel} cannot contain special characterst.`);
                     return;
                 }
 
@@ -816,7 +811,7 @@ function loadEditCategoryEvent(categoryId, currentPage) {
         fd.append("attributes", JSON.stringify(attrs));
 
         showLoading();
-        fetch('/category/view?type=update', {
+        fetch('/category/views?type=update', {
             method: 'POST',
             body: fd
         })
@@ -1776,7 +1771,7 @@ function loadCreateCategoryEvent() {
         }
 
         showLoading();
-        fetch('/category/view?type=create', {
+        fetch('/category/views?type=create', {
             method: 'POST',
             body: formData
         })

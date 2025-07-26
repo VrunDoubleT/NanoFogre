@@ -390,6 +390,7 @@
                                            name="selectedAddress"
                                            value="<%= address.getId()%>"
                                            hidden=""
+                                           disabled=""
                                            class="h-5 w-5 text-indigo-600 accent-indigo-500 mt-1"
                                            onchange="if (this.checked)
                                                        selectAddress(this.value)" />
@@ -454,9 +455,6 @@
                                 <c:choose>
                                     <c:when test="${empty availableAddresses}">
                                         <p class="text-gray-600">Please add delivery address.</p>
-                                        <button id="addAddressBtn" class="btn-success inline-flex items-center px-4 py-2 rounded-lg" type="button">
-                                            <i class="fas fa-plus mr-2"></i>Add New
-                                        </button>
                                     </c:when>
                                     <c:otherwise>
                                         <c:forEach var="addr" items="${availableAddresses}">
@@ -874,7 +872,7 @@
             }
             function selectAddress(addressId) {
                 showLoadingState();
-                fetch('<%= request.getContextPath()%>/checkout', {
+                fetch('<%= request.getContextPath()%>/checkouts', {
                     method: 'POST',
                     headers: {'Content-Type': 'application/x-www-form-urlencoded'},
                     body: new URLSearchParams({action: 'selectAddress', addressId})
@@ -1102,7 +1100,7 @@
                 if (id)
                     params.append('addressId', id);
 
-                fetch(`${contextPath}/checkout`, {
+                fetch(`${contextPath}/checkouts`, {
                     method: 'POST',
                     headers: {'Content-Type': 'application/x-www-form-urlencoded'},
                     body: params.toString()
@@ -1306,7 +1304,7 @@
                     voucherCode: code,
                     cartIds: '<%= cartIdsJson%>'
                 });
-                fetch('<%= request.getContextPath()%>/checkout', {
+                fetch('<%= request.getContextPath()%>/checkouts', {
                     method: 'POST',
                     headers: {'Content-Type': 'application/x-www-form-urlencoded'},
                     body: params.toString()
@@ -1337,7 +1335,7 @@
             }
 
             function removeVoucher() {
-                fetch('<%= request.getContextPath()%>/checkout?action=removeVoucher', {
+                fetch('<%= request.getContextPath()%>/checkouts?action=removeVoucher', {
                     method: 'POST',
                     body: new URLSearchParams({cartIds: '<%= cartIdsJson%>'})
                 })
@@ -1428,7 +1426,7 @@
                     params.append('voucherId', vid);
                 }
 
-                fetch('<%= request.getContextPath()%>/checkout?action=processPurchase', {
+                fetch('<%= request.getContextPath()%>/checkouts?action=processPurchase', {
                     method: 'POST',
                     headers: {'Content-Type': 'application/x-www-form-urlencoded'},
                     body: params.toString()

@@ -6,16 +6,10 @@ import Models.Cart;
 import Models.Category;
 import Models.Product;
 import Models.Voucher;
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
-import java.lang.reflect.Type;
-import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
-import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -397,17 +391,6 @@ public class CartDAO extends DB.DBContext {
         return null;
     }
 /////////new cart
-
-    /**
-     * Lấy danh sách Cart của user phân trang với OFFSET/FETCH (SQL Server). Nếu
-     * bạn dùng MySQL, chuyển thành "LIMIT ? OFFSET ?".
-     *
-     * @param customerId ID của customer
-     * @param offset số bản ghi bỏ qua
-     * @param limit số bản ghi lấy về
-     * @return List<Cart> được load kèm Product, Brand, Category, ảnh đại diện
-     * và avgStar
-     */
     public List<Cart> getCartItemsByUserIdPaginated(int customerId, int offset, int limit) {
         List<Cart> list = new ArrayList<>();
         String sql
@@ -442,7 +425,6 @@ public class CartDAO extends DB.DBContext {
                 cart.setCustomerId(rs.getInt("customerId"));
                 cart.setQuantity(rs.getInt("cartQuantity"));
 
-                // Map Product
                 Product p = new Product();
                 p.setProductId(rs.getInt("productId"));
                 p.setTitle(rs.getString("productTitle"));
@@ -450,20 +432,17 @@ public class CartDAO extends DB.DBContext {
                 p.setQuantity(rs.getInt("productQuantity"));
                 p.setAverageStar(rs.getDouble("avgStar"));
 
-                // Ảnh đại diện
                 String img = rs.getString("imageUrl");
                 List<String> urls = (List<String>) ((img != null && !img.isEmpty())
                         ? Collections.singletonList(img)
                         : Collections.emptyList());
                 p.setUrls(urls);
 
-                // Brand
                 Brand b = new Brand();
                 b.setId(rs.getInt("brandId"));
                 b.setName(rs.getString("brandName"));
                 p.setBrand(b);
 
-                // Category
                 Category cat = new Category();
                 cat.setId(rs.getInt("categoryId"));
                 cat.setName(rs.getString("categoryName"));

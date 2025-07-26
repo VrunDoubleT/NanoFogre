@@ -8,7 +8,6 @@ import DAOs.ForgetDAO;
 import Models.Employee;
 import Utils.Common;
 import java.io.IOException;
-import java.io.IOException;
 import java.io.PrintWriter;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;

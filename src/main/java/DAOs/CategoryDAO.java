@@ -1,6 +1,6 @@
 package DAOs;
 
-import DB.DBContext;
+
 import Models.Category;
 import Models.ProductAttribute;
 import java.sql.Connection;
@@ -11,8 +11,7 @@ import java.sql.Statement;
 import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+
 
 /**
  *

@@ -1,0 +1,79 @@
+package Controllers;
+
+import DAOs.OrderDAO;
+import Models.Order;
+import Models.OrderDetails;
+import Models.OrderStatusHistory;
+import Utils.Converter;
+import java.io.IOException;
+import java.util.List;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+
+/**
+ * Servlet for handling order view requests
+ *
+ * @author iphon
+ */
+@WebServlet(name = "OrderViewServlet", urlPatterns = {"/order/view"})
+public class OrderViewServlet extends HttpServlet {
+
+    private static final int DEFAULT_LIMIT = 5;
+
+    @Override
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+
+        int limit = 5;
+        OrderDAO orderDao = new OrderDAO();
+        String type = request.getParameter("type") != null ? request.getParameter("type") : "orders";
+
+        switch (type) {
+            case "list":
+                int page = Converter.parseOption(request.getParameter("page"), 1);
+                List<Order> order = orderDao.getOrders(page, limit);
+                request.setAttribute("orders", order);
+                request.setAttribute("page", page);
+                request.setAttribute("limit", limit);
+                request.getRequestDispatcher("/WEB-INF/employees/templates/order/orderTeamplate.jsp").forward(request, response);
+                break;
+            case "pagination":
+                int p = Converter.parseOption(request.getParameter("page"), 1);
+                int t = orderDao.countOrders();
+                request.setAttribute("total", t);
+                request.setAttribute("limit", limit);
+                request.setAttribute("page", p);
+                request.getRequestDispatcher("/WEB-INF/employees/common/paginationTeamplate.jsp").forward(request, response);
+                break;
+
+            case "total":
+                int totalOrderCount = orderDao.countOrders();
+                response.setContentType("application/json");
+                response.setCharacterEncoding("UTF-8");
+                break;
+
+            case "detail":
+                OrderDAO dao = new OrderDAO();
+                int orderId = Integer.parseInt(request.getParameter("orderId"));
+                Order o = dao.getOrderById(orderId);
+                List<OrderDetails> details = dao.getOrderDetailsByOrderId(orderId);
+                List<OrderStatusHistory> historyList = dao.getOrderStatusHistory(orderId);
+                System.out.println("show list hgisstory" + historyList);
+                request.setAttribute("order", o);
+                request.setAttribute("orderDetails", details);
+                request.setAttribute("orderStatusHistory", historyList);
+                request.getRequestDispatcher("/WEB-INF/employees/templates/order/orderDetailTeamplate.jsp").forward(request, response);
+                break;
+
+        }
+    }
+
+    @Override
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+   
+    }
+
+}

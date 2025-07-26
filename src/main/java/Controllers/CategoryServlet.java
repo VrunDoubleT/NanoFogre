@@ -4,10 +4,7 @@ import DAOs.CategoryDAO;
 import Models.Category;
 import Models.ProductAttribute;
 import Utils.CloudinaryConfig;
-import Utils.Common;
-import Utils.Converter;
 import com.google.gson.Gson;
-import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
 import com.google.gson.reflect.TypeToken;
 
@@ -22,16 +19,11 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.Part;
-import java.io.File;
-import static java.lang.System.out;
-import java.nio.file.Paths;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import jdk.nashorn.internal.ir.BreakNode;
 import org.cloudinary.json.JSONObject;
 
 @MultipartConfig(
@@ -42,74 +34,13 @@ import org.cloudinary.json.JSONObject;
 /**
  * Servlet implementation class CategoryViewServlet
  */
-@WebServlet(name = "CategoryViewServlet", urlPatterns = {"/category/view"})
+@WebServlet(name = "CategoryServlet", urlPatterns = {"/category/views"})
 public class CategoryServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
-        int limit = 5;
-        CategoryDAO categoryDao = new CategoryDAO();
-        String type = request.getParameter("type") != null ? request.getParameter("type") : "categories";
-
-        switch (type) {
-            case "list":
-                int page = Converter.parseOption(request.getParameter("page"), 1);
-                List<Category> categories = categoryDao.getCategories(page, limit);
-                request.setAttribute("categories", categories);
-                request.setAttribute("page", page);
-                request.setAttribute("limit", limit);
-                request.getRequestDispatcher("/WEB-INF/employees/templates/category/categoryTeamplate.jsp").forward(request, response); // Forward to JSP
-                break;
-            case "pagination":
-                int p = Converter.parseOption(request.getParameter("page"), 1);
-                int t = categoryDao.countCategory();
-                request.setAttribute("total", t);
-                request.setAttribute("limit", limit);
-                request.setAttribute("page", p);
-                request.getRequestDispatcher("/WEB-INF/employees/common/paginationTeamplate.jsp").forward(request, response);
-                break;
-            case "create":
-
-                request.getRequestDispatcher("/WEB-INF/employees/templates/category/createCategoryTeamplate.jsp").forward(request, response);
-                break;
-            case "detail":
-                int categoryIds = Integer.parseInt(request.getParameter("categoryId"));
-
-                CategoryDAO categoryDAO = new CategoryDAO();
-                Category categorys = categoryDAO.getCategoryById(categoryIds);
-                List<ProductAttribute> attributes = categoryDAO.getAttributesByCategoryId(categoryIds);
-
-                request.setAttribute("category", categorys);
-                request.setAttribute("attributes", attributes);
-
-                request.getRequestDispatcher("/WEB-INF/employees/templates/category/detailCategoryTeamplate.jsp")
-                        .forward(request, response);
-                break;
-
-            case "edit":
-                int categoryId = Integer.parseInt(request.getParameter("categoryId"));
-                Category category = categoryDao.getCategoryById(categoryId);
-                request.setAttribute("category", category);
-                request.getRequestDispatcher("/WEB-INF/employees/templates/category/editCategoryTeamplate.jsp").forward(request, response);
-                break;
-            case "total":
-                int totalCategoryCount = categoryDao.countCategory();
-                response.setContentType("application/json");
-                response.setCharacterEncoding("UTF-8");
-
-                response.getWriter().write("{\"total\":" + totalCategoryCount + "}");
-                break;
-            case "check-name":
-                String checkName = request.getParameter("categoryName");
-                boolean exists = categoryDao.isCategoryNameExists(checkName);
-                response.setContentType("application/json");
-                response.getWriter().write("{\"exists\":" + exists + "}");
-                break;
-            default:
-                break;
-        }
     }
 
     @Override
