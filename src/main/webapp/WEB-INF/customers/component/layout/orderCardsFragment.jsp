@@ -10,7 +10,7 @@
 <%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn"  %>
 
 <c:forEach var="order" items="${orders}">
-    <div class="order-card transition-none opacity-100 scale-100 p-6 rounded-2xl border shadow-md bg-gradient-to-br from-white via-blue-50 to-gray-100 relative group"
+    <div class="order-card transition-none opacity-100 scale-100 p-6 rounded-2xl border relative group"
          data-status="${order.orderStatus.id}" data-id="${order.id}">
         <div class="flex flex-wrap items-center justify-between gap-2 mb-4">
             <div>

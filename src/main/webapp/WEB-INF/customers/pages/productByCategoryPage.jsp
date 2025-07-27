@@ -52,17 +52,23 @@
                 <div class="grid grid-cols-1 md:grid-cols-10 gap-6 h-fit">
                     <div class="md:col-span-3 h-fit bg-[#f7f6f8] px-6 py-4 rounded-lg">
                         <h2 class="text-lg font-semibold text-gray-800 mb-4"">Filter by brand</h2>
-                        <c:forEach var="brand" items="${brands}"> 
-                            <div class="flex gap-3 mb-1 items-center">
-                                <input id="brand-${brand.id}" data-id="${brand.id}" class="brand-checkbox shrink-0 w-4 h-4 cursor-pointer" id="brand-${brand.id}" type="checkbox" />
-                                <label for="brand-${brand.id}" class="flex gap-2">
-                                    <div class="w-6 h-6">
-                                        <img class="h-full w-full object-cover" src="${brand.url}" alt="alt"/>
-                                    </div>
-                                    <h3>${brand.name}</h3>
-                                </label>
-                            </div>
-                        </c:forEach>
+                        <c:if test="${not empty brands}">
+                            <c:forEach var="brand" items="${brands}"> 
+                                <div class="flex gap-3 mb-1 items-center">
+                                    <input id="brand-${brand.id}" data-id="${brand.id}" class="brand-checkbox shrink-0 w-4 h-4 cursor-pointer" id="brand-${brand.id}" type="checkbox" />
+                                    <label for="brand-${brand.id}" class="flex gap-2">
+                                        <div class="w-6 h-6">
+                                            <img class="h-full w-full object-cover" src="${brand.url}" alt="alt"/>
+                                        </div>
+                                        <h3>${brand.name}</h3>
+                                    </label>
+                                </div>
+                            </c:forEach>
+                        </c:if>
+                        <c:if test="${empty brands}">
+                            <div class="text-red-500">No brand</div>
+                        </c:if>
+
                     </div>
                     <div class="md:col-span-7">
                         <div id="loading" class="grid grid-cols-2 lg:grid-cols-3 gap-4">

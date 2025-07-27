@@ -141,6 +141,7 @@
                             Load more
                         </button>
                     </div>
+                    <div style="display : none" class="text-center text-blue-500" id="categoryFull">All categories have been displayed.</div>
                 </div>
 
                 <div class="section-divider"></div>
@@ -160,53 +161,58 @@
                         </div>
 
                         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                            <c:forEach var="p" items="${newestProducts}">
-                                <div class="group relative bg-white rounded-3xl p-6 border border-gray-200 overflow-hidden">
-                                    <!-- Product Badge -->
-                                    <div class="absolute top-4 right-4 z-10">
-                                        <span class="bg-gradient-to-r from-purple-400 to-pink-500 text-white text-xs font-bold px-3 py-1 rounded-full">
-                                            ✨ NEW
-                                        </span>
-                                    </div>
+                            <c:if test="${not empty newestProducts}">
+                                <c:forEach var="p" items="${newestProducts}">
+                                    <div class="group relative bg-white rounded-3xl p-6 border border-gray-200 overflow-hidden">
+                                        <!-- Product Badge -->
+                                        <div class="absolute top-4 right-4 z-10">
+                                            <span class="bg-gradient-to-r from-purple-400 to-pink-500 text-white text-xs font-bold px-3 py-1 rounded-full">
+                                                ✨ NEW
+                                            </span>
+                                        </div>
 
-                                    <!-- Image Container -->
-                                    <div class="relative mb-6 rounded-2xl overflow-hidden bg-gradient-to-br from-gray-50 to-gray-100">
-                                        <c:choose>
-                                            <c:when test="${not empty p.urls and not empty p.urls[0]}">
-                                                <img src="${p.urls[0]}" alt="${p.title}" 
-                                                     class="w-full h-48 object-cover group-hover:scale-110 transition-transform duration-500">
-                                            </c:when>
-                                            <c:otherwise>
-                                                <div class="w-full h-48 shimmer flex items-center justify-center">
-                                                    <i data-lucide="image" class="w-12 h-12 text-gray-400"></i>
+                                        <!-- Image Container -->
+                                        <div class="relative mb-6 rounded-2xl overflow-hidden bg-gradient-to-br from-gray-50 to-gray-100">
+                                            <c:choose>
+                                                <c:when test="${not empty p.urls and not empty p.urls[0]}">
+                                                    <img src="${p.urls[0]}" alt="${p.title}" 
+                                                         class="w-full h-48 object-cover group-hover:scale-110 transition-transform duration-500">
+                                                </c:when>
+                                                <c:otherwise>
+                                                    <div class="w-full h-48 shimmer flex items-center justify-center">
+                                                        <i data-lucide="image" class="w-12 h-12 text-gray-400"></i>
+                                                    </div>
+                                                </c:otherwise>
+                                            </c:choose>
+                                            <div class="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-all duration-300"></div>
+                                        </div>
+
+                                        <!-- Product Info -->
+                                        <div class="space-y-3">
+                                            <a href="/product/detail?pId=${p.productId}" class="font-bold text-gray-800 text-lg leading-tight line-clamp-2 hover:text-purple-600 hover:underline transition-colors">
+                                                ${p.title}
+                                            </a>
+
+                                            <div class="flex items-center justify-between">
+                                                <div class="text-2xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+                                                    ${CurrencyFormatter.formatVietNamCurrency(p.price)}đ
                                                 </div>
-                                            </c:otherwise>
-                                        </c:choose>
-                                        <div class="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-all duration-300"></div>
-                                    </div>
-
-                                    <!-- Product Info -->
-                                    <div class="space-y-3">
-                                        <a href="/product/detail?pId=${p.productId}" class="font-bold text-gray-800 text-lg leading-tight line-clamp-2 hover:text-purple-600 hover:underline transition-colors">
-                                            ${p.title}
-                                        </a>
-
-                                        <div class="flex items-center justify-between">
-                                            <div class="text-2xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
-                                                ${CurrencyFormatter.formatVietNamCurrency(p.price)}đ
+                                                <div class="text-sm text-gray-500 bg-gray-100 px-3 py-1 rounded-full">
+                                                    Stock: ${p.quantity}
+                                                </div>
                                             </div>
-                                            <div class="text-sm text-gray-500 bg-gray-100 px-3 py-1 rounded-full">
-                                                Stock: ${p.quantity}
+
+                                            <div class="flex items-center gap-2 text-sm text-gray-600">
+                                                <i data-lucide="package" class="w-4 h-4"></i>
+                                                ${p.material}
                                             </div>
                                         </div>
-
-                                        <div class="flex items-center gap-2 text-sm text-gray-600">
-                                            <i data-lucide="package" class="w-4 h-4"></i>
-                                            ${p.material}
-                                        </div>
                                     </div>
-                                </div>
-                            </c:forEach>
+                                </c:forEach>
+                            </c:if>
+                            <c:if test="${empty newestProducts}">
+                                <div class="text-red-500 font-bold text-center">No products found</div>
+                            </c:if>
                         </div>
                     </section>
 
@@ -227,53 +233,58 @@
                         </div>
 
                         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                            <c:forEach var="p" items="${topRatedProducts}">
-                                <div class="group relative bg-white rounded-3xl p-6 card-hover border border-gray-100 overflow-hidden">
-                                    <!-- Product Badge -->
-                                    <div class="absolute top-4 right-4 z-10">
-                                        <span class="bg-gradient-to-r from-yellow-400 to-orange-500 text-white text-xs font-bold px-3 py-1 rounded-full">
-                                            ⭐ TOP
-                                        </span>
-                                    </div>
+                            <c:if test="${not empty topRatedProducts}">
+                                <c:forEach var="p" items="${topRatedProducts}">
+                                    <div class="group relative bg-white rounded-3xl p-6 card-hover border border-gray-100 overflow-hidden">
+                                        <!-- Product Badge -->
+                                        <div class="absolute top-4 right-4 z-10">
+                                            <span class="bg-gradient-to-r from-yellow-400 to-orange-500 text-white text-xs font-bold px-3 py-1 rounded-full">
+                                                ⭐ TOP
+                                            </span>
+                                        </div>
 
-                                    <!-- Image Container -->
-                                    <div class="relative mb-6 rounded-2xl overflow-hidden bg-gradient-to-br from-gray-50 to-gray-100">
-                                        <c:choose>
-                                            <c:when test="${not empty p.urls and not empty p.urls[0]}">
-                                                <img src="${p.urls[0]}" alt="${p.title}" 
-                                                     class="w-full h-48 object-cover group-hover:scale-110 transition-transform duration-500">
-                                            </c:when>
-                                            <c:otherwise>
-                                                <div class="w-full h-48 shimmer flex items-center justify-center">
-                                                    <i data-lucide="image" class="w-12 h-12 text-gray-400"></i>
+                                        <!-- Image Container -->
+                                        <div class="relative mb-6 rounded-2xl overflow-hidden bg-gradient-to-br from-gray-50 to-gray-100">
+                                            <c:choose>
+                                                <c:when test="${not empty p.urls and not empty p.urls[0]}">
+                                                    <img src="${p.urls[0]}" alt="${p.title}" 
+                                                         class="w-full h-48 object-cover group-hover:scale-110 transition-transform duration-500">
+                                                </c:when>
+                                                <c:otherwise>
+                                                    <div class="w-full h-48 shimmer flex items-center justify-center">
+                                                        <i data-lucide="image" class="w-12 h-12 text-gray-400"></i>
+                                                    </div>
+                                                </c:otherwise>
+                                            </c:choose>
+                                            <div class="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-all duration-300"></div>
+                                        </div>
+
+                                        <!-- Product Info -->
+                                        <div class="space-y-3">
+                                            <a href="/product/detail?pId=${p.productId}" class="font-bold text-gray-800 text-lg leading-tight line-clamp-2 hover:underline hover:text-blue-600 transition-colors">
+                                                ${p.title}
+                                            </a>
+
+                                            <div class="flex items-center justify-between">
+                                                <div class="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                                                    ${CurrencyFormatter.formatVietNamCurrency(p.price)}đ
                                                 </div>
-                                            </c:otherwise>
-                                        </c:choose>
-                                        <div class="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-all duration-300"></div>
-                                    </div>
-
-                                    <!-- Product Info -->
-                                    <div class="space-y-3">
-                                        <a href="/product/detail?pId=${p.productId}" class="font-bold text-gray-800 text-lg leading-tight line-clamp-2 hover:underline hover:text-blue-600 transition-colors">
-                                            ${p.title}
-                                        </a>
-
-                                        <div class="flex items-center justify-between">
-                                            <div class="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                                                ${CurrencyFormatter.formatVietNamCurrency(p.price)}đ
+                                                <div class="text-sm text-gray-500 bg-gray-100 px-3 py-1 rounded-full">
+                                                    Stock: ${p.quantity}
+                                                </div>
                                             </div>
-                                            <div class="text-sm text-gray-500 bg-gray-100 px-3 py-1 rounded-full">
-                                                Stock: ${p.quantity}
+
+                                            <div class="flex items-center gap-2 text-sm text-gray-600">
+                                                <i data-lucide="package" class="w-4 h-4"></i>
+                                                ${p.material}
                                             </div>
                                         </div>
-
-                                        <div class="flex items-center gap-2 text-sm text-gray-600">
-                                            <i data-lucide="package" class="w-4 h-4"></i>
-                                            ${p.material}
-                                        </div>
                                     </div>
-                                </div>
-                            </c:forEach>
+                                </c:forEach>
+                            </c:if>
+                            <c:if test="${empty topRatedProducts}">
+                                <div class="text-red-500 font-bold text-center">No products found</div>
+                            </c:if>
                         </div>
                     </section>
 
@@ -294,53 +305,58 @@
                         </div>
 
                         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                            <c:forEach var="p" items="${topSellingProducts}">
-                                <div class="group relative bg-white rounded-3xl p-6 card-hover border border-gray-100 overflow-hidden">
-                                    <!-- Product Badge -->
-                                    <div class="absolute top-4 right-4 z-10">
-                                        <span class="bg-gradient-to-r from-green-400 to-emerald-500 text-white text-xs font-bold px-3 py-1 rounded-full">
-                                            🔥 HOT
-                                        </span>
-                                    </div>
+                            <c:if test="${not empty topSellingProducts}">
+                                <c:forEach var="p" items="${topSellingProducts}">
+                                    <div class="group relative bg-white rounded-3xl p-6 card-hover border border-gray-100 overflow-hidden">
+                                        <!-- Product Badge -->
+                                        <div class="absolute top-4 right-4 z-10">
+                                            <span class="bg-gradient-to-r from-green-400 to-emerald-500 text-white text-xs font-bold px-3 py-1 rounded-full">
+                                                🔥 HOT
+                                            </span>
+                                        </div>
 
-                                    <!-- Image Container -->
-                                    <div class="relative mb-6 rounded-2xl overflow-hidden bg-gradient-to-br from-gray-50 to-gray-100">
-                                        <c:choose>
-                                            <c:when test="${not empty p.urls and not empty p.urls[0]}">
-                                                <img src="${p.urls[0]}" alt="${p.title}" 
-                                                     class="w-full h-48 object-cover group-hover:scale-110 transition-transform duration-500">
-                                            </c:when>
-                                            <c:otherwise>
-                                                <div class="w-full h-48 shimmer flex items-center justify-center">
-                                                    <i data-lucide="image" class="w-12 h-12 text-gray-400"></i>
+                                        <!-- Image Container -->
+                                        <div class="relative mb-6 rounded-2xl overflow-hidden bg-gradient-to-br from-gray-50 to-gray-100">
+                                            <c:choose>
+                                                <c:when test="${not empty p.urls and not empty p.urls[0]}">
+                                                    <img src="${p.urls[0]}" alt="${p.title}" 
+                                                         class="w-full h-48 object-cover group-hover:scale-110 transition-transform duration-500">
+                                                </c:when>
+                                                <c:otherwise>
+                                                    <div class="w-full h-48 shimmer flex items-center justify-center">
+                                                        <i data-lucide="image" class="w-12 h-12 text-gray-400"></i>
+                                                    </div>
+                                                </c:otherwise>
+                                            </c:choose>
+                                            <div class="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-all duration-300"></div>
+                                        </div>
+
+                                        <!-- Product Info -->
+                                        <div class="space-y-3">
+                                            <a href="/product/detail?pId=${p.productId}" class="font-bold text-gray-800 text-lg leading-tight line-clamp-2 hover:underline hover:text-green-600 transition-colors">
+                                                ${p.title}
+                                            </a>
+
+                                            <div class="flex items-center justify-between">
+                                                <div class="text-2xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">
+                                                    <fmt:formatNumber value="${p.price / 100}" type="currency" currencySymbol="$"/>
                                                 </div>
-                                            </c:otherwise>
-                                        </c:choose>
-                                        <div class="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-all duration-300"></div>
-                                    </div>
-
-                                    <!-- Product Info -->
-                                    <div class="space-y-3">
-                                        <a href="/product/detail?pId=${p.productId}" class="font-bold text-gray-800 text-lg leading-tight line-clamp-2 hover:underline hover:text-green-600 transition-colors">
-                                            ${p.title}
-                                        </a>
-
-                                        <div class="flex items-center justify-between">
-                                            <div class="text-2xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">
-                                                <fmt:formatNumber value="${p.price / 100}" type="currency" currencySymbol="$"/>
+                                                <div class="text-sm text-gray-500 bg-gray-100 px-3 py-1 rounded-full">
+                                                    Stock: ${p.quantity}
+                                                </div>
                                             </div>
-                                            <div class="text-sm text-gray-500 bg-gray-100 px-3 py-1 rounded-full">
-                                                Stock: ${p.quantity}
+
+                                            <div class="flex items-center gap-2 text-sm text-gray-600">
+                                                <i data-lucide="package" class="w-4 h-4"></i>
+                                                ${p.material}
                                             </div>
                                         </div>
-
-                                        <div class="flex items-center gap-2 text-sm text-gray-600">
-                                            <i data-lucide="package" class="w-4 h-4"></i>
-                                            ${p.material}
-                                        </div>
                                     </div>
-                                </div>
-                            </c:forEach>
+                                </c:forEach>
+                            </c:if>
+                            <c:if test="${empty topSellingProducts}">
+                                <div class="text-red-500 font-bold text-center">No products found</div>
+                            </c:if>
                         </div>
                     </section>
                 </div>
@@ -379,7 +395,7 @@
             </div>
         </div>
         <jsp:include page="../common/footer.jsp" />
-        <<script src="../../../js/header.js"></script>
+        <script src="../../../js/header.js"></script>
         <script>
             // Initialize Lucide icons
             lucide.createIcons();
@@ -403,6 +419,7 @@
 
                             if (data.isLastPage) {
                                 hasMore = false;
+                                document.getElementById("categoryFull").style.display = "block";
                                 document.getElementById("loadCategoriesBtn").style.display = "none";
                             }
 

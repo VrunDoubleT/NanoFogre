@@ -150,49 +150,71 @@ function validateMaxValue(type, maxValueInput, maxValueError) {
 // Validate start date
 function validateFromDate(validFromInput, validFromError) {
     const from = validFromInput.value;
-    const now = new Date().toISOString().split("T")[0];
+    console.log("From input:", from);
+
     if (!from) {
         validFromError.textContent = "Start date is required.";
         validFromInput.classList.add("border-red-500");
         return false;
     }
-    if (from < now) {
-        validFromError.textContent = "Start date must be in the future.";
+
+    const fromDate = new Date(from);
+    const now = new Date();
+    
+    now.setSeconds(0);
+    now.setMilliseconds(0);
+
+    if (fromDate <= now) {
+        validFromError.textContent = "Start date must be in the future (to the minute).";
         validFromInput.classList.add("border-red-500");
         validFromInput.classList.remove("ring-1", "ring-green-500");
         return false;
     }
+
     validFromError.textContent = "";
     validFromInput.classList.remove("border-red-500");
     validFromInput.classList.add("ring-1", "ring-green-500");
     return true;
 }
 
+
 // Validate end date
 function validateToDate(validFromInput, validToInput, validToError) {
-    const from = validFromInput.value;
-    const to = validToInput.value;
-    const now = new Date().toISOString().split("T")[0];
-    if (!to) {
+    const fromValue = validFromInput.value;
+    const toValue = validToInput.value;
+
+    if (!toValue) {
         validToError.textContent = "End date is required.";
         validToInput.classList.add("border-red-500");
         return false;
     }
-    if (from && to < from) {
-        validToError.textContent = "End date must be after start date.";
-        validToInput.classList.add("border-red-500");
-        return false;
+
+    const toDate = new Date(toValue);
+    const now = new Date();
+    now.setSeconds(0);
+    now.setMilliseconds(0);
+
+    if (fromValue) {
+        const fromDate = new Date(fromValue);
+        if (toDate <= fromDate) {
+            validToError.textContent = "End date must be after start date.";
+            validToInput.classList.add("border-red-500");
+            return false;
+        }
     }
-    if (to <= now) {
+
+    if (toDate <= now) {
         validToError.textContent = "End date must be in the future.";
         validToInput.classList.add("border-red-500");
         return false;
     }
+
     validToError.textContent = "";
     validToInput.classList.remove("border-red-500");
     validToInput.classList.add("ring-1", "ring-green-500");
     return true;
 }
+
 
 // Validate total usage limit
 function validateTotalLimit(validTotalInput, validTotalError) {

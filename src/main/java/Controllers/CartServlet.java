@@ -1,4 +1,3 @@
-
 package Controllers;
 
 import DAOs.CartDAO;
@@ -62,7 +61,7 @@ public class CartServlet extends HttpServlet {
             out.println("</html>");
         }
     }
-    
+
     // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
     /**
      * Handles the HTTP <code>GET</code> method.
@@ -109,7 +108,6 @@ public class CartServlet extends HttpServlet {
                 response.setContentType("application/json");
                 response.setCharacterEncoding("UTF-8");
 
-                
                 String jsonTotal = gson.toJson(resultTotal);
                 response.getWriter().write(jsonTotal);
                 break;
@@ -175,11 +173,10 @@ public class CartServlet extends HttpServlet {
                     }
                 }
                 break;
-                  case "update": {
+            case "update": {
                 response.setContentType("application/json;charset=UTF-8");
                 JsonObject json = new JsonObject();
 
-        
                 int cartId;
                 try {
                     cartId = Integer.parseInt(request.getParameter("cartId"));
@@ -325,8 +322,6 @@ public class CartServlet extends HttpServlet {
                     c.setPhone(address.getPhone());
                 }
 
-          
-
                 request.setAttribute("address", address);
                 request.setAttribute("customer", c);
                 request.setAttribute("selectedItems", selectedItems);
@@ -353,7 +348,7 @@ public class CartServlet extends HttpServlet {
                     }
 
                     int custId = customer.getId();
-                 
+
                     System.out.println("recipientName = " + recipientName);
                     System.out.println("addressName = " + addressName);
                     System.out.println("addressDetails = " + addressDetails);
@@ -390,9 +385,6 @@ public class CartServlet extends HttpServlet {
                     );
                 }
                 return;
-
-
-
             default:
                 throw new AssertionError();
         }

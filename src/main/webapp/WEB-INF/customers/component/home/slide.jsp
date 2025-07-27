@@ -84,25 +84,7 @@
                                  alt="Model Image"
                                  class="w-full h-full object-contain" />
                         </div>
-                        <div class="h-[96px] bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/10 w-full">
-                            <div class="grid grid-cols-3 gap-4 text-center h-full items-center">
-                                <div>
-                                    <div class="text-2xl font-bold text-white">1000+</div>
-                                    <div class="text-sm text-blue-200">Models</div>
-                                </div>
-                                <div>
-                                    <div class="text-2xl font-bold text-white">50K+</div>
-                                    <div class="text-sm text-blue-200">Customers</div>
-                                </div>
-                                <div>
-                                    <div class="text-2xl font-bold text-white">4.9</div>
-                                    <div class="text-sm text-blue-200">Rating</div>
-                                </div>
-                            </div>
-                        </div>
                     </div>
-
-                    <!-- End Visual -->
                 </div>
             </div>
         </div>

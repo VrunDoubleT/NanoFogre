@@ -390,7 +390,7 @@ public class CustomerDAO extends DB.DBContext {
 
     public List<Address> getAddressesByCustomerId(int customerId) {
         List<Address> addresses = new ArrayList<>();
-        String query = "SELECT * FROM Address WHERE customerId = ?";
+        String query = "SELECT * FROM Address WHERE customerId = ? AND _destroy = 0";
         Object[] params = {customerId};
 
         try ( ResultSet rs = execSelectQuery(query, params)) {
@@ -451,7 +451,7 @@ public class CustomerDAO extends DB.DBContext {
     }
 
     public boolean deleteAddressById(int addressId) {
-        String query = "DELETE FROM Address WHERE addressId = ?";
+        String query = "UPDATE Address SET _destroy = 1 WHERE addressId = ?";
         Object[] params = {addressId};
         try {
             int rowsAffected = execQuery(query, params);
@@ -461,5 +461,4 @@ public class CustomerDAO extends DB.DBContext {
             return false;
         }
     }
-
 }

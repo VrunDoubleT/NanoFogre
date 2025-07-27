@@ -33,6 +33,13 @@ public class CustomerContentServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        HttpSession session = request.getSession(false);
+        Customer customer = (session != null) ? (Customer) session.getAttribute("customer") : null;
+
+        if (customer == null) {
+            response.sendRedirect(request.getContextPath() + "/auth?action=login");
+            return;
+        }
         request.getRequestDispatcher("/WEB-INF/customers/component/layout/customerLayout.jsp").forward(request, response);
     }
 }

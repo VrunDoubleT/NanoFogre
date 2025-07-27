@@ -108,7 +108,7 @@ public class CartViewServlet extends HttpServlet {
         request.setAttribute("currentPage", currentPage);
         request.setAttribute("totalPages", totalPages);
 
-        request.getRequestDispatcher("/WEB-INF/customers/pages/cart.jsp")
+        request.getRequestDispatcher("/WEB-INF/customers/pages/cartPage.jsp")
                 .forward(request, response);
 
     }

@@ -253,53 +253,58 @@ function initCustomerForm() {
             showLoading();
             window.scrollTo({ top: 0});
             try {
-                const res = await fetch(form.action, {
-                    method: "POST",
-                    body: new FormData(form)
-                });
+    const res = await fetch(form.action, {
+        method: "POST",
+        body: new FormData(form)
+    });
 
-                if (res.status === 200) {
-                    // Update sidebar
-                    loadSidebar();
-                    // Reload main content
-                    fetch("/customer/self?type=profile")
-                        .then(r => r.text())
-                        .then(html => {
-                            const main = document.querySelector("#main-content");
-                            if (main) {
-                                main.innerHTML = html;
-                                lucide.createIcons();
-                                initCustomerForm();
-                                initCreateAddressButton();
-                            }
-                        });
-                    hiddenLoading();
-                    Toastify({
-                        text: "Your profile has been updated successfully!",
-                        duration: 3000,
-                        gravity: "top",
-                        position: "right",
-                        backgroundColor: "#22c55e",
-                    }).showToast();
-                } else {
-                    Toastify({
-                        text: "Failed to update. Please try again.",
-                        duration: 3000,
-                        gravity: "top",
-                        position: "right",
-                        backgroundColor: "#ef4444",
-                    }).showToast();
+    const data = await res.json();
+
+    if (res.ok && data.isSuccess) {
+        // Update sidebar
+        loadSidebar();
+
+        // Reload main content
+        fetch("/customer/self?type=profile")
+            .then(r => r.text())
+            .then(html => {
+                const main = document.querySelector("#main-content");
+                if (main) {
+                    main.innerHTML = html;
+                    lucide.createIcons();
+                    initCustomerForm();
+                    initCreateAddressButton();
                 }
-            } catch (err) {
-                console.error("Submit error:", err);
-                Toastify({
-                    text: "Server error. Please try again later.",
-                    duration: 3000,
-                    gravity: "top",
-                    position: "right",
-                    backgroundColor: "#ef4444",
-                }).showToast();
-            }
+            });
+
+        hiddenLoading();
+        document.getElementById("customerName").innerText = data.customer.name
+        Toastify({
+            text: "Your profile has been updated successfully!",
+            duration: 3000,
+            gravity: "top",
+            position: "right",
+            backgroundColor: "#22c55e",
+        }).showToast();
+    } else {
+        Toastify({
+            text: "Failed to update. Please try again.",
+            duration: 3000,
+            gravity: "top",
+            position: "right",
+            backgroundColor: "#ef4444",
+        }).showToast();
+    }
+} catch (err) {
+    console.error("Submit error:", err);
+    Toastify({
+        text: "Server error. Please try again later.",
+        duration: 3000,
+        gravity: "top",
+        position: "right",
+        backgroundColor: "#ef4444",
+    }).showToast();
+}
         }
     });
 }
@@ -318,7 +323,7 @@ const updateModalContent = (path, loadEvent) => {
 // Handle create address button
 function initCreateAddressButton() {
     const createAddressBtn = document.getElementById("create-address-button");
-    createAddressBtn.addEventListener("click", () => {
+    createAddressBtn?.addEventListener("click", () => {
         const modal = document.getElementById("modal");
         openModal(modal);
         updateModalContent("/customer/self?type=createAddress", loadCreateCustomerAddressEvent);
@@ -464,7 +469,7 @@ document.addEventListener("click", function (e) {
                     }).showToast();
 
                     if (isSuccess) {
-                        loadContent("profile", false); // Reload trang profile
+                        loadContent("profile", false);
                     }
                 })
                 .catch(() => {

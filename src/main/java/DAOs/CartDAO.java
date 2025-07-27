@@ -160,8 +160,10 @@ public class CartDAO extends DB.DBContext {
     }
 
     public int getTotalQuantity(int customerId) {
-        String sql = "SELECT COUNT(*) FROM Carts"
-                + " WHERE customerId = ?";
+        String sql = "SELECT COUNT(*) FROM Carts c\n"
+                + "JOIN Products p\n"
+                + "ON p.productId = c.productId\n"
+                + "WHERE customerId = ? AND p._destroy = 0 AND p.isActive = 1";
         Object[] params = {customerId};
         try (
                  ResultSet rs = execSelectQuery(sql, params)) {
@@ -391,6 +393,7 @@ public class CartDAO extends DB.DBContext {
         return null;
     }
 /////////new cart
+
     public List<Cart> getCartItemsByUserIdPaginated(int customerId, int offset, int limit) {
         List<Cart> list = new ArrayList<>();
         String sql
@@ -413,7 +416,7 @@ public class CartDAO extends DB.DBContext {
                 + ") r ON p.productId = r.productId  "
                 + "LEFT JOIN Brands b    ON p.brandId    = b.brandId  "
                 + "LEFT JOIN Categories cat ON p.categoryId = cat.categoryId  "
-                + "WHERE c.customerId = ?  "
+                + "WHERE c.customerId = ? AND p._destroy = 0 AND p.isActive = 1 "
                 + "ORDER BY c.cartId DESC  "
                 + "OFFSET ? ROWS FETCH NEXT ? ROWS ONLY;";
 

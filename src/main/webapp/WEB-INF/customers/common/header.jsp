@@ -52,7 +52,7 @@
                     </a>
                     <a href="/account" class="text-white font-semibold flex items-center gap-2">
                         <i class="fa fa-user-circle text-yellow-400"></i>
-                        ${sessionScope.customer.name}
+                        <span id="customerName">${sessionScope.customer.name}</span>
                     </a>
                     <a href="${pageContext.request.contextPath}/auth?action=logout" class="px-4 py-2 bg-gradient-to-r from-red-500 to-orange-500 text-white rounded-full text-sm font-semibold shadow hover:scale-105 transition">
                         Logout

@@ -92,22 +92,26 @@
                         .then(html => {
                             const container = document.getElementById('main-content');
                             container.innerHTML = html;
-                            lucide.createIcons();
-                            // GỌI ĐÚNG INIT cho mỗi module:
-                            if (path === 'profile' && typeof initCustomerForm === 'function') {
-                                initCustomerForm();
-                            }
-                            if (path === 'order' && typeof initCustomerOrdersPage === 'function') {
-                                initCustomerOrdersPage();
-                            }
-                            if (typeof initCreateAddressButton === 'function')
-                                initCreateAddressButton();
                             if (push) {
                                 history.pushState({page: path}, '', '/account?view=' + path);
                             }
-                        });
+                            switch (path) {
+                                case 'profile':
+                                    lucide.createIcons();
+                                    if (typeof initCustomerForm === 'function')
+                                        initCustomerForm();
+                                    if (typeof initCreateAddressButton === 'function')
+                                        initCreateAddressButton();
+                                    break;
+                                case 'order':
+                                    if (path === 'order' && typeof initCustomerOrdersPage === 'function') {
+                                        initCustomerOrdersPage();
+                                    }
+                                    break;
+                            }
+                            ;
+                        })
             }
-
 
             const updateActiveSidebar = (page) => {
                 document.querySelectorAll(".nav-link").forEach((element) => {

@@ -4,6 +4,7 @@ package Controllers;
 import DAOs.BrandDAO;
 import DAOs.CategoryDAO;
 import DAOs.HomeDAO;
+import DAOs.ProductDAO;
 import DAOs.ReviewDAO;
 import Models.Brand;
 import Models.Category;
@@ -60,13 +61,13 @@ public class HomeViewServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        HomeDAO hDao = new HomeDAO();
+        ProductDAO pDao = new ProductDAO();
         CategoryDAO cDao = new CategoryDAO();
         ReviewDAO rDao = new ReviewDAO();
         BrandDAO bDao = new BrandDAO();
-        List<Product> topRated = hDao.getTopRatedProducts(8);
-        List<Product> topSelling = hDao.getTopSellingProducts(8);
-        List<Product> newest = hDao.getNewestProducts(8);
+        List<Product> topRated = pDao.getTopRatedProducts(8);
+        List<Product> topSelling = pDao.getTopSellingProducts(8);
+        List<Product> newest = pDao.getNewestProducts(8);
         List<Brand> brands = bDao.getAllBrands();
         List<Review> reviews = rDao.getTopFiveStarReviews(12);
         request.setAttribute("topRatedProducts", topRated);

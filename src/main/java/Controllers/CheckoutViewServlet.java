@@ -141,7 +141,7 @@ public class CheckoutViewServlet extends HttpServlet {
         request.setAttribute("availableAddresses", availableAddresses);
         request.setAttribute("address", selectedAddress);
 
-        request.getRequestDispatcher("/WEB-INF/customers/pages/purchase.jsp").forward(request, response);
+        request.getRequestDispatcher("/WEB-INF/customers/pages/purchasePage.jsp").forward(request, response);
     }
 
     /**

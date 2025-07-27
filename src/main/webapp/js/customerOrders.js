@@ -233,6 +233,8 @@ function showReviewProductModal(orderId, productId, productTitle, productImg, bt
                     if (btn) {
                         btn.innerHTML = '<i data-lucide="star"></i> Edit Review';
                         btn.className = "review-product-btn flex items-center gap-1 px-3 py-1 text-xs rounded bg-yellow-200 text-yellow-600 hover:bg-yellow-400 hover:text-white transition ml-2";
+                        btn.dataset.reviewContent = result.value.content;
+                        btn.dataset.reviewStar = result.value.rating;
                         btn.disabled = false;
                         if (window.lucide)
                             window.lucide.createIcons();
@@ -245,4 +247,3 @@ function showReviewProductModal(orderId, productId, productTitle, productImg, bt
         }
     });
 }
-

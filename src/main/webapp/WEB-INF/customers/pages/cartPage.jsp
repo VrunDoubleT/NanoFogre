@@ -75,14 +75,14 @@
                             <div class="lg:col-span-2 space-y-6">
                                 <div id="cart-list">
                                     <c:forEach var="item" items="${cartItems}" varStatus="status">
-
-                                        <div class="product-card cart-product flex flex-col border sm:flex-row items-center bg-white rounded-2xl mb-5 p-5 gap-6 transition-all duration-300"
+                                        <div class="product-card cart-product flex flex-col sm:flex-row items-center bg-white rounded-2xl mb-[15px]
+                                             p-5 border border-gray-200 gap-6 transition-all duration-300"   
                                              id="cart-item-${item.cartId}"                                           
                                              data-idx="${status.index}">
                                             <!-- Checkbox -->
                                             <input 
                                                 type="checkbox"
-                                                class="item-checkbox accent-purple-500 w-5 h-5 mt-1 mr-0 cursor-pointer
+                                                class="item-checkbox accent-purple-500 w-5 h-5 mt-1 mr-0 cursor-pointer "
                                                 <c:if test='${item.product.quantity == 0}'> opacity-50 cursor-not-allowed</c:if>'"
                                                 data-index="${status.index}"
                                                 data-id="${item.cartId}"
@@ -106,13 +106,21 @@
                                                     <span class="px-2 py-1 rounded-full bg-blue-100 text-blue-800">${item.product.brand.name}</span>
                                                     <span class="px-2 py-1 rounded-full bg-pink-100 text-pink-800">${item.product.category.name}</span>
                                                 </div>
-
+                                                <div class="text-sm mt-2 text-gray-500">${item.product.quantity} available</div>
                                                 <p class="text-gray-500 mt-2">
                                                     Price:
                                                     <span class="font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
                                                         ${CurrencyFormatter.formatVietNamCurrency(item.product.price)}đ
                                                     </span>
                                                 </p>
+
+                                                <p class="text-gray-500 mt-2 ">
+                                                    Total:
+                                                    <span class="text-2xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent" id="lineTotal-${item.cartId}">
+                                                        ${CurrencyFormatter.formatVietNamCurrency(item.product.price * item.quantity)}đ
+                                                    </span>
+                                                </p>
+
 
                                                 <div class="flex items-center gap-4 mt-3">
                                                     <label class="font-medium text-gray-700">Quantity:</label>
@@ -143,26 +151,22 @@
                                                             <i data-lucide="plus" class="w-4 h-4 text-gray-600"></i>
                                                         </button>
                                                     </div>
-                                                    <span class="text-sm text-gray-500 ml-2">${item.product.quantity} available</span>
+                                                    <button type="button"
+                                                            class="remove-btn ml-auto w-[30px] h-[30px] flex items-center justify-center rounded-md text-white bg-gradient-to-r from-rose-500 to-rose-600 hover:from-rose-600 hover:to-rose-700 text-sm"
+                                                            onclick="removeFromCart(${item.cartId})">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-trash-icon lucide-trash"><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                                                    </button>
                                                 </div>
-
                                             </div>
-                                            <!-- Price & Action -->
-                                            <div class="flex flex-col items-end gap-2 w-full sm:w-40 text-right sm:text-left mt-4 sm:mt-0">
-                                                <div id="lineTotal-${item.cartId}"
-                                                     class="text-2xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
-                                                    ${CurrencyFormatter.formatVietNamCurrency(item.product.price * item.quantity)}đ
-                                                </div>
-                                                <button type="button" class="remove-btn  w-full py-1.5 rounded-md text-white bg-gradient-to-r from-rose-500 to-rose-600 hover:from-rose-600 hover:to-rose-700 text-sm" onclick="removeFromCart(${item.cartId})">🗑 Remove</button>
-                                            </div>
+                                           
                                         </div>
                                     </c:forEach>
                                 </div>
-                                <div id="loadMoreDots" class="text-center my-8 hidden">
-                                    <span class="inline-block px-4 py-2 rounded-full bg-white border border-gray-200">
+                                    <div id="loadMoreDots" class="text-center my-8" style="display: none;">
+                                        <span class="inline-block px-4 py-2 rounded-full bg-white border border-gray-200">
                                         <img src="https://res.cloudinary.com/dd9jweqlv/image/upload/v1753013466/Ellipsis_1x-1.5s-200px-200px_qwtjaq.svg" alt="Loading..." style="width:60px; height:30px; display:inline-block;" />
-                                    </span>
-                                </div>
+                                        </span>
+                                    </div>
                             </div>
 
 
@@ -209,15 +213,6 @@
         <jsp:include page="../common/footer.jsp" />
 
 
-        <!--        purchase-->
-        <div id="purchaseModal" class="modal-overlay">
-            <div class="modal-content p-6">
-                <div id="purchaseModalContent">
-
-                </div>
-            </div>
-        </div>
-
         <!-- JavaScript -->
         <script>
 
@@ -226,48 +221,50 @@
             const totalPages = ${totalPages};
             let isLoading = false;
 
-            window.addEventListener('scroll', function () {
-                if (isLoading || currentPage >= totalPages)
-                    return;
 
-                if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight - 100) {
-                    setTimeout(() => {
-                        loadMoreItems();
-                    }, 500);
-                }
-            });
 
-            function loadMoreItems() {
+let scrollTimeout;
 
-                console.log('loadMoreItems triggered');
-                isLoading = true;
-                currentPage++;
+window.addEventListener('scroll', function () {
+    if (isLoading || currentPage >= totalPages) return;
 
-                const dots = document.getElementById('loadMoreDots');
-                dots.classList.remove('hidden');
+    clearTimeout(scrollTimeout);
 
-                fetch('${cartUrl}?action=loadMore&page=' + currentPage)
-                        .then(resp => resp.json())
-                        .then(data => {
-                            if (data.length === 0) {
-                                currentPage--;
-                                return;
-                            }
-                            appendCartItems(data);
-                        })
-                        .catch(err => {
-                            console.error(err);
-                            currentPage--;
-                        })
-                        .finally(() => {
-                            dots.classList.add('hidden');
-                            isLoading = false;
-                        });
-            }
+    scrollTimeout = setTimeout(() => {
+        if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight - 400) {
+            loadMoreItems();
+        }
+    }, 300);
+});
+
+        function loadMoreItems() {
+    if (isLoading || currentPage >= totalPages) return;
+
+    isLoading = true;
+    currentPage++; // ✅ tăng trước
+
+    const dots = document.getElementById('loadMoreDots');
+    if (dots) dots.style.display = 'block';
+
+    fetch(`${cartUrl}?action=loadMore&page=${currentPage}`)
+        .then(resp => resp.json())
+        .then(data => {
+            if (data.length === 0) return;
+            appendCartItems(data);
+          
+        })
+        .catch(err => console.error(err))
+        .finally(() => {
+            if (dots) dots.style.display = 'none';
+            isLoading = false;
+        });
+}
+
+
 
 
             function appendCartItems(items) {
-                const cartList = document.getElementById('cart-list');
+                    const cartList = document.getElementById('cart-list');
 
                 items.forEach(item => {
                     cartItems.push({
@@ -286,17 +283,22 @@
                     const disablePlus = item.quantity >= item.product.quantity || !inStock ? 'disabled' : '';
 
                     const itemHtml = `
-<div class="product-card cart-product flex flex-col sm:flex-row items-center bg-white rounded-2xl mt-[15px] p-5 shadow-lg gap-6 transition-all duration-300"
-     id="cart-item-\${item.cartId}">
+<div class="product-card cart-product relative flex flex-col sm:flex-row items-center bg-white rounded-2xl mt-[15px]
+     p-5 border border-gray-200 gap-6 transition-all duration-300"
+     id="cart-item-\${item.cartId}" data-idx="\${cartItems.length}">
 
-    <input type="checkbox"
-           class="item-checkbox accent-purple-500 w-5 h-5 mt-1 mr-0 cursor-pointer \${checkboxClass}"
-           data-id="\${item.cartId}" \${disableCheckbox} />
+    <!-- Checkbox -->
+    <input 
+        type="checkbox"
+        class="item-checkbox accent-purple-500 w-5 h-5 mt-1 mr-0 cursor-pointer \${checkboxClass}"
+        data-id="\${item.cartId}" \${disableCheckbox} />
 
-    <img src="\${item.product.urls[0] || 'default.png'}"
-         alt="\${item.product.title}"
-         class="w-[146px] \${!inStock ? 'out-of-stock' : ''} h-auto object-cover rounded-lg border-2 border-gray-200" />
+    <!-- Image -->
+    <img src="\${item.product.urls?.[0] || 'default.png'}"
+         alt="\${item.product.title}" 
+         class="w-[146px] \${!inStock ? 'out-of-stock' : ''} h-[146px] object-cover rounded-lg border-2 border-gray-200" />
 
+    <!-- Info -->
     <div class="flex-1 ml-0 sm:ml-6 w-full \${!inStock ? 'out-of-stock' : ''}">
         <h2 class="font-bold text-lg text-gray-800 leading-tight line-clamp-2 hover:text-purple-600 transition-colors cursor-pointer">
             \${item.product.title}
@@ -311,39 +313,70 @@
         </div>
 
         <p class="text-gray-500 mt-2">
-            Price: <span class="font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+            Price:
+            <span class="font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
                 \${formatCurrencyVND(item.product.price)}
             </span>
         </p>
 
-        <div class="flex items-center gap-3 mt-3" id="qty-group-\${item.cartId}" data-min="1" data-max="\${item.product.quantity}">
-            <button type="button" class="w-8 h-8 rounded-full bg-gray-200 text-gray-800 flex items-center justify-center font-bold hover:bg-gray-300 transition disabled:opacity-50 disabled:cursor-not-allowed"
-                    onclick="updateQuantity(\${item.cartId}, -1)" id="decrease-\${item.cartId}" \${disableMinus}>–</button>
+        <p class="text-gray-500 mt-2">
+            Total:
+            <span class="text-2xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent" id="lineTotal-\${item.cartId}">
+                \${formatCurrencyVND(item.product.price * item.quantity)}
+            </span>
+        </p>
 
-            <span id="qty-\${item.cartId}" class="w-8 text-center font-bold text-gray-900">\${item.quantity}</span>
+        <div class="flex items-center gap-4 mt-3">
+                                                    <label class="font-medium text-gray-700">Quantity:</label>
+                                                    <div class="flex items-center border border-gray-300 rounded-md">
+  <button
+    type="button"
+    class="px-3 py-2 hover:bg-gray-50 transition-colors border-r border-gray-300 decreaseQuantityBtn"
+    data-cartid="\${item.cartId}"
+    \${disableMinus}>
+    <i data-lucide="minus" class="w-4 h-4 text-gray-600"></i>
+  </button>
 
-            <button type="button" class="w-8 h-8 rounded-full bg-gray-200 text-gray-800 flex items-center justify-center font-bold hover:bg-gray-300 transition disabled:opacity-50 disabled:cursor-not-allowed"
-                    onclick="updateQuantity(\${item.cartId}, 1)" id="increase-\${item.cartId}" \${disablePlus}>+</button>
-        </div>
-    </div>
+  <input
+    type="number"
+    id="quantity-\${item.cartId}"
+    value="\${item.quantity > 0 ? item.quantity : 1}"
+    min="1"
+    max="\${item.product.quantity}"
+    class="w-16 h-10 text-center  bg-transparent text-gray-900 focus:outline-none focus:ring-2 focus:ring-purple-500"
+    \${!inStock ? 'disabled' : ''} />
 
-    <div class="flex flex-col items-end gap-2 w-full sm:w-40 text-right sm:text-left mt-4 sm:mt-0">
-        <div id="lineTotal-\${item.cartId}" class="text-2xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
-            \${formatCurrencyVND(item.product.price * item.quantity)}
-        </div>
-        <button type="button" class="remove-btn w-full py-1.5 rounded-md text-white bg-gradient-to-r from-rose-500 to-rose-600 hover:from-rose-600 hover:to-rose-700 text-sm"
-                onclick="removeFromCart(\${item.cartId})">🗑 Remove</button>
+  <button
+    type="button"
+    class="px-3 py-2 hover:bg-gray-50 transition-colors border-l border-gray-300 increaseQuantityBtn"
+    data-cartid="\${item.cartId}"
+    \${disablePlus}>
+    <i data-lucide="plus" class="w-4 h-4 text-gray-600"></i>
+  </button>
+</div>
+                                                    <button type="button"
+                                                            class="remove-btn ml-auto w-[30px] h-[30px] flex items-center justify-center rounded-md text-white bg-gradient-to-r from-rose-500 to-rose-600 hover:from-rose-600 hover:to-rose-700 text-sm"
+                                                            onclick="removeFromCart(\${item.cartId})">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-trash-icon lucide-trash"><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                                                    </button>
+                                                </div>
+            
     </div>
 </div>`;
 
 
 
-                    cartList.insertAdjacentHTML('beforeend', itemHtml);
-                });
 
-                attachCheckboxEvent();
-                updateCartLineCount();
-                recalc();
+                  cartList.insertAdjacentHTML('beforeend', itemHtml);
+                  lucide.createIcons(); 
+});
+
+
+attachCheckboxEvent();
+attachQuantityBtnEvent();        
+attachQuantityInputEvent();   
+updateCartLineCount();
+recalc();
             }
 
 

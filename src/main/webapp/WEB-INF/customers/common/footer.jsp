@@ -48,6 +48,6 @@
         </div>
     </div>
     <div class="mt-12 border-t border-slate-800 pt-6 text-sm text-center text-blue-400">
-        © 2025 Model Universe. All rights reserved.
+        © 2025 Nano Forge. All rights reserved.
     </div>
 </footer>

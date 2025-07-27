@@ -50,12 +50,17 @@ public class CustomerSelfServlet extends HttpServlet {
         String type = request.getParameter("type") != null ? request.getParameter("type") : "profile";
 
         HttpSession session = request.getSession(false);
-        Customer sessionCustomer = (Customer) session.getAttribute("customer");
-        int customerId = sessionCustomer.getId();
+        Customer customer = (session != null) ? (Customer) session.getAttribute("customer") : null;
+
+        if (customer == null) {
+            response.sendRedirect(request.getContextPath() + "/auth?action=login");
+            return;
+        }
+        int customerId = customer.getId();
         switch (type) {
             case "profile":
-                session.setAttribute("addressList", dao.getAddressesByCustomerId(sessionCustomer.getId()));
-                session.setAttribute("address", dao.getAddressDefaultByCustomerId(sessionCustomer.getId()));
+                session.setAttribute("addressList", dao.getAddressesByCustomerId(customerId));
+                session.setAttribute("address", dao.getAddressDefaultByCustomerId(customerId));
                 request.getRequestDispatcher("/WEB-INF/customers/component/layout/customerProfileContent.jsp")
                         .forward(request, response);
                 break;
@@ -253,15 +258,27 @@ public class CustomerSelfServlet extends HttpServlet {
                     }
                 }
 
+                response.setContentType("application/json");
+                response.setCharacterEncoding("UTF-8");
+
+                Gson gson = new Gson();
+                JsonObject jsonResponse = new JsonObject();
                 if (updatedCustomer && updatedAddresses) {
                     Customer updated = dao.getCustomerById(customerId);
                     session.setAttribute("customer", updated);
                     session.setAttribute("address", dao.getAddressDefaultByCustomerId(customerId));
                     session.setAttribute("addressList", dao.getAddressesByCustomerId(customerId));
-                    response.setStatus(200);
+
+                    jsonResponse.addProperty("isSuccess", true);
+                    jsonResponse.add("customer", gson.toJsonTree(updated));
+                    response.setStatus(HttpServletResponse.SC_OK);
                 } else {
-                    response.setStatus(500);
+                    jsonResponse.addProperty("isSuccess", false);
+                    jsonResponse.add("customer", null);
+                    response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
                 }
+
+                response.getWriter().write(jsonResponse.toString());
                 break;
             }
             case "createAddress": {
