@@ -33,7 +33,7 @@
     <!-- Body -->
     <div class="flex-1 min-h-0 overflow-y-auto px-6 space-y-6">
         <!-- Profile Tab -->
-        <div id="profileTab" class="py-6">
+        <div id="profileTab" class="p-6">
             <!-- Avatar -->
             <div class="flex justify-center mb-2">
                 <div class="relative">
@@ -49,7 +49,7 @@
             </div>
 
             <!-- Info Cards -->
-            <div id="profileTab" class="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
                 <!-- Email -->
                 <div class="flex items-center bg-gray-50 border border-gray-200 rounded-lg p-4 shadow-sm">
                     <div class="w-10 h-10 flex items-center justify-center bg-blue-100 rounded-lg mr-3">
@@ -71,7 +71,9 @@
                     </div>
                     <div>
                         <p class="text-sm text-gray-500">Phone</p>
-                        <p class="font-semibold text-gray-800"><%= cus.getPhone()%></p>
+                        <p class="font-semibold text-gray-800">
+                            <%--<%= (cus.getPhone().trim().isEmpty()) ? "No phone" : cus.getPhone() %>--%>
+                        </p>
                     </div>
                 </div>
 
@@ -240,7 +242,7 @@
                                         }
                                     }
                                 %>
-                                <span>-<%= formatted%></span>
+                                <span><%= formatted%></span>
                             </div>
 
                             <!-- Total -->
@@ -251,19 +253,13 @@
                         </div>
                     </div>
                 </div>
+                <%
+                    } // end for orders 
+                } else {
+                %>
+                <p class="text-gray-500 text-sm">This customer has no orders.</p>
+                <% }%>
             </div>
-            <%
-                } // end for orders 
-            } else {
-            %>
-            <p class="text-gray-500 text-sm">This customer has no orders.</p>
-            <% }%>
         </div>
     </div>
 </div>
-
-
-</div>
-</div>
-
-

@@ -211,7 +211,7 @@
         </main>
 
         <jsp:include page="../common/footer.jsp" />
-
+        <script src="../../../js/header.js"></script>
 
         <!-- JavaScript -->
         <script>
@@ -395,8 +395,8 @@ recalc();
                 restoreChecked();
                 attachCheckboxEvent();
                 recalc();
+                reloadCart();
             });
-
 
             const baseUrl = '${cartUrl}';
             const cartItems = [];
@@ -424,6 +424,7 @@ recalc();
                 restoreChecked();
                 attachCheckboxEvent();
                 recalc();
+                reloadCart();
             });
 
 
@@ -784,7 +785,6 @@ recalc();
                 const param = encodeURIComponent(JSON.stringify(checked));
                 window.location.href = '<%= request.getContextPath()%>/checkout?cartIds=' + param;
             });
-
         </script>
     </body>
 </html>

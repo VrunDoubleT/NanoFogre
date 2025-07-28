@@ -34,7 +34,7 @@
         </div>
 
         <%@ include file="../../common/footer.jsp" %>
-
+        <script src="../../../js/header.js"></script>
         <script>
             lucide.createIcons();
 
@@ -147,6 +147,7 @@
                 const viewPage = params.get('view') || 'profile';
                 updateActiveSidebar(viewPage);
                 loadContent(viewPage, false);
+                reloadCart();
             };
 
             window.onpopstate = function (e) {

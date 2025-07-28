@@ -43,7 +43,7 @@ document.addEventListener("DOMContentLoaded", function () {
                         suggestionBox.innerHTML = `<div class='px-4 py-2 text-gray-400'>No products found.</div>`;
                     } else {
                         suggestionBox.innerHTML = arr.map((item, idx) => `
-                            <a href="/product/${item.slug}"
+                            <a href="/product/detail?pId=${item.productId}"
                                class="flex items-center gap-3 px-4 py-3
                                       ${idx < arr.length - 1 ? 'border-b border-gray-100' : ''}
                                       hover:bg-blue-50 focus:bg-blue-50 transition

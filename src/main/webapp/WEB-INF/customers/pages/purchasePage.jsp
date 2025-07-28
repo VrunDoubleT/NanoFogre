@@ -89,19 +89,16 @@
             .btn-primary {
                 background: linear-gradient(135deg, #4f46e5 0%, #9333ea 100%);
                 transition: all 0.25s ease;
-                box-shadow: 0 4px 6px rgba(79, 70, 229, 0.4);
             }
 
             .btn-success {
                 background: linear-gradient(135deg, #10b981 0%, #059669 100%);
                 transition: all 0.25s ease;
-                box-shadow: 0 4px 6px rgba(16, 185, 129, 0.4);
             }
 
             .btn-disabled {
                 background: #9ca3af;
                 cursor: not-allowed;
-                box-shadow: none !important;
                 transform: none !important;
                 opacity: 0.7;
             }
@@ -115,7 +112,6 @@
                 margin: 20px 0;
                 border-left: 6px solid #10b981;
                 font-weight: 700;
-                box-shadow: 0 6px 16px rgba(16, 185, 129, 0.4);
             }
 
 
@@ -154,7 +150,6 @@
                 width: 95%;
                 max-height: 85vh;
                 overflow-y: auto;
-                box-shadow: 0 20px 40px rgba(0,0,0,0.2);
                 font-size: 1rem;
                 color: #333;
             }
@@ -191,7 +186,6 @@
                 background: rgba(255, 255, 255, 0.9);
                 backdrop-filter: blur(20px);
                 border: 1px solid rgba(255, 255, 255, 0.2);
-                box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
             }
 
 
@@ -213,12 +207,10 @@
 
             .btn-primary-modern {
                 background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                box-shadow: 0 4px 15px rgba(102,126,234,0.4);
             }
 
             .btn-success-modern {
                 background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
-                box-shadow: 0 4px 15px rgba(17,153,142,0.4);
             }
 
 
@@ -265,7 +257,6 @@
             .modern-input:focus {
                 outline: none;
                 border-color: #667eea;
-                box-shadow: 0 0 0 3px rgba(102,126,234,0.1);
                 background: rgba(255,255,255,1);
             }
 
@@ -300,7 +291,7 @@
         </style>
     </head>
 
-    <body class="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50">
+    <body class="min-h-screen">
         <jsp:include page="../common/header.jsp" />
         <main class="container mx-auto max-w-6xl px-4 py-8">
             <div class="w-full h-full overflow-auto px-4 py-8">
@@ -342,7 +333,7 @@
 
                 <div class="xl:col-span-2 space-y-8">
                     <!-- Fixed Purchase.jsp HTML Structure -->
-                    <section id="customerInfoSection" class="modern-card glass-card p-8 animate-slide-in">
+                    <section id="customerInfoSection" class="modern-card glass-card p-8 animate-slide-in border border-gray-200">
                         <!-- Header -->
                         <div class="flex items-center justify-between mb-6">
                             <div class="flex items-center">
@@ -380,59 +371,61 @@
                             </div>
 
                             <!-- Fixed Currently Selected Address -->
-                            <div id="selectedAddressCard"
-                                 class="glass-card p-4 rounded-2xl border border-gray-200 transition-shadow hover:shadow-lg flex justify-between items-start bg-white/80 backdrop-blur-sm">
-                                <% if (address != null) {%>
-                                <label class="flex items-start space-x-4 flex-1 cursor-pointer">
+                            <div id="selectedAddressContainer"
+                                 class="glass-card p-4 rounded-2xl border border-gray-200 flex justify-between items-start bg-white/80 backdrop-blur-sm">
 
+                                <label id="selectedAddressCard"
+                                       class="flex items-start space-x-4 flex-1 cursor-pointer"
+                                       style="${address==null ? 'display:none;' : ''}">
                                     <input id="selectedAddressTopRadio"
-                                           type="checkbox"
+                                           type="radio"
                                            name="selectedAddress"
-                                           value="<%= address.getId()%>"
-                                           hidden=""
-                                           disabled=""
+                                           value="${address.id}"
+                                           hidden
+                                           disabled
                                            class="h-5 w-5 text-indigo-600 accent-indigo-500 mt-1"
                                            onchange="if (this.checked)
                                                        selectAddress(this.value)" />
                                     <div>
-                                        <p id="selectedAddressName" class="font-semibold text-gray-800 text-lg">
-                                            <%= address.getName()%>
+                                        <p id="selectedAddressName"
+                                           class="font-semibold text-gray-800 text-lg">
+                                            <c:out value="${address.name}" />
                                         </p>
                                         <div class="text-sm text-gray-600 mt-1 space-y-1">
                                             <p>
                                                 <i class="fas fa-phone mr-2 text-indigo-500"></i>
-                                                <span id="selectedAddressPhone"><%= address.getPhone()%></span>
+                                                <span id="selectedAddressPhone">
+                                                    <c:out value="${address.phone}" />
+                                                </span>
                                             </p>
                                             <p>
                                                 <i class="fas fa-user mr-2 text-indigo-500"></i>
-                                                <span id="selectedAddressRecipient"><%= address.getRecipientName()%></span>
+                                                <span id="selectedAddressRecipient">
+                                                    <c:out value="${address.recipientName}" />
+                                                </span>
                                             </p>
                                             <p>
                                                 <i class="fas fa-location-dot mr-2 text-indigo-500"></i>
-                                                <span id="selectedAddressDetails"><%= address.getDetails()%></span>
+                                                <span id="selectedAddressDetails">
+                                                    <c:out value="${address.details}" />
+                                                </span>
                                             </p>
                                         </div>
                                     </div>
                                 </label>
 
-                                <button onclick="toggleAddresses()"
-                                        class="ml-4 flex-shrink-0 text-indigo-600 hover:text-indigo-800 transition-colors">
-                                    <span>Change Address</span>
-                                </button>
-                                <% } else { %>
-                                <div class="flex items-center space-x-3 flex-1">
-                                    <i class="fas fa-exclamation-circle text-red-500 text-xl"></i>
-                                    <p class="text-red-600 font-medium">Please add a delivery address.</p>
+                                <div id="noAddressNotice"
+                                     class="flex items-center space-x-3 flex-1 text-red-600 font-medium"
+                                     style="${address!=null ? 'display:none;' : ''}">
+                                    <i class="fas fa-exclamation-circle text-red-500 text-2xl"></i>
+                                    <span>Please add a delivery address.</span>
                                 </div>
+
                                 <button onclick="toggleAddresses()"
                                         class="ml-4 flex-shrink-0 text-indigo-600 hover:text-indigo-800 transition-colors">
-                                    <i class="fas fa-chevron-down"></i>
+                                    <i id="addressesChevron" class="fas fa-chevron-down text-gray-500"></i>
                                 </button>
-                                <% }%>
                             </div>
-
-
-
                         </div>
 
                         <!-- Delivery Addresses -->
@@ -459,7 +452,7 @@
                                     <c:otherwise>
                                         <c:forEach var="addr" items="${availableAddresses}">
 
-                                            <div class="address-item group flex items-start justify-between p-4 bg-gray-50 rounded-lg border border-gray-200 hover:bg-white hover:shadow-md transition-all ${addr.id.equals(address.id) ? 'ring-2 ring-indigo-400 bg-white' : ''}"
+                                            <div class="address-item group flex items-start justify-between p-4 bg-gray-50 rounded-lg border border-gray-200 hover:bg-white transition-all ${addr.id.equals(address.id) ? 'ring-2 ring-indigo-400 bg-white' : ''}"
                                                  data-address-id="${addr.id}"
                                                  data-name="${addr.name}"
                                                  data-recipient="${addr.recipientName}"
@@ -505,7 +498,7 @@
 
 
                     <!-- Product Details -->
-                    <section class="modern-card glass-card p-8 ">
+                    <section class="modern-card glass-card p-8 border border-gray-200">
                         <div class="flex items-center mb-6">
                             <div class="w-12 h-12 bg-gradient-to-br from-green-500 to-teal-600 rounded-full flex items-center justify-center mr-4">
                                 <i class="fas fa-shopping-bag text-white text-lg"></i>
@@ -520,7 +513,7 @@
                                     Product p = cart.getProduct();
                                     int qty = cart.getQuantity();
                                     double lineTotal = p.getPrice() * qty; %>
-                            <div class="product-card p-6 rounded-xl">
+                            <div class="product-card border border-gray-200 p-6 rounded-xl">
                                 <div class="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-4">
                                     <div  class="flex-shrink-0 w-20 h-20 mx-auto sm:mx-0">
                                         <% if (p.getUrls() != null && !p.getUrls().isEmpty()) {%>
@@ -552,7 +545,7 @@
                     </section>
 
                     <!-- Payment Method -->
-                    <section class="modern-card glass-card p-8">
+                    <section class="modern-card glass-card p-8 border border-gray-200">
                         <div class="flex items-center mb-6">
                             <div class="w-12 h-12 bg-gradient-to-br from-yellow-500 to-orange-600 rounded-full flex items-center justify-center mr-4">
                                 <i class="fas fa-credit-card text-white text-lg"></i>
@@ -577,7 +570,7 @@
                 </div>
 
                 <div class="xl:col-span-1">
-                    <div class="modern-card glass-card p-8 sticky top-24 animate-fade-in-up">
+                    <div class="modern-card glass-card p-8 border border-gray-200 sticky top-24 animate-fade-in-up">
                         <!-- Voucher Section -->
                         <div class="mb-8">
                             <h3 class="text-lg font-bold text-gray-800 mb-4 flex items-center">
@@ -623,7 +616,7 @@
                                         <div class="relative flex-1">
                                             <input id="voucherInput"
                                                    type="text"
-                                                   class="w-full rounded-xl border border-gray-200 bg-white/70 shadow-inner px-4 py-3 text-sm pr-10 placeholder-gray-400 focus:ring-2 focus:ring-blue-300 outline-none transition-all"
+                                                   class="w-full rounded-xl border border-gray-200 bg-white/70 px-4 py-3 text-sm pr-10 placeholder-gray-400 focus:ring-2 focus:ring-blue-300 outline-none transition-all"
                                                    placeholder="Enter voucher code..." />
 
                                             <button
@@ -638,7 +631,7 @@
                                         </div>
 
                                         <button id="applyVoucherBtn"
-                                                class="bg-gradient-to-tr from-teal-400 via-green-400 to-cyan-500 hover:from-green-500 hover:to-cyan-600 transition-all px-8 py-3 rounded-xl font-bold shadow-lg text-white text-base focus:ring-2 focus:ring-teal-300 active:scale-95"
+                                                class="bg-gradient-to-tr from-teal-400 via-green-400 to-cyan-500 hover:from-green-500 hover:to-cyan-600 transition-all px-8 py-3 rounded-xl font-bold text-white text-base focus:ring-2 focus:ring-teal-300 active:scale-95"
                                                 onclick="applyVoucher()"
                                                 >
                                             Apply
@@ -653,7 +646,7 @@
                                     <div class="flex flex-wrap gap-2 max-h-48 overflow-y-auto">
                                         <% for (Voucher v : availableVouchers) {%>
                                         <button type="button"
-                                                class="voucher-suggestion px-3 py-1 rounded-full bg-purple-100 hover:bg-purple-200 text-purple-700 text-sm font-medium shadow-sm border border-purple-200 transition-all"
+                                                class="voucher-suggestion px-3 py-1 rounded-full bg-purple-100 hover:bg-purple-200 text-purple-700 text-sm font-medium border border-purple-200 transition-all"
                                                 data-code="<%= v.getCode()%>"
                                                 onclick="selectVoucher('<%= v.getCode()%>')"
                                                 title="<%= v.getDescription()%>">
@@ -711,7 +704,16 @@
 
                         <!-- Purchase Button -->
                         <div class="mt-6 space-y-3">
-                            <button id="purchaseBtn" type="button" onclick="confirmPurchase()" class="w-full btn-<%= canPurchase ? "primary" : "disabled"%> btn-modern btn-primary-modern w-full text-white py-4 rounded-xl font-bold text-lg"><i class="fas fa-<%= canPurchase ? "credit-card" : "lock"%> mr-2"></i><%= canPurchase ? "Place Order" : "Complete Info to Order"%></button>
+                            <button
+                                id="purchaseBtn"
+                                type="button"
+                                <%= !canPurchase ? "disabled" : ""%>
+                                class="w-full btn-<%= canPurchase ? "primary" : "disabled"%> btn-modern btn-primary-modern text-white py-4 rounded-xl font-bold text-lg"
+                                onclick="if (!this.disabled)
+                                            confirmPurchase()">
+                                <i class="fas fa-<%= canPurchase ? "credit-card" : "lock"%> mr-2"></i>
+                                <%= canPurchase ? "Place Order" : "Complete Info to Order"%>
+                            </button>
                             <a href="<%= request.getContextPath()%>/cart" class="w-full inline-flex items-center justify-center px-6 py-3 border-2 border-gray-300 rounded-lg text-gray-700 font-medium hover:bg-gray-50 transition-colors"><i class="fas fa-arrow-left mr-2"></i>Back to Cart</a>
                         </div>
                     </div>
@@ -724,7 +726,7 @@
         <!-- Confirmation Modal -->
         <div id="confirmModal"
              class="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center opacity-0 pointer-events-none transition-opacity duration-300 z-50">
-            <div class="bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl w-full max-w-lg p-6 animate-fade-in-up">
+            <div class="bg-white/90 backdrop-blur-sm rounded-2xl w-full max-w-lg p-6 animate-fade-in-up">
                 <h3 class="text-2xl font-bold text-gray-800 mb-4 flex items-center ">
                     <i class="fas fa-check-circle text-green-500 mr-2"></i>
                     Confirm Your Order
@@ -763,7 +765,7 @@
 
         <div id="addressModal"
              class="fixed inset-0 bg-black bg-opacity-40 backdrop-blur-sm flex items-center justify-center opacity-0 pointer-events-none transition-opacity duration-300 z-40">
-            <div class="bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg w-full max-w-md p-6 relative animate-fade-in-up">
+            <div class="bg-white/90 backdrop-blur-sm rounded-2xl w-full max-w-md p-6 relative animate-fade-in-up">
                 <button type="button"
                         class="absolute top-4 right-4 text-gray-500 hover:text-gray-700 transition"
                         onclick="closeAddressModal()">×</button>
@@ -811,8 +813,12 @@
             </div>
         </div>
 
+        
         <script>
             function renderSelectedAddressCard(addr) {
+                document.getElementById('selectedAddressCard').style.display = '';
+                document.getElementById('noAddressNotice').style.display = 'none';
+
                 document.getElementById('selectedAddressName').textContent = addr.name;
                 document.getElementById('selectedAddressPhone').textContent = addr.phone;
                 document.getElementById('selectedAddressRecipient').textContent = addr.recipient;
@@ -904,23 +910,6 @@
                         })
                         .finally(hideLoadingState);
             }
-
-            document.addEventListener('DOMContentLoaded', () => {
-
-                document.querySelectorAll('#addressesList input[name="selectedAddress"]')
-                        .forEach(radio => {
-                            radio.addEventListener('change', e => {
-                                selectAddress(e.target.value);
-                            });
-                        });
-
-                const selectedTop = document.getElementById('selectedAddressTopRadio');
-                if (selectedTop) {
-                    updatePurchaseButton();
-                    updateAddressListSelection(selectedTop.value);
-
-                }
-            });
 
 
             function toggleAddresses() {
@@ -1100,7 +1089,7 @@
                 if (id)
                     params.append('addressId', id);
 
-                fetch(`${contextPath}/checkouts`, {
+                fetch(`<%= request.getContextPath()%>/checkouts`, {
                     method: 'POST',
                     headers: {'Content-Type': 'application/x-www-form-urlencoded'},
                     body: params.toString()
@@ -1205,7 +1194,7 @@
                         '<strong class="mr-1">Address:</strong> ' + addr.details +
                         '</p>';
 
-                div.querySelector('input[name="selectedAddress"]').checked = true;
+//                div.querySelector('input[name="selectedAddress"]').checked = true;
             }
             addressForm.addEventListener('submit', function (e) {
                 let ok = true;
@@ -1389,10 +1378,14 @@
             }
 
             function confirmPurchase() {
+                const btn = document.getElementById('purchaseBtn');
+                if (btn.disabled)
+                    return;
                 const modal = document.getElementById('confirmModal');
                 modal.classList.remove('opacity-0', 'pointer-events-none');
                 document.body.classList.add('modal-open');
             }
+
 
             function closeModal() {
                 const modal = document.getElementById('confirmModal');
@@ -1400,11 +1393,7 @@
                 document.body.classList.remove('modal-open');
             }
 
-            document.addEventListener('DOMContentLoaded', () => {
-                document
-                        .getElementById('confirmButton')
-                        .addEventListener('click', processPurchase);
-            });
+
             ///-----------Purchase
             function processPurchase() {
                 const btn = document.getElementById('confirmButton');
@@ -1517,9 +1506,27 @@
                         }
                     }
                 }
-            }
-            );
+                
+                document.querySelectorAll('#addressesList input[name="selectedAddress"]')
+                        .forEach(radio => {
+                            radio.addEventListener('change', e => {
+                                selectAddress(e.target.value);
+                            });
+                        });
 
+                const selectedTop = document.getElementById('selectedAddressTopRadio');
+                if (selectedTop) {
+                    updatePurchaseButton();
+                    updateAddressListSelection(selectedTop.value);
+
+                }
+                
+                 document
+                        .getElementById('confirmButton')
+                        .addEventListener('click', processPurchase);
+
+               
+            });
         </script>
     </body>
 </html>

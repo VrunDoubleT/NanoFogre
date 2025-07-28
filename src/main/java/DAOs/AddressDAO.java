@@ -20,8 +20,8 @@ public class AddressDAO extends DB.DBContext {
 
     public List<Address> getAddressesByCustomerId(int customerId) {
         List<Address> list = new ArrayList<>();
-        String sql = "SELECT addressId, addressName, recipientName, addressDetails, addressPhone, isDefault "
-                + "FROM Address WHERE customerId = ?";
+        String sql = "SELECT addressId, addressName, recipientName, addressDetails, addressPhone, isDefault,_destroy "
+                + "FROM Address WHERE customerId = ? AND _destroy = 0";
         Object[] params = {customerId};
         try ( ResultSet rs = execSelectQuery(sql, params)) {
             while (rs.next()) {
@@ -42,7 +42,7 @@ public class AddressDAO extends DB.DBContext {
     }
 
     public int insert(Address a) throws SQLException {
-        String sql = "INSERT INTO Address(addressName, recipientName, addressDetails, addressPhone, customerId, isDefault) VALUES (?, ?, ?, ?, ?, 0)";
+        String sql = "INSERT INTO Address(addressName, recipientName, addressDetails, addressPhone, customerId, isDefault, _destroy ) VALUES (?, ?, ?, ?, ?, 0,0)";
         Object[] params = {
             a.getName(),
             a.getRecipientName(),
@@ -54,7 +54,7 @@ public class AddressDAO extends DB.DBContext {
     }
 
     public boolean update(Address a) throws SQLException {
-        String sql = "UPDATE Address SET addressName=?, recipientName=?, addressDetails=?, addressPhone=? "
+        String sql = "UPDATE Address SET addressName=?, recipientName=?, addressDetails=?, addressPhone=?"
                 + "WHERE addressId=?";
         return execQuery(sql, new Object[]{
             a.getName(), a.getRecipientName(), a.getDetails(), a.getPhone(), a.getId()
@@ -68,7 +68,7 @@ public class AddressDAO extends DB.DBContext {
 
     public Address getById(int addressId) throws SQLException {
         String sql = "SELECT * "
-                + "FROM Address WHERE addressId = ?";
+                + "FROM Address WHERE addressId = ? AND _destroy = 0";
         try ( ResultSet rs = execSelectQuery(sql, new Object[]{addressId})) {
             if (rs.next()) {
                 Address a = new Address();
@@ -86,8 +86,8 @@ public class AddressDAO extends DB.DBContext {
     }
 
     public Address getDefaultAddress(int customerId) {
-        String sql = "SELECT TOP 1 addressId, addressName, recipientName, addressDetails, addressPhone, isDefault "
-                + "FROM Address WHERE customerId = ? AND isDefault = 1";
+        String sql = "SELECT TOP 1 addressId, addressName, recipientName, addressDetails, addressPhone, isDefault , _destroy "
+                + "FROM Address WHERE customerId = ? AND isDefault = 1 AND _destroy = 0";
 
         Address address = null;
 
@@ -116,7 +116,7 @@ public class AddressDAO extends DB.DBContext {
     }
 
     public boolean setDefaultAddress(int customerId, int addressId) throws SQLException {
-        String sqlCheck = "SELECT addressId FROM Address WHERE addressId = ? AND customerId = ?";
+        String sqlCheck = "SELECT addressId FROM Address WHERE addressId = ? AND customerId = ? AND _destroy = 0";
         Object[] checkParams = {addressId, customerId};
         try ( ResultSet rs = execSelectQuery(sqlCheck, checkParams)) {
             if (!rs.next()) {
@@ -124,11 +124,11 @@ public class AddressDAO extends DB.DBContext {
             }
         }
 
-        String sqlUnset = "UPDATE Address SET isDefault = 0 WHERE customerId = ?";
+        String sqlUnset = "UPDATE Address SET isDefault = 0 WHERE customerId = ? AND _destroy = 0";
         Object[] unsetParams = {customerId};
         execQuery(sqlUnset, unsetParams);
 
-        String sqlSet = "UPDATE Address SET isDefault = 1 WHERE addressId = ? AND customerId = ?";
+        String sqlSet = "UPDATE Address SET isDefault = 1 WHERE addressId = ? AND customerId = ? AND _destroy = 0";
         Object[] setParams = {addressId, customerId};
         return execQuery(sqlSet, setParams) > 0;
     }

@@ -82,6 +82,7 @@
             </div>
         </div>
         <jsp:include page="../common/footer.jsp" />
+        <script src="../../../js/header.js"></script>
         <script>
             function getUrlParam(name) {
                 const urlParams = new URLSearchParams(window.location.search);
@@ -247,6 +248,7 @@
                 loadProductsAndPagination()
                 reRenderBrand()
                 reRenderSort()
+                reloadCart();
             });
 
             document.querySelectorAll('input.brand-checkbox').forEach(checkbox => {

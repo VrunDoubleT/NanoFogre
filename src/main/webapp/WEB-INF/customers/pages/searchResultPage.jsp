@@ -72,6 +72,7 @@
         </div>
 
         <jsp:include page="../common/footer.jsp" />
+        <script src="../../../js/header.js"></script>
         <script>
             lucide.createIcons();
 
@@ -191,6 +192,7 @@
 
             document.addEventListener("DOMContentLoaded", function () {
                 loadProductsAndPagination()
+                reloadCart()
             });
         </script>
     </body>

@@ -1,4 +1,3 @@
-// FOR ADMIN/STAFF
 // Customer list
 const loadCustomerContentAndEvent = (page) => {
     lucide.createIcons();
@@ -66,8 +65,7 @@ function initToggleBlockEvents() {
                     Toastify({
                         text: "Update customer status failed.",
                         duration: 4000,
-                        gravity: "top",
-                        position: "right",
+                        gravity: "top", position: "right",
                         style: {background: "#f44336"},
                         close: true
                     }).showToast();
@@ -98,6 +96,8 @@ document.addEventListener("click", async function (e) {
         try {
             const response = await fetch(`/customer/view?type=detail&id=${id}`);
             const html = await response.text();
+            console.log(html.toString());
+            
             modalContent.innerHTML = html;
             lucide.createIcons();
             modal.classList.remove("hidden");
@@ -125,13 +125,3 @@ function getCurrentPageFromURL() {
     const urlParams = new URLSearchParams(window.location.search);
     return parseInt(urlParams.get("page")) || 1;
 }
-
-
-
-
-
-
-
-
-
-

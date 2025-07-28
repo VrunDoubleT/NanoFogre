@@ -44,20 +44,37 @@ function validateName(input, errorEl) {
     return true;
 }
 
-// Validate phone
 function validatePhone(input, errorEl) {
     const value = input.value.trim();
-    const regex = /^\+?\d{8,15}$/;
+    const regex = /^\d{10,11}$/;
+
+    const prefixes = [
+        '032', '033', '034', '035', '036', '037', '038', '039',
+        '056', '058', '059', '099',
+        '070', '076', '077', '078', '079', '089', '090', '091', '093', '094',
+        '081', '082', '083', '084', '085',
+        '086', '096', '097', '098'
+    ];
+
     if (!value) {
         errorEl.textContent = "Phone number is required.";
         input.classList.add("border-red-500");
         return false;
     }
+
     if (!regex.test(value)) {
-        errorEl.textContent = "Invalid phone number.";
+        errorEl.textContent = "Phone number must be 10 or 11 digits.";
         input.classList.add("border-red-500");
         return false;
     }
+
+    const prefix = value.substring(0, 3);
+    if (!prefixes.includes(prefix)) {
+        errorEl.textContent = "Phone number prefix is not valid.";
+        input.classList.add("border-red-500");
+        return false;
+    }
+
     errorEl.textContent = "";
     input.classList.remove("border-red-500");
     input.classList.add("ring-1", "ring-green-500");
@@ -121,17 +138,40 @@ function initCustomerForm() {
 
     phoneInput?.addEventListener("blur", () => {
         const value = phoneInput.value.trim();
-        const phoneRegex = /^0[0-9]{9}$/; 
-        if (value !== "" && !phoneRegex.test(value)) {
-            phoneError.textContent = "Invalid phone number format.";
-            phoneInput.classList.add("border-red-500");
-        } else if (value === ""){
-            phoneInput.classList.remove("border-red-500");
-        } else {
+        const prefixes = [
+            '032', '033', '034', '035', '036', '037', '038', '039',
+            '056', '058', '059', '099',
+            '070', '076', '077', '078', '079', '089', '090', '091', '093', '094',
+            '081', '082', '083', '084', '085',
+            '086', '096', '097', '098'
+        ];
+        const phoneRegex = /^0\d{9,10}$/; 
+
+        if (value === "") {
             phoneError.textContent = "";
-            phoneInput.classList.remove("border-red-500");
-            phoneInput.classList.add("ring-1", "ring-green-500");
+            phoneInput.classList.remove("border-red-500", "ring-1", "ring-green-500");
+            phoneInput.classList.add("border-yellow-500");
+            return;
         }
+
+        if (!phoneRegex.test(value)) {
+            phoneError.textContent = "Phone number must be 10–11 digits.";
+            phoneInput.classList.add("border-red-500");
+            phoneInput.classList.remove("ring-1", "ring-green-500");
+            return;
+        }
+
+        const prefix = value.substring(0, 3);
+        if (!prefixes.includes(prefix)) {
+            phoneError.textContent = "Invalid phone number prefix.";
+            phoneInput.classList.add("border-red-500");
+            phoneInput.classList.remove("ring-1", "ring-green-500");
+            return;
+        }
+
+        phoneError.textContent = "";
+        phoneInput.classList.remove("border-red-500");
+        phoneInput.classList.add("ring-1", "ring-green-500");
     });
 
     phoneInput?.addEventListener("input", () => resetErrorStyle(phoneInput, phoneError));
@@ -213,20 +253,44 @@ function initCustomerForm() {
         const nameValid = !nameInput.hasAttribute("readonly") ? validateName(nameInput, nameError) : true;
         const phoneValid = !phoneInput.hasAttribute("readonly") ? (() => {
         const value = phoneInput.value.trim();
-        const phoneRegex = /^0[0-9]{9}$/; 
-        if (value !== "" && !phoneRegex.test(value)) {
-            phoneError.textContent = "Invalid phone number format.";
+        const phoneRegex = /^0\d{9,10}$/;
+
+        const prefixes = [
+            '032', '033', '034', '035', '036', '037', '038', '039',
+            '056', '058', '059', '099',
+            '070', '076', '077', '078', '079', '089', '090', '091', '093', '094',
+            '081', '082', '083', '084', '085',
+            '086', '096', '097', '098'
+        ];
+
+        if (value === "") {
+            phoneError.textContent = "";
+            phoneInput.classList.remove("border-red-500", "ring-red-500", "ring-green-500");
+            phoneInput.classList.add("ring-1", "ring-yellow-500");
+            return true;
+        }
+
+        if (!phoneRegex.test(value)) {
+            phoneError.textContent = "Phone number must be 10–11 digits and start with 0.";
             phoneInput.classList.add("border-red-500", "ring-1", "ring-red-500");
+            phoneInput.classList.remove("ring-yellow-500", "ring-green-500");
             return false;
         }
-        if (value === ""){
-            phoneInput.classList.remove("border-red-500", "ring-1", "ring-red-500");
+
+        const prefix = value.substring(0, 3);
+        if (!prefixes.includes(prefix)) {
+            phoneError.textContent = "Invalid phone number prefix.";
+            phoneInput.classList.add("border-red-500", "ring-1", "ring-red-500");
+            phoneInput.classList.remove("ring-yellow-500", "ring-green-500");
+            return false;
         }
+        
         phoneError.textContent = "";
-        phoneInput.classList.remove("border-red-500", "ring-1", "ring-red-500");
+        phoneInput.classList.remove("border-red-500", "ring-red-500", "ring-yellow-500");
         phoneInput.classList.add("ring-1", "ring-green-500");
         return true;
         })() : true;
+
 
         let addressValid = true;
         for (const item of addressItems) {
@@ -305,6 +369,7 @@ function initCustomerForm() {
         backgroundColor: "#ef4444",
     }).showToast();
 }
+
         }
     });
 }
@@ -323,7 +388,7 @@ const updateModalContent = (path, loadEvent) => {
 // Handle create address button
 function initCreateAddressButton() {
     const createAddressBtn = document.getElementById("create-address-button");
-    createAddressBtn?.addEventListener("click", () => {
+    createAddressBtn.addEventListener("click", () => {
         const modal = document.getElementById("modal");
         openModal(modal);
         updateModalContent("/customer/self?type=createAddress", loadCreateCustomerAddressEvent);
@@ -430,7 +495,7 @@ document.addEventListener("click", function (e) {
                 duration: 4000,
                 gravity: "top",
                 position: "right",
-                backgroundColor: "#f59e0b", // warning màu vàng
+                backgroundColor: "#f59e0b",
                 close: true
             }).showToast();
             return;
