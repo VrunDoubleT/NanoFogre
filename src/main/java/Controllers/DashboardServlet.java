@@ -31,7 +31,6 @@ public class DashboardServlet extends HttpServlet {
             filterType = "daily";
         }
 
-        // Lấy các tham số filter
         String startDateParam = request.getParameter("startDate");
         String endDateParam = request.getParameter("endDate");
         String startMonthParam = request.getParameter("startMonth");
@@ -127,16 +126,21 @@ public class DashboardServlet extends HttpServlet {
             yearlyEnd = LocalDate.of(endYear, 12, 31);
         }
 
+        // Cộng thêm 1 ngày/tháng/năm cho biến truyền xuống DAO ====
+        String dailyEndForQuery = dailyEnd.plusDays(1).toString();
+        String monthlyEndForQuery = monthlyEnd.plusDays(1).toString();
+        String yearlyEndForQuery = yearlyEnd.plusDays(1).toString();
+
         List<Revenue> revenueDaily, revenueMonthly, revenueYearly;
         if (!valid) {
             filterType = "daily";
-            revenueDaily = dashboardDAO.getRevenueData("daily", dailyStart.toString(), dailyEnd.toString());
-            revenueMonthly = dashboardDAO.getRevenueData("monthly", monthlyStart.toString(), monthlyEnd.toString());
-            revenueYearly = dashboardDAO.getRevenueData("yearly", yearlyStart.toString(), yearlyEnd.toString());
+            revenueDaily = dashboardDAO.getRevenueData("daily", dailyStart.toString(), dailyEndForQuery);
+            revenueMonthly = dashboardDAO.getRevenueData("monthly", monthlyStart.toString(), monthlyEndForQuery);
+            revenueYearly = dashboardDAO.getRevenueData("yearly", yearlyStart.toString(), yearlyEndForQuery);
         } else {
-            revenueDaily = dashboardDAO.getRevenueData("daily", dailyStart.toString(), dailyEnd.toString());
-            revenueMonthly = dashboardDAO.getRevenueData("monthly", monthlyStart.toString(), monthlyEnd.toString());
-            revenueYearly = dashboardDAO.getRevenueData("yearly", yearlyStart.toString(), yearlyEnd.toString());
+            revenueDaily = dashboardDAO.getRevenueData("daily", dailyStart.toString(), dailyEndForQuery);
+            revenueMonthly = dashboardDAO.getRevenueData("monthly", monthlyStart.toString(), monthlyEndForQuery);
+            revenueYearly = dashboardDAO.getRevenueData("yearly", yearlyStart.toString(), yearlyEndForQuery);
         }
         if (revenueDaily == null) {
             revenueDaily = new ArrayList<>();
@@ -159,10 +163,12 @@ public class DashboardServlet extends HttpServlet {
         List<Revenue> fullRevenueYearly = generateFullYearRange(yearlyStart, yearlyEnd);
         mergeRevenueData(fullRevenueYearly, revenueYearly);
 
-        List<TopProduct> topProducts = dashboardDAO.getTopProducts(dailyStart.toString(), dailyEnd.toString(), 10);
-        BigDecimal totalRevenue = calculateTotalRevenue(fullRevenueDaily);
-        int totalOrders = calculateTotalOrders(fullRevenueDaily);
+        // truyền endDate+1 ngày vào getTopProducts ====
+        List<TopProduct> topProducts = dashboardDAO.getTopProducts(dailyStart.toString(), dailyEndForQuery, 10);
 
+        // ==== tổng revenue delivered ====
+        BigDecimal totalRevenue = dashboardDAO.getTotalRevenueDelivered();
+        int totalOrders = dashboardDAO.countTotalOrders();
         int totalCustomers = dashboardDAO.countCustomers();
         int totalStaff = dashboardDAO.countStaff();
 
@@ -185,7 +191,8 @@ public class DashboardServlet extends HttpServlet {
         if (errorMsg != null) {
             request.setAttribute("errorMsg", errorMsg);
         }
-        Map<String, Integer> orderStatusData = dashboardDAO.getOrderStatusDistribution(dailyStart, dailyEnd);
+        // truyền endDate+1 ngày vào getOrderStatusDistribution ====
+        Map<String, Integer> orderStatusData = dashboardDAO.getOrderStatusDistribution(dailyStart, dailyEnd.plusDays(1));
         request.setAttribute("orderStatusData", orderStatusData);
 
         request.getRequestDispatcher("/WEB-INF/employees/components/adminDashboardComponent.jsp")

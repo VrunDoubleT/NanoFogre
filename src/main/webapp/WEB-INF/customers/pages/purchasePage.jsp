@@ -1431,7 +1431,7 @@
                                     allowOutsideClick: false,
                                     allowEscapeKey: false
                                 }).then(() => {
-                                    window.location.href = '<%= request.getContextPath()%>/login';
+                                    window.location.href = '<%= request.getContextPath()%>/cart';
                                 });
                                 return;
                             }
@@ -1443,10 +1443,10 @@
                                     title: 'Order Placed Successfully!',
                                     text: data.message || 'Your order has been placed.',
                                     showConfirmButton: true,
-                                    confirmButtonText: 'View My Carts',
+                                    confirmButtonText: 'View my orders',
                                     willClose: () => {
 
-                                        window.location.href = '<%= request.getContextPath()%>/cart';
+                                        window.location.href = '<%= request.getContextPath()%>/account?view=order';
                                     }
                                 });
                             } else {

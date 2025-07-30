@@ -14,7 +14,17 @@
 <html>
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-        <title>${product.title} - Product Detail</title>
+        <title>
+            <c:choose>
+                <c:when test="${not empty product}">
+                    ${product.title} - Product Detail
+                </c:when>
+                <c:otherwise>
+                    Product Not Found
+                </c:otherwise>
+            </c:choose>
+        </title>
+
         <script src="https://cdn.tailwindcss.com"></script>
         <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>

@@ -161,6 +161,17 @@ public class ForgetDAO extends DB.DBContext {
     // ======= CUSTOMER =======
     public SendResult upsertCodeCustomer(int customerId, String code, LocalDateTime expiredAt, boolean isRegister) {
         if (isRegister) {
+            int failedCount = 0;
+            String sel = "SELECT failedCount FROM VerifyCodes WHERE userType=0 AND customerId=? ORDER BY createdAt DESC";
+            try ( ResultSet rs = execSelectQuery(sel, new Object[]{customerId})) {
+                if (rs.next()) {
+                    failedCount = rs.getInt("failedCount");
+                }
+            } catch (SQLException ex) {
+                ex.printStackTrace();
+                return SendResult.DB_ERROR;
+            }
+            // delete code old insert new
             String del = "DELETE FROM VerifyCodes WHERE userType=0 AND customerId=?";
             try {
                 execQuery(del, new Object[]{customerId});
@@ -168,10 +179,16 @@ public class ForgetDAO extends DB.DBContext {
                 ex.printStackTrace();
                 return SendResult.DB_ERROR;
             }
-            String ins = "INSERT INTO VerifyCodes (userType, customerId, code, createdAt, expiredAt, requestCount, failedCount) VALUES (0, ?, ?, ?, ?, 0, 0)";
+
+            // Insert code giữ lại failedCount cũ
+            String ins = "INSERT INTO VerifyCodes (userType, customerId, code, createdAt, expiredAt, requestCount, failedCount) VALUES (0, ?, ?, ?, ?, 0, ?)";
             try {
                 int rows = execQuery(ins, new Object[]{
-                    customerId, code, new Timestamp(System.currentTimeMillis()), Timestamp.valueOf(expiredAt)
+                    customerId,
+                    code,
+                    new Timestamp(System.currentTimeMillis()),
+                    Timestamp.valueOf(expiredAt),
+                    failedCount
                 });
                 return rows > 0 ? SendResult.OK : SendResult.DB_ERROR;
             } catch (SQLException ex) {
@@ -192,13 +209,20 @@ public class ForgetDAO extends DB.DBContext {
                     String upd = "UPDATE VerifyCodes SET code=?, createdAt=?, expiredAt=?, requestCount=? WHERE userType=0 AND customerId=?";
                     int newCount = olderThanDay ? 1 : count + 1;
                     int rows = execQuery(upd, new Object[]{
-                        code, Timestamp.valueOf(now), Timestamp.valueOf(expiredAt), newCount, customerId
+                        code,
+                        Timestamp.valueOf(now),
+                        Timestamp.valueOf(expiredAt),
+                        newCount,
+                        customerId
                     });
                     return rows > 0 ? SendResult.OK : SendResult.DB_ERROR;
                 } else {
                     String ins = "INSERT INTO VerifyCodes (userType, customerId, code, createdAt, expiredAt, requestCount, failedCount) VALUES (0, ?, ?, ?, ?, 1, 0)";
                     int rows = execQuery(ins, new Object[]{
-                        customerId, code, new Timestamp(System.currentTimeMillis()), Timestamp.valueOf(expiredAt)
+                        customerId,
+                        code,
+                        new Timestamp(System.currentTimeMillis()),
+                        Timestamp.valueOf(expiredAt)
                     });
                     return rows > 0 ? SendResult.OK : SendResult.DB_ERROR;
                 }

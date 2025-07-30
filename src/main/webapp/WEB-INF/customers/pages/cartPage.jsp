@@ -533,8 +533,7 @@ recalc();
                         icon: 'warning',
                         showCancelButton: true,
                         confirmButtonText: 'Yes, remove',
-                        cancelButtonText: 'Cancel',
-                        customClass: {popup: 'bg-gray-800 text-white rounded-lg'}
+                        cancelButtonText: 'Cancel'
                     }).then(result => {
                         if (result.isConfirmed) {
                             doRemoveCartItem(cartId);
@@ -567,6 +566,7 @@ recalc();
                             if (!data.success) {
                                 throw new Error(data.message || 'Remove failed');
                             }
+                            reloadCart();
                             const row = document.getElementById('cart-item-' + cartId);
                             if (row)
                                 row.remove();
@@ -593,8 +593,7 @@ recalc();
                                 Swal.fire({
                                     icon: 'error',
                                     title: 'Error',
-                                    text: err.message || 'Failed to remove item. Please try again.',
-                                    customClass: {popup: 'bg-gray-800 text-white rounded-lg'}
+                                    text: err.message || 'Failed to remove item. Please try again.'
                                 });
                             }
                         })

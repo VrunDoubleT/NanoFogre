@@ -1,6 +1,7 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+<%@ page import="Utils.CurrencyFormatter" %>
 
 <script type="application/json" id="revenueDailyScript">
     [
@@ -36,7 +37,7 @@
 </script>
 <input type="hidden" id="filterTypeValue" value="${filterType}" />
 
-<div class="dashboard-content px-4 py-8 bg-gradient-to-b from-gray-100 via-white to-gray-50 min-h-screen">
+<div class="dashboard-content min-h-screen">
     <c:if test="${not empty errorMsg}">
         <div class="mb-8 p-4 bg-red-50 border border-red-300 text-red-700 rounded-xl font-semibold shadow"> ${errorMsg} </div>
     </c:if>
@@ -44,7 +45,7 @@
     <!-- Overview Cards -->
     <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 mb-8">
         <!-- Total Revenue -->
-        <div class="bg-white rounded-2xl shadow-xl hover:shadow-2xl transition p-6 border border-gray-100 flex items-center gap-4">
+        <div class="bg-white rounded-2xl p-6 border border-gray-100 flex items-center gap-4 shadow-sm">
             <div class="p-3 rounded-full bg-green-100 flex items-center justify-center">
                 <!-- Lucide icon: Banknote -->
                 <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -54,13 +55,14 @@
             </div>
             <div>
                 <div class="text-sm text-gray-500">Total Revenue</div>
-                <div class="text-2xl font-extrabold text-gray-900">
-                    <fmt:formatNumber value="${dashboardData.totalRevenue}" type="currency" currencyCode="VND"/>
+                <div class="text-2xl font-extrabold text-gray-900 break-all text-center truncate" title="${dashboardData.totalRevenue}">
+                    <%--<fmt:formatNumber value="${dashboardData.totalRevenue}" type="currency" currencyCode="VND"/>--%>
+                    ${CurrencyFormatter.formatCurrencyShort(dashboardData.totalRevenue)}
                 </div>
             </div>
         </div>
         <!-- Total Orders -->
-        <div class="bg-white rounded-2xl shadow-xl hover:shadow-2xl transition p-6 border border-gray-100 flex items-center gap-4">
+        <div class="bg-white rounded-2xl p-6 border border-gray-100 flex items-center gap-4 shadow-sm">
             <div class="p-3 rounded-full bg-blue-100 flex items-center justify-center">
                 <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <rect x="3" y="6" width="18" height="12" rx="2" stroke="currentColor" stroke-width="2"/>
@@ -73,7 +75,7 @@
             </div>
         </div>
         <!-- Total Customers -->
-        <div class="bg-white rounded-2xl shadow-xl hover:shadow-2xl transition p-6 border border-gray-100 flex items-center gap-4">
+        <div class="bg-white rounded-2xl p-6 border border-gray-100 flex items-center gap-4 shadow-sm">
             <div class="p-3 rounded-full bg-yellow-100 flex items-center justify-center">
                 <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 text-yellow-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <circle cx="12" cy="10" r="4" stroke="currentColor" stroke-width="2"/>
@@ -86,7 +88,7 @@
             </div>
         </div>
         <!-- Total Staff -->
-        <div class="bg-white rounded-2xl shadow-xl hover:shadow-2xl transition p-6 border border-gray-100 flex items-center gap-4">
+        <div class="bg-white rounded-2xl p-6 border border-gray-100 flex items-center gap-4 shadow-sm">
             <div class="p-3 rounded-full bg-purple-100 flex items-center justify-center">
                 <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 text-purple-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <circle cx="12" cy="10" r="4" stroke="currentColor" stroke-width="2"/>
@@ -103,7 +105,7 @@
     <!-- Chart Area -->
     <div class="grid grid-cols-1 lg:grid-cols-10 gap-8 mb-8">
         <!-- Revenue Chart -->
-        <div class="bg-white rounded-2xl shadow-lg p-8 col-span-7 flex flex-col">
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 col-span-7 flex flex-col">
             <div class="flex items-center justify-between mb-4">
                 <h2 class="text-xl font-bold text-gray-900 tracking-tight">Revenue Chart</h2>
                 <div class="flex gap-2">
@@ -160,20 +162,21 @@
             </div>
         </div>
         <!-- Pie Chart -->
-        <div class="bg-white rounded-2xl shadow-lg p-8 col-span-3 flex flex-col items-center">
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 col-span-3 flex flex-col items-center">
             <h2 class="text-xl font-bold text-gray-900 tracking-tight mb-4">Order Status Distribution</h2>
             <canvas id="statusPieChart" width="320" height="320"></canvas>
         </div>
     </div>
 
     <!-- Top Products -->
-    <div class="bg-white rounded-2xl shadow-lg p-8 mt-4">
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 mt-4">
         <h2 class="text-lg font-bold text-gray-900 mb-6">Top 10 Best-Selling Products</h2>
         <div class="overflow-x-auto rounded-xl border border-gray-100">
             <table class="min-w-full bg-white text-sm">
                 <thead class="bg-gray-50 font-bold text-gray-700">
                     <tr>
                         <th class="px-6 py-3 text-left">#</th>
+                        <th class="px-6 py-3 text-left">Image</th>
                         <th class="px-6 py-3 text-left">Product</th>
                         <th class="px-6 py-3 text-left">Sold</th>
                         <th class="px-6 py-3 text-left">Revenue</th>
@@ -183,15 +186,23 @@
                     <c:forEach items="${dashboardData.topProducts}" var="product" varStatus="loop">
                         <tr class="hover:bg-gray-50 transition">
                             <td class="px-6 py-4 font-bold">${loop.index + 1}</td>
+                            <!-- Product Image -->
+                            <td class="px-6 py-4">
+                                <img src="${not empty product.imageUrl ? product.imageUrl : '/assets/img/no-image.png'}"
+                                     alt="${product.productTitle}" class="w-12 h-12 rounded shadow border object-cover" />
+                            </td>
+                            <!-- Product Title -->
                             <td class="px-6 py-4">
                                 <div class="font-semibold text-gray-800">${product.productTitle}</div>
                                 <div class="text-xs text-gray-400">ID: ${product.productId}</div>
                             </td>
+                            <!-- Sold -->
                             <td class="px-6 py-4">
                                 <span class="bg-green-100 text-green-700 rounded px-2 py-1">${product.totalSold} sold</span>
                             </td>
-                            <td class="px-6 py-4 font-semibold text-gray-900">
-                                <fmt:formatNumber value="${product.totalRevenue}" type="currency" currencyCode="VND"/>
+                            <!-- Revenue -->
+                            <td class="px-6 py-4 text-md text-red-600 font-bold">
+                                ${CurrencyFormatter.formatVietNamCurrency(product.totalRevenue)}đ
                             </td>
                         </tr>
                     </c:forEach>

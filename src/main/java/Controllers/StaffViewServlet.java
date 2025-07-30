@@ -10,6 +10,7 @@ import Models.Category;
 import Models.Employee;
 import Models.Order;
 import Models.ProductStat;
+import Utils.Converter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import jakarta.servlet.ServletException;
@@ -78,12 +79,22 @@ public class StaffViewServlet extends HttpServlet {
                 request.setAttribute("brands", brands);
                 break;
             case "brand":
+                int brandPage = Converter.parseOption(request.getParameter("page"), 1);
+                int brandLimit = 5;
+                List<Brand> brandList = brandDao.getBrands(brandPage, brandLimit);
+                int totalBrands = brandDao.getTotalBrands();
+                int totalBrandPages = (int) Math.ceil((double) totalBrands / brandLimit);
+                request.setAttribute("brands", brandList);
+                request.setAttribute("total", totalBrands);
+                request.setAttribute("limit", brandLimit);
+                request.setAttribute("totalPages", totalBrandPages);
+                request.setAttribute("page", brandPage);
                 viewPath = "/WEB-INF/employees/components/brandComponent.jsp";
-                request.setAttribute("viewPath", viewPath);
-                request.getRequestDispatcher("/brand").forward(request, response);
-                return;
+                break;
             case "voucher":
                 viewPath = "/WEB-INF/employees/components/voucherComponent.jsp";
+                List<Category> categoryList = categoryDao.getCategories();
+                request.setAttribute("categoryList", categoryList);
                 break;
             case "order":
                 viewPath = "/WEB-INF/employees/components/orderComponent.jsp";
@@ -100,9 +111,9 @@ public class StaffViewServlet extends HttpServlet {
                 viewPath = "/WEB-INF/employees/common/employeeHeader.jsp";
                 break;
             case "dashboard":
-                // Forward request DashboardServlet
-                request.getRequestDispatcher("/dashboard").forward(request, response);
-                return;
+                request.getRequestDispatcher("/dashboard").include(request, response);
+                viewPath = "/WEB-INF/employees/components/adminDashboardComponent.jsp";
+                break;
             default:
                 viewPath = "/WEB-INF/employees/components/adminDashboardComponent.jsp";
         }

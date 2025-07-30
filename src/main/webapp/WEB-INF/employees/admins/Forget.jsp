@@ -11,11 +11,11 @@
         <title>Forgot Password - NanoForge</title>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <style>
+              <style>
             body {
                 font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
                 height: 100vh;
-                background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+                background: #fff; /* nền trắng */
                 display: flex;
                 justify-content: center;
                 align-items: center;
@@ -23,13 +23,13 @@
                 position: relative;
             }
             .forgot-container {
-                background: rgba(255, 255, 255, 0.13);
-                backdrop-filter: blur(10px);
-                border: 1px solid rgba(255, 255, 255, 0.18);
+                background: #ffffff;
+                /* Bỏ blur, thay bằng viền đổ nhẹ */
+                border: 1px solid #ddd;
                 border-radius: 22px;
                 padding: 38px 36px;
                 width: 400px;
-                box-shadow: 0 8px 32px rgba(0, 0, 0, 0.24);
+                box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
                 animation: scaleUp 1.3s;
             }
             @keyframes scaleUp {
@@ -47,14 +47,14 @@
                 margin-bottom: 32px;
             }
             .forgot-header h2 {
-                color: #fff;
+                color: #222;
                 font-size: 32px;
                 margin-bottom: 10px;
                 font-weight: 700;
             }
             .forgot-header p {
-                color: #fff;
-                opacity: 0.75;
+                color: #555;
+                opacity: 0.8;
                 font-size: 15px;
                 margin: 0;
             }
@@ -66,13 +66,13 @@
                 animation: fadeInUp 0.6s;
             }
             @keyframes fadeInUp {
-                from{
-                    opacity:0;
-                    transform:translateY(20px);
+                from {
+                    opacity: 0;
+                    transform: translateY(20px);
                 }
-                to{
-                    opacity:1;
-                    transform:translateY(0);
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
                 }
             }
             .forgot-form-group {
@@ -83,7 +83,7 @@
                 align-items: center;
             }
             .forgot-form-group label {
-                color: #fff;
+                color: #333;
                 font-size: 15px;
                 font-weight: 600;
                 margin-bottom: 8px;
@@ -92,41 +92,36 @@
                 width: 100%;
             }
             .forgot-form-group input {
-
                 width: 90%;
                 padding: 14px 16px;
-                border: 2px solid #e1e5e9;
+                border: 2px solid #ccc;
                 border-radius: 11px;
                 font-size: 16px;
-                color: #1a1a2e;
+                color: #222;
                 background: #fff;
                 transition: all 0.3s;
             }
             .forgot-form-group input:focus {
                 outline: none;
                 border-color: #ff6b6b;
-                box-shadow: 0 0 0 3px rgba(255,107,107,0.10);
+                box-shadow: 0 0 0 3px rgba(255, 107, 107, 0.2);
             }
             .forgot-form-group input::placeholder {
                 color: #999;
             }
-
             .forgot-btn, .back-btn {
                 width: 100%;
                 margin-bottom: 0;
             }
-
             .button-group {
                 display: flex;
                 gap: 10px;
                 margin-top: 15px;
             }
-
             .button-group .forgot-btn, .button-group .back-btn {
                 width: 50%;
                 margin-bottom: 0;
             }
-
             @media (max-width: 480px) {
                 .forgot-container {
                     width: 100%;
@@ -138,7 +133,7 @@
                 .otp-input {
                     width: 30px;
                     height: 38px;
-                    font-size:1rem;
+                    font-size: 1rem;
                 }
                 .button-group {
                     flex-direction: column;
@@ -148,8 +143,7 @@
                     width: 100%;
                 }
             }
-
-            .forgot-btn  {
+            .forgot-btn {
                 width: 100%;
                 padding: 14px;
                 background: linear-gradient(45deg, #ff6b6b, #ff8e8e);
@@ -195,7 +189,7 @@
                 width: 13px;
                 height: 13px;
                 border-radius: 50%;
-                background: #e1e5e9;
+                background: #ccc;
                 transition: all 0.3s;
             }
             .step-dot.active {
@@ -211,15 +205,16 @@
                 text-align: center;
                 font-size: 1.4rem;
                 border-radius: 8px;
-                border: 2px solid #e1e5e9;
+                border: 2px solid #ccc;
                 background: #fff;
                 margin-right: 2px;
                 outline: none;
                 transition: border 0.2s;
+                color: #222;
             }
             .otp-input:focus {
                 border-color: #ff6b6b;
-                box-shadow: 0 0 0 2px rgba(255,107,107,0.13);
+                box-shadow: 0 0 0 2px rgba(255, 107, 107, 0.13);
             }
             .otp-input.error {
                 border-color: #e74c3c !important;
@@ -252,7 +247,7 @@
                 .otp-input {
                     width: 32px;
                     height: 40px;
-                    font-size:1.1rem;
+                    font-size: 1.1rem;
                 }
             }
             .loading-spinner {
@@ -270,13 +265,11 @@
                     transform: rotate(360deg);
                 }
             }
-
             input[type="password"]::-ms-reveal,
             input[type="password"]::-ms-clear,
             input[type="password"]::-webkit-textfield-decoration-button {
                 display: none;
             }
-
             .input-valid {
                 border-color: #27ae60 !important;
                 box-shadow: 0 0 0 3px rgba(39, 174, 96, 0.3);

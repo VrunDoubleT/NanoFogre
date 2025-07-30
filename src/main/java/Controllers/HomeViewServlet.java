@@ -69,7 +69,7 @@ public class HomeViewServlet extends HttpServlet {
         List<Product> topSelling = pDao.getTopSellingProducts(8);
         List<Product> newest = pDao.getNewestProducts(8);
         List<Brand> brands = bDao.getAllBrands();
-        List<Review> reviews = rDao.getTopFiveStarReviews(12);
+        List<Review> reviews = rDao.getTopFiveStarReviews(16);
         request.setAttribute("topRatedProducts", topRated);
         request.setAttribute("topSellingProducts", topSelling);
         request.setAttribute("newestProducts", newest);

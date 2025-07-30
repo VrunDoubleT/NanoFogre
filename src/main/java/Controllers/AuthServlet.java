@@ -158,26 +158,48 @@ public class AuthServlet extends HttpServlet {
             return;
         }
 
+        // Check if this email is a verified customer (đã đăng ký xác thực xong)
         if (customerDAO.checkEmailExists(email)) {
             response.sendRedirect(redirectBase + "&error=" + java.net.URLEncoder.encode("Email already exists!", "UTF-8"));
             return;
         }
 
+        // Check if this email has an unverified account (tài khoản chưa verify)
         Customer unverified = customerDAO.findUnverifiedCustomerByEmail(email);
-        boolean success;
+
         if (unverified != null) {
-            success = customerDAO.updateUnverifiedCustomer(email, name, Common.hashPassword(password));
+            forgetDAO.autoUnblockIfNeeded(unverified.getId());
+            Customer refreshed = customerDAO.findUnverifiedCustomerByEmail(email);
+            if (refreshed != null && refreshed.isIsBlock()) {
+                response.sendRedirect(redirectBase + "&error=" + java.net.URLEncoder.encode(
+                        "Your account has been locked for 24 hours due to too many incorrect code attempts. Please try again later!", "UTF-8"));
+                return;
+            }
+
+            int failedCount = forgetDAO.getFailedCountForCustomer(unverified.getId());
+            if (failedCount >= 5) {
+                forgetDAO.blockCustomer(unverified.getId());
+                response.sendRedirect(redirectBase + "&error=" + java.net.URLEncoder.encode(
+                        "Your account has been locked for 24 hours due to too many incorrect code attempts. Please try again later!", "UTF-8"));
+                return;
+            }
+
+            customerDAO.updateUnverifiedCustomer(email, name, Common.hashPassword(password));
         } else {
             Customer newCustomer = new Customer();
             newCustomer.setName(name);
             newCustomer.setEmail(email);
             newCustomer.setPassword(Common.hashPassword(password));
             newCustomer.setIsBlock(false);
-            success = customerDAO.register(newCustomer);
+            boolean success = customerDAO.register(newCustomer);
+            if (!success) {
+                response.sendRedirect(redirectBase + "&error=" + java.net.URLEncoder.encode("Registration error, please try again!", "UTF-8"));
+                return;
+            }
         }
 
         Customer saved = customerDAO.findCustomerByEmail(email);
-        if (!success || saved == null) {
+        if (saved == null) {
             response.sendRedirect(redirectBase + "&error=" + java.net.URLEncoder.encode("Registration error, please try again!", "UTF-8"));
             return;
         }
@@ -185,10 +207,10 @@ public class AuthServlet extends HttpServlet {
         String code = String.valueOf((int) ((Math.random() * 900000) + 100000));
         LocalDateTime expiredAt = LocalDateTime.now().plusMinutes(10);
 
-        ForgetDAO forgetDAO = new ForgetDAO();
         ForgetDAO.SendResult codeResult = forgetDAO.upsertCodeCustomer(saved.getId(), code, expiredAt, true);
         if (codeResult == ForgetDAO.SendResult.TOO_MANY_REQUESTS) {
-            response.sendRedirect(redirectBase + "&error=" + java.net.URLEncoder.encode("You have reached the maximum number of resend attempts today. Please try again later!", "UTF-8"));
+            response.sendRedirect(redirectBase + "&error=" + java.net.URLEncoder.encode(
+                    "You have reached the maximum number of code requests for today. Please try again after 24 hours!", "UTF-8"));
             return;
         }
         if (codeResult != ForgetDAO.SendResult.OK) {
@@ -226,10 +248,36 @@ public class AuthServlet extends HttpServlet {
             request.getRequestDispatcher("/WEB-INF/customers/pages/registerPage.jsp").forward(request, response);
             return;
         }
-        ForgetDAO forgetDAO = new ForgetDAO();
+        forgetDAO.autoUnblockIfNeeded(customer.getId());
+        if (customer.isIsBlock()) {
+            request.setAttribute("error", "Your account has been locked for 24 hours due to too many incorrect code attempts. Please try again later.");
+            request.setAttribute("email", email);
+            request.getRequestDispatcher("/WEB-INF/customers/pages/verifyCode.jsp").forward(request, response);
+            return;
+        }
+        int failedCount = forgetDAO.getFailedCountForCustomer(customer.getId());
+        if (failedCount >= 5) {
+            forgetDAO.blockCustomer(customer.getId());
+            request.setAttribute("error", "Your account has been locked for 24 hours due to too many incorrect code attempts. Please try again later.");
+            request.setAttribute("email", email);
+            request.getRequestDispatcher("/WEB-INF/customers/pages/verifyCode.jsp").forward(request, response);
+            return;
+        }
+
         boolean valid = forgetDAO.checkVerifyCodeCustomer(customer.getId(), code.trim());
         if (!valid) {
-            request.setAttribute("error", "Invalid or expired code!");
+            try {
+                forgetDAO.incrementFailedCountForCustomer(customer.getId());
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            failedCount = forgetDAO.getFailedCountForCustomer(customer.getId());
+            if (failedCount >= 5) {
+                forgetDAO.blockCustomer(customer.getId());
+                request.setAttribute("error", "Your account has been locked for 24 hours due to too many incorrect code attempts. Please try again later.");
+            } else {
+                request.setAttribute("error", "Invalid or expired code. (" + failedCount + "/5 attempts used)");
+            }
             request.setAttribute("email", email);
             request.getRequestDispatcher("/WEB-INF/customers/pages/verifyCode.jsp").forward(request, response);
             return;
@@ -239,7 +287,6 @@ public class AuthServlet extends HttpServlet {
         forgetDAO.deleteCodeCustomer(customer.getId(), code.trim());
 
         request.getSession().removeAttribute("verifyEmail");
-
         request.getSession().setAttribute("registerSuccess", true);
         response.sendRedirect(request.getContextPath() + "/auth?action=register&justRegistered=true");
     }

@@ -244,6 +244,7 @@ public class ProductDAO extends DB.DBContext {
             query += " AND p.productTitle LIKE ?";
             paramList.add("%" + keyword.trim() + "%");
         }
+
         query += "\nORDER BY p.productId ASC";
         query += "\nOFFSET ? ROWS FETCH NEXT ? ROWS ONLY;";
         paramList.add(row);
@@ -253,6 +254,7 @@ public class ProductDAO extends DB.DBContext {
             while (rs.next()) {
                 Product product = new Product();
                 int productId = rs.getInt("productId");
+
                 product.setProductId(productId);
                 product.setTitle(rs.getString("productTitle"));
                 product.setSlug(rs.getString("slug"));
@@ -263,6 +265,7 @@ public class ProductDAO extends DB.DBContext {
                 product.setDestroy(rs.getBoolean("_destroy"));
                 product.setIsActive(rs.getBoolean("isActive"));
 
+                // Set brand
                 Object brandIdObj = rs.getObject("brandId");
                 if (brandIdObj != null) {
                     int brandId = (int) brandIdObj;
@@ -272,6 +275,7 @@ public class ProductDAO extends DB.DBContext {
                     product.setBrand(null);
                 }
 
+                // Set category
                 Object categoryIdObj = rs.getObject("categoryId");
                 if (categoryIdObj != null) {
                     int categoryIdRs = (int) categoryIdObj;
@@ -280,27 +284,14 @@ public class ProductDAO extends DB.DBContext {
                 } else {
                     product.setCategory(null);
                 }
-                Object[] params = {productId};
-                ResultSet urlsResult = execSelectQuery("SELECT * FROM ProductImages WHERE productId = ?", params);
+
+                // Get 1 image
+                ResultSet imageResult = execSelectQuery("SELECT TOP 1 url FROM ProductImages WHERE productId = ?", new Object[]{productId});
                 List<String> urls = new ArrayList<>();
-                while (urlsResult.next()) {
-                    urls.add(urlsResult.getString("url"));
+                if (imageResult.next()) {
+                    urls.add(imageResult.getString("url"));
                 }
                 product.setUrls(urls);
-                String reviewStatsQuery = "SELECT COUNT(r.reviewId) AS totalReivew, AVG(CAST(r.star AS FLOAT)) AS averageStar\n"
-                        + "FROM Reviews r WHERE r.productId = ? GROUP BY r.productId";
-                ResultSet reviewStatsResult = execSelectQuery(reviewStatsQuery, params);
-                if (reviewStatsResult.next()) {
-                    product.setTotalReviews(reviewStatsResult.getInt("totalReivew"));
-                    product.setAverageStar(reviewStatsResult.getDouble("averageStar"));
-                }
-                ResultSet soldResult = execSelectQuery("SELECT SUM(od.detailQuantity) AS solt FROM OrderDetails od\n"
-                        + "WHERE od.productId = ? GROUP BY od.productId", params);
-                if (soldResult.next()) {
-                    product.setSold(soldResult.getInt("solt"));
-                }
-                List<ProductAttribute> pas = getAttributesByProductId(productId);
-                product.setAttributes(pas);
                 pros.add(product);
             }
         } catch (SQLException e) {
@@ -452,7 +443,7 @@ public class ProductDAO extends DB.DBContext {
         }
         return product;
     }
-    
+
     public Product getActiveProductById(int id) {
         Product product = null;
         String query = "select p.*, c.categoryName, b.brandName\n"
@@ -988,8 +979,8 @@ public class ProductDAO extends DB.DBContext {
                 + "from Products p\n"
                 + "where p.productId = ?";
         Object[] params = new Object[]{productId};
-        try (ResultSet rs = execSelectQuery(select, params);) {
-            if(rs.next()){
+        try ( ResultSet rs = execSelectQuery(select, params);) {
+            if (rs.next()) {
                 return rs.getInt("productQuantity");
             }
         } catch (SQLException e) {
@@ -998,7 +989,7 @@ public class ProductDAO extends DB.DBContext {
         }
         return 0;
     }
-    
+
     public List<Product> getTopRatedProducts(int limit) {
         List<Product> products = new ArrayList<>();
         String query = "SELECT TOP (?) p.*, AVG(CAST(r.star AS FLOAT)) AS avgStar\n"

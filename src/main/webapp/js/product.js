@@ -600,6 +600,7 @@ const handleChangeCategory = (
     // DEFINE HANDLER FUNCTION
     handleCategoryProductChangeEvent = function () {
         productAttributes = null
+                console.log(productAttributes);
         const result = handleValidateCategoryAndBrand(
             {
                 ...configSelectCategoryObj,
@@ -676,6 +677,7 @@ const handleValidateAttributeItem = async (elm, categoryId) => {
         const data = await response.json()
         productAttributes = data.data
     }
+        console.log(productAttributes);
 
     const attributeId = parseOptionNumber(elm.dataset.attributeId, 0)
     const atbObj = productAttributes.find((attr) => attr.id === attributeId)
@@ -1014,6 +1016,7 @@ const loadCreateProductEvent = async (categoryIdURL, pageIdURL) => {
 }
 
 const loadUpdateProductEvent = async (categoryIdURL, pageIdURL) => {
+    productAttributes = null
     lucide.createIcons()
     const configValidateBasicInfo = [
         {

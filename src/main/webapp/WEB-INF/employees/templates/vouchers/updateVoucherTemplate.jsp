@@ -86,7 +86,9 @@
                                                 <div class="flex items-center gap-1 px-3 py-1 bg-blue-100 text-blue-800 rounded text-sm category-tag"
                                                      data-id="${cat.id}">
                                                     <span>${cat.name}</span>
-                                                    <button type="button" class="text-blue-500 remove-category" title="Remove">&times;</button>
+                                                    <c:if test="${!(voucherStatus == 'Ongoing' || voucherStatus == 'Expired') || !voucherIsUsed}">
+                                                        <button type="button" class="text-blue-500 remove-category" title="Remove">&times;</button>
+                                                    </c:if>
                                                 </div>
                                             </c:forEach>
                                         </div>

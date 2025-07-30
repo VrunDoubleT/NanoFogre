@@ -65,14 +65,12 @@ public class SearchServlet extends HttpServlet {
         switch (type) {
             case "list":
                 String keywordToSearch = request.getParameter("keyword");
-                System.out.println(keywordToSearch);
                 if (keywordToSearch == null || keywordToSearch.trim().isEmpty()) {
                     request.setAttribute("products", null);
                     request.getRequestDispatcher("/WEB-INF/customers/component/products/products.jsp").forward(request, response);
                     break;
                 }
-                int page = Converter.parseOption(request.getParameter("page"), 1);
-                List<Product> products = pDao.getActiveProductByKeyword(keywordToSearch, page, limit);
+                List<Product> products = pDao.getActiveProductByKeyword(keywordToSearch, 1, limit);
                 request.setAttribute("products", products);
                 request.getRequestDispatcher("/WEB-INF/customers/component/products/products.jsp").forward(request, response);
                 break;

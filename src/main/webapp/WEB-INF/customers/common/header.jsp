@@ -50,10 +50,14 @@
                             <c:out value="${sessionScope.cartQuantity}" default="0"/>
                         </span>
                     </a>
-                    <a href="/account" class="text-white font-semibold flex items-center gap-2">
+                    <div href="/account" class="relative group text-white font-semibold flex items-center gap-2">
                         <i class="fa fa-user-circle text-yellow-400"></i>
                         <span id="customerName">${sessionScope.customer.name}</span>
-                    </a>
+                        <div class="absolute top-[105%] hidden text-white bg-[#1b2537] right-0 text-sm group-hover:block shadow-md rounded-md w-40 z-50">
+                            <a href="/account?view=profile" class="block px-4 py-2 opacity-50 hover:opacity-100">Profile</a>
+                            <a href="/account?view=order" class="block px-4 py-2 opacity-50 hover:opacity-100">Orders history</a>
+                        </div>
+                    </div>
                     <a href="${pageContext.request.contextPath}/auth?action=logout" class="px-4 py-2 bg-gradient-to-r from-red-500 to-orange-500 text-white rounded-full text-sm font-semibold shadow hover:scale-105 transition">
                         Logout
                     </a>

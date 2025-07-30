@@ -34,6 +34,7 @@
                         </div>
                     </c:if>
                 </td>
+                <c:if test="${not empty sessionScope.employee && sessionScope.employee.role.id == 1}">
                 <td class="py-3 px-6 text-center align-middle">
                     <div class="flex justify-center items-center gap-3 min-h-[40px]">
                         <button
@@ -59,6 +60,7 @@
                         </button>
                     </div>
                 </td>
+                </c:if>ss
             </tr>
         </c:forEach>
     </c:otherwise>

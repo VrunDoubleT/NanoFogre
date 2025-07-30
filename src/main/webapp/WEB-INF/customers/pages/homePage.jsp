@@ -13,7 +13,7 @@
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Home Page</title>
+        <title>Home Page - Nano Forge</title>
         <script src="https://cdn.tailwindcss.com"></script>
         <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
@@ -339,7 +339,7 @@
 
                                             <div class="flex items-center justify-between">
                                                 <div class="text-2xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">
-                                                    <fmt:formatNumber value="${p.price / 100}" type="currency" currencySymbol="$"/>
+                                                    ${CurrencyFormatter.formatVietNamCurrency(p.price)}đ
                                                 </div>
                                                 <div class="text-sm text-gray-500 bg-gray-100 px-3 py-1 rounded-full">
                                                     Stock: ${p.quantity}

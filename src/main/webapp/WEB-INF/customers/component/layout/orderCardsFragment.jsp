@@ -8,7 +8,7 @@
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core"      prefix="c"  %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/fmt"       prefix="fmt"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn"  %>
-
+<%@page import="Utils.CurrencyFormatter"%>
 <c:forEach var="order" items="${orders}">
     <div class="order-card transition-none opacity-100 scale-100 p-6 rounded-2xl border relative group"
          data-status="${order.orderStatus.id}" data-id="${order.id}">
@@ -33,7 +33,7 @@
             </div>
             <div class="flex flex-wrap items-center gap-3">
                 <span class="text-lg font-bold text-blue-700 tracking-tight">
-                    <fmt:formatNumber value="${order.totalAmount}" type="number" maxFractionDigits="0"/>đ
+                    ${CurrencyFormatter.formatVietNamCurrency(order.totalAmount)}đ
                 </span>
                 <button type="button"
                         class="show-order-details-btn flex items-center gap-1 px-3 py-1.5 text-sm rounded-lg font-semibold bg-blue-100 text-blue-700 hover:bg-blue-600 hover:text-white transition shadow focus:ring-2 focus:ring-blue-300"
@@ -56,7 +56,7 @@
                             <div class="text-xs text-gray-500">x${item.quantity}</div>
                         </div>
                         <div class="font-bold text-blue-600 text-base ml-auto whitespace-nowrap">
-                            <fmt:formatNumber value="${item.price}" type="number" maxFractionDigits="0"/>đ
+                            ${CurrencyFormatter.formatVietNamCurrency(item.price)}đ
                         </div>
                         <c:if test="${order.orderStatus.id == 4}">
                             <c:choose>

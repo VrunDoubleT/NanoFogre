@@ -5,6 +5,7 @@
 --%>
 
 <%@ page contentType="text/html;charset=UTF-8" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <!DOCTYPE html>
 <html lang="en">
     <head>
@@ -32,7 +33,20 @@
             </div>
             <input type="hidden" id="verify-code" name="code">
             <c:if test="${not empty error}">
-                <div class="text-red-500 text-center">${error}</div>
+                <script>
+                    document.addEventListener("DOMContentLoaded", function () {
+                        Swal.fire({
+                            icon: "error",
+                            title: "Error",
+                            text: "${error.replace("\"", "\\\"")}"
+                        }).then(function () {
+                            var msg = "${error}";
+                            if (msg && msg.toLowerCase().includes("locked for 24 hours")) {
+                                window.location.href = "auth?action=register";
+                            }
+                        });
+                    });
+                </script>
             </c:if>
             <button type="submit"
                     class="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg transition font-semibold">

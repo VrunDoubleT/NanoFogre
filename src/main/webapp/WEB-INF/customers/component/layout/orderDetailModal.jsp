@@ -7,7 +7,7 @@
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core"      prefix="c"   %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/fmt"       prefix="fmt" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn"  %>
-
+<%@page import="Utils.CurrencyFormatter"%>
 <c:choose>
     <c:when test="${empty order}">
         <div class="p-8 text-center text-red-500 text-lg">Order not found or you have no permission to view this order.</div>
@@ -101,14 +101,14 @@
                     <div class="flex justify-between">
                         <span>Subtotal</span>
                         <span>
-                            <fmt:formatNumber value="${subtotal}" type="number" maxFractionDigits="0"/>đ
+                            ${CurrencyFormatter.formatVietNamCurrency(subtotal)}đ
                         </span>
                     </div>
                     <!-- Shipping Fee -->
                     <div class="flex justify-between">
                         <span>Shipping fee</span>
                         <span>
-                            <fmt:formatNumber value="${order.shippingFee}" type="number" maxFractionDigits="0"/>đ
+                            ${CurrencyFormatter.formatVietNamCurrency(order.shippingFee)}đ
                         </span>
                     </div>
                     <!-- Voucher -->
@@ -117,7 +117,8 @@
                             <span>Voucher 
                                 <span class="text-xs text-blue-500">(${order.voucher.code})</span>
                             </span>
-                            <span class="text-red-500">-<fmt:formatNumber value="${order.voucher.value}" type="number" maxFractionDigits="0"/>đ</span>
+                            <span class="text-red-500">
+                                -${CurrencyFormatter.formatVietNamCurrency(order.voucher.value)}đ</span>
                         </div>
                     </c:if>
                     <!-- Divider -->
@@ -126,7 +127,7 @@
                     <div class="flex justify-between font-bold text-blue-700 text-lg">
                         <span>Total to pay</span>
                         <span>
-                            <fmt:formatNumber value="${order.totalAmount}" type="number" maxFractionDigits="0"/>đ
+                            ${CurrencyFormatter.formatVietNamCurrency(order.totalAmount)}đ
                         </span>
                     </div>
                 </div>
@@ -170,7 +171,7 @@
                                 <div class="text-sm text-gray-500">x<c:out value="${item.quantity}"/></div>
                             </div>
                             <div class="font-bold text-blue-700 text-base shrink-0">
-                                <fmt:formatNumber value="${item.price}" type="number" maxFractionDigits="0"/>đ
+                                ${CurrencyFormatter.formatVietNamCurrency(item.price)}đ
                             </div>
                         </div>
                     </c:forEach>

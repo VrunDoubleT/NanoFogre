@@ -61,7 +61,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     }
                     wrapper.style.display = "block";
                 });
-            }, 200);
+            }, 50);
         });
 
         function formatPrice(price) {

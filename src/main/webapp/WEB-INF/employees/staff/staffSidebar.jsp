@@ -53,11 +53,11 @@
         </div>
     </div>
     <div class="w-full px-3 flex justify-center mb-3">
-        <button class="px-6 w-full flex justify-center py-3 bg-red-500 hover:bg-red-600 text-white font-semibold rounded-lg transition-colors duration-200 flex items-center gap-2">
+        <a href="${pageContext.request.contextPath}/logout" class="px-6 w-full flex justify-center py-3 bg-red-500 hover:bg-red-600 text-white font-semibold rounded-lg transition-colors duration-200 flex items-center gap-2">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
             </svg>
             Logout
-        </button>
+        </a>
     </div>
 </div>
