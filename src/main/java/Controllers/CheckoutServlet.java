@@ -233,6 +233,12 @@ public class CheckoutServlet extends HttpServlet {
                 for (Cart cart : selectedItems) {
                     subtotal += cart.getQuantity() * cart.getProduct().getPrice();
                 }
+                if (subtotal < v.getMinValue()) {
+                    json.put("success", false);
+                    json.put("message", "The order total must be at least "
+                            + CurrencyFormatter.formatVietNamCurrency(v.getMinValue()) + " to apply this voucher.");
+                    break;
+                }
 
                 double discount = 0;
                 if ("percentage".equalsIgnoreCase(v.getType())) {
@@ -253,7 +259,7 @@ public class CheckoutServlet extends HttpServlet {
                 sess.setAttribute("appliedVoucher", v);
 
                 json.put("success", true);
-                json.put("message", "Voucher applied successfully");
+                json.put("message", "Voucher applied successfully.");
                 json.put("subtotal", subtotal);
                 json.put("discount", discount);
                 json.put("total", total);

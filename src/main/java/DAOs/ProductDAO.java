@@ -290,6 +290,19 @@ public class ProductDAO extends DB.DBContext {
                     urls.add(imageResult.getString("url"));
                 }
                 product.setUrls(urls);
+                String reviewStatsQuery = "SELECT COUNT(r.reviewId) AS totalReivew, AVG(CAST(r.star AS FLOAT)) AS averageStar\n"
+                        + "FROM Reviews r WHERE r.productId = ? GROUP BY r.productId";
+                Object[] params = new Object[]{productId};
+                ResultSet reviewStatsResult = execSelectQuery(reviewStatsQuery, params);
+                if (reviewStatsResult.next()) {
+                    product.setTotalReviews(reviewStatsResult.getInt("totalReivew"));
+                    product.setAverageStar(reviewStatsResult.getDouble("averageStar"));
+                }
+                ResultSet soldResult = execSelectQuery("SELECT SUM(od.detailQuantity) AS solt FROM OrderDetails od\n"
+                        + "WHERE od.productId = ? GROUP BY od.productId", params);
+                if (soldResult.next()) {
+                    product.setSold(soldResult.getInt("solt"));
+                }
                 pros.add(product);
             }
         } catch (SQLException e) {

@@ -123,7 +123,9 @@
                                                style="fill: ${i <= product.averageStar ? '#fbbf24' : '#e5e7eb'}"></i>
                                         </c:forEach>
                                     </div>
-                                    <span class="font-semibold text-gray-900">${product.averageStar}</span>
+                                    <span class="font-semibold text-gray-900">
+                                        <fmt:formatNumber value="${product.averageStar}" type="number" maxFractionDigits="1" minFractionDigits="1" />
+                                    </span>
                                     <span class="text-blue-600 text-sm">
                                         (${product.totalReviews} reviews)
                                     </span>

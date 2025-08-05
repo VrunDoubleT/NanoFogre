@@ -1293,7 +1293,7 @@ const toggleReviewLoading = (show) => {
 
 const loadReviews = async (productId, star = 0, page = 1) => {
     toggleReviewLoading(true)
-    const response = await fetch('/product/view?type=review&productId=' + productId + "&star=" + star + "&page=" + page);
+    const response = await fetch('/review?type=review&productId=' + productId + "&star=" + star + "&page=" + page);
     const HTML = await response.text();
     if (HTML === null || HTML.trim().length === 0) {
         isLastPageReview = true;
@@ -1341,7 +1341,7 @@ function sendReply(reviewId) {
     }
     const replyText = document.getElementById(`replyText${reviewId}`).value.trim()
     const employeeId = 1
-    fetch("/product/view?type=reply",{
+    fetch("/review?type=reply",{
         method: "POST",
         headers: {
             "Content-Type": "application/json"

@@ -16,7 +16,7 @@
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Cart - NanoForge</title>
-        <link rel="icon" type="image/png" href="https://res.cloudinary.com/dk4fqvp3v/image/upload/v1752501574/1_1_r1trli.png">
+
         <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
 
         <script src="https://cdn.tailwindcss.com"></script>
@@ -582,8 +582,7 @@ recalc();
                                     title: 'Removed',
                                     text: data.message || 'Item removed from cart.',
                                     timer: 1200,
-                                    showConfirmButton: false,
-                                    customClass: {popup: 'bg-gray-800 text-white rounded-lg'}
+                                    showConfirmButton: false
                                 });
                             }
                         })
@@ -769,21 +768,90 @@ recalc();
             }
 
             //----------Purchase-----------------//
-            document.getElementById('purchaseBtn').addEventListener('click', () => {
-                const checked = Array.from(document.querySelectorAll('.item-checkbox'))
-                        .filter(ch => ch.checked)
-                        .map(ch => ch.dataset.id);
-                if (!checked.length) {
-                    Swal.fire({
-                        icon: 'warning',
-                        title: 'No items selected',
-                        text: 'Please select at least one item to purchase.'
-                    });
-                    return;
-                }
-                const param = encodeURIComponent(JSON.stringify(checked));
-                window.location.href = '<%= request.getContextPath()%>/checkout?cartIds=' + param;
-            });
+
+document.getElementById('purchaseBtn').addEventListener('click', () => {
+    const checked = Array.from(document.querySelectorAll('.item-checkbox'))
+            .filter(ch => ch.checked)
+            .map(ch => ch.dataset.id);
+            
+    if (!checked.length) {
+        Swal.fire({
+            icon: 'warning',
+            title: 'No items selected',
+            text: 'Please select at least one item to purchase.'
+        });
+        return;
+    }
+    
+    const invalidItems = [];
+    let hasInvalidQuantity = false;
+    
+    checked.forEach(cartId => {
+        const quantityInput = document.getElementById('quantity-' + cartId);
+        const item = cartItems.find(it => it.id == cartId);
+        
+        if (quantityInput && item) {
+            const currentQuantity = parseInt(quantityInput.value) || 0;
+            const maxStock = parseInt(quantityInput.max) || 0;
+            
+            if (currentQuantity > maxStock || maxStock === 0) {
+                hasInvalidQuantity = true;
+                invalidItems.push({
+                    cartId: cartId,
+                    title: item.title,
+                    quantity: currentQuantity,
+                    stock: maxStock
+                });
+            }
+        }
+    });
+    
+if (hasInvalidQuantity) {
+    let errorMessage = 'Cannot proceed. Some items have invalid quantities. Please adjust them.';
+    Swal.fire({
+        icon: 'error',
+        title: 'Invalid Quantities',
+        text: errorMessage,
+        confirmButtonText: 'Fix Quantities',
+        customClass: {
+            popup: 'text-left'
+        }
+    }).then(() => {
+        invalidItems.forEach(item => {
+            highlightInvalidItem(item.cartId);
+        });
+    });
+    return;
+}
+    
+    const param = encodeURIComponent(JSON.stringify(checked));
+    window.location.href = '<%= request.getContextPath()%>/checkout?cartIds=' + param;
+});
+
+
+function highlightInvalidItem(cartId) {
+    const cartItem = document.getElementById('cart-item-' + cartId);
+    const quantityInput = document.getElementById('quantity-' + cartId);
+    
+    if (cartItem && quantityInput) {
+
+        cartItem.classList.add('border-red-500', 'border-2');
+        quantityInput.classList.add('border-red-500', 'bg-red-50');
+        
+        cartItem.style.animation = 'shake 0.5s ease-in-out';
+        
+        cartItem.scrollIntoView({ 
+            behavior: 'smooth', 
+            block: 'center' 
+        });
+        
+        setTimeout(() => {
+            cartItem.classList.remove('border-red-500', 'border-2');
+            quantityInput.classList.remove('border-red-500', 'bg-red-50');
+            cartItem.style.animation = '';
+        }, 5000);
+    }
+}
         </script>
     </body>
 </html>
