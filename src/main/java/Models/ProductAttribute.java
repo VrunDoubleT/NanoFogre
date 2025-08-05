@@ -5,15 +5,15 @@ package Models;
  * @author iphon
  */
 public class ProductAttribute {
-    private Integer id;
+    private int id;
     private String name;
     private String unit;
     private String minValue;
     private String maxValue;
     private String dataType;
     private String value;
-    private Boolean isRequired;
-    private Boolean isActive;
+    private boolean isRequired;
+    private boolean isActive;
     private Category category;
 
     public ProductAttribute() {

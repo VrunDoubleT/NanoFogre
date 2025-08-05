@@ -212,9 +212,8 @@ function handleCreateBrand() {
 
     if (submitBtn)
         submitBtn.disabled = true;
-    if (loadingIcon)
-        loadingIcon.classList.remove('hidden');
 
+    showLoading()
     const formData = new FormData();
     formData.append('type', 'create');
     formData.append('brandName', nameInput.value.trim());
@@ -238,8 +237,7 @@ function handleCreateBrand() {
             .finally(() => {
                 if (submitBtn)
                     submitBtn.disabled = false;
-                if (loadingIcon)
-                    loadingIcon.classList.add('hidden');
+                hiddenLoading()
             });
 }
 
@@ -267,7 +265,6 @@ function handleUpdateBrand() {
     if (hasError) return;
 
     if (submitBtn) submitBtn.disabled = true;
-    if (loadingIcon) loadingIcon.classList.remove('hidden');
 
     const formData = new FormData();
     formData.append('type', 'update');
@@ -277,6 +274,7 @@ function handleUpdateBrand() {
         formData.append('brandImage', imageInput.files[0]);
     }
 
+    showLoading();
     fetch('/brand/view', {
         method: 'POST',
         body: formData
@@ -301,7 +299,7 @@ function handleUpdateBrand() {
     })
     .finally(() => {
         if (submitBtn) submitBtn.disabled = false;
-        if (loadingIcon) loadingIcon.classList.add('hidden');
+        hiddenLoading()
     });
 }
 

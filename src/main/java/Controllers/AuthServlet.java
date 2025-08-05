@@ -58,7 +58,7 @@ public class AuthServlet extends HttpServlet {
             if (session != null) {
                 session.invalidate();
             }
-            response.sendRedirect(request.getContextPath() + "/auth?action=login");
+            response.sendRedirect(request.getContextPath() + "/");
         } else if ("verifyCode".equals(action)) {
             HttpSession session = request.getSession();
             String email = (String) session.getAttribute("verifyEmail");

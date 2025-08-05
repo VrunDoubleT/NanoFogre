@@ -162,7 +162,7 @@ public class ForgetDAO extends DB.DBContext {
     public SendResult upsertCodeCustomer(int customerId, String code, LocalDateTime expiredAt, boolean isRegister) {
         if (isRegister) {
             int failedCount = 0;
-            String sel = "SELECT failedCount FROM VerifyCodes WHERE userType=0 AND customerId=? ORDER BY createdAt DESC";
+            String sel = "SELECT failedCount FROM VerifyCodes WHERE customerId=? ORDER BY createdAt DESC";
             try ( ResultSet rs = execSelectQuery(sel, new Object[]{customerId})) {
                 if (rs.next()) {
                     failedCount = rs.getInt("failedCount");
@@ -172,7 +172,7 @@ public class ForgetDAO extends DB.DBContext {
                 return SendResult.DB_ERROR;
             }
             // delete code old insert new
-            String del = "DELETE FROM VerifyCodes WHERE userType=0 AND customerId=?";
+            String del = "DELETE FROM VerifyCodes WHERE customerId=?";
             try {
                 execQuery(del, new Object[]{customerId});
             } catch (SQLException ex) {
@@ -181,7 +181,7 @@ public class ForgetDAO extends DB.DBContext {
             }
 
             // Insert code giữ lại failedCount cũ
-            String ins = "INSERT INTO VerifyCodes (userType, customerId, code, createdAt, expiredAt, requestCount, failedCount) VALUES (0, ?, ?, ?, ?, 0, ?)";
+            String ins = "INSERT INTO VerifyCodes (customerId, code, createdAt, expiredAt, requestCount, failedCount) VALUES (?, ?, ?, ?, 0, ?)";
             try {
                 int rows = execQuery(ins, new Object[]{
                     customerId,
@@ -196,7 +196,7 @@ public class ForgetDAO extends DB.DBContext {
                 return SendResult.DB_ERROR;
             }
         } else {
-            String sel = "SELECT requestCount, createdAt FROM VerifyCodes WHERE userType = 0 AND customerId = ?";
+            String sel = "SELECT requestCount, createdAt FROM VerifyCodes WHERE customerId = ?";
             try ( ResultSet rs = execSelectQuery(sel, new Object[]{customerId})) {
                 LocalDateTime now = LocalDateTime.now();
                 if (rs.next()) {
@@ -206,7 +206,7 @@ public class ForgetDAO extends DB.DBContext {
                     if (!olderThanDay && count >= 3) {
                         return SendResult.TOO_MANY_REQUESTS;
                     }
-                    String upd = "UPDATE VerifyCodes SET code=?, createdAt=?, expiredAt=?, requestCount=? WHERE userType=0 AND customerId=?";
+                    String upd = "UPDATE VerifyCodes SET code=?, createdAt=?, expiredAt=?, requestCount=? WHERE customerId=?";
                     int newCount = olderThanDay ? 1 : count + 1;
                     int rows = execQuery(upd, new Object[]{
                         code,
@@ -217,7 +217,7 @@ public class ForgetDAO extends DB.DBContext {
                     });
                     return rows > 0 ? SendResult.OK : SendResult.DB_ERROR;
                 } else {
-                    String ins = "INSERT INTO VerifyCodes (userType, customerId, code, createdAt, expiredAt, requestCount, failedCount) VALUES (0, ?, ?, ?, ?, 1, 0)";
+                    String ins = "INSERT INTO VerifyCodes (customerId, code, createdAt, expiredAt, requestCount, failedCount) VALUES (?, ?, ?, ?, 1, 0)";
                     int rows = execQuery(ins, new Object[]{
                         customerId,
                         code,
@@ -234,7 +234,7 @@ public class ForgetDAO extends DB.DBContext {
     }
 
     public boolean checkVerifyCodeCustomer(int customerId, String code) {
-        String sql = "SELECT COUNT(*) AS count FROM VerifyCodes WHERE userType = 0 AND customerId = ? AND code = ? AND expiredAt > ?";
+        String sql = "SELECT COUNT(*) AS count FROM VerifyCodes WHERE customerId = ? AND code = ? AND expiredAt > ?";
         try ( ResultSet rs = execSelectQuery(sql, new Object[]{customerId, code, new Timestamp(System.currentTimeMillis())})) {
             if (rs.next()) {
                 return rs.getInt("count") > 0;
@@ -246,7 +246,7 @@ public class ForgetDAO extends DB.DBContext {
     }
 
     public int getLatestVerifyCodeId(int customerId) {
-        String sql = "SELECT id FROM VerifyCodes WHERE userType = 0 AND customerId = ? ORDER BY createdAt DESC LIMIT 1";
+        String sql = "SELECT id FROM VerifyCodes WHERE customerId = ? ORDER BY createdAt DESC LIMIT 1";
         try ( ResultSet rs = execSelectQuery(sql, new Object[]{customerId})) {
             if (rs.next()) {
                 return rs.getInt("id");
@@ -258,10 +258,10 @@ public class ForgetDAO extends DB.DBContext {
     }
 
     public void incrementFailedCountForCustomer(int customerId) throws SQLException {
-        String sql = "UPDATE VerifyCodes SET failedCount = failedCount + 1 WHERE userType = 0 AND customerId = ?";
+        String sql = "UPDATE VerifyCodes SET failedCount = failedCount + 1 WHERE customerId = ?";
         execQuery(sql, new Object[]{customerId});
 
-        String sel = "SELECT failedCount FROM VerifyCodes WHERE userType = 0 AND customerId = ? ORDER BY createdAt DESC LIMIT 1";
+        String sel = "SELECT failedCount FROM VerifyCodes WHERE customerId = ? ORDER BY createdAt DESC LIMIT 1";
         try ( ResultSet rs = execSelectQuery(sel, new Object[]{customerId})) {
         } catch (SQLException ex) {
             ex.printStackTrace();
@@ -269,7 +269,7 @@ public class ForgetDAO extends DB.DBContext {
     }
 
     public int getLatestFailedCount(int customerId) {
-        String sql = "SELECT failedCount FROM VerifyCodes WHERE userType = 0 AND customerId = ? ORDER BY createdAt DESC LIMIT 1";
+        String sql = "SELECT failedCount FROM VerifyCodes WHERE customerId = ? ORDER BY createdAt DESC LIMIT 1";
         try ( ResultSet rs = execSelectQuery(sql, new Object[]{customerId})) {
             if (rs.next()) {
                 return rs.getInt("failedCount");
@@ -281,7 +281,7 @@ public class ForgetDAO extends DB.DBContext {
     }
 
     public int getFailedCountForCustomer(int customerId) {
-        String sql = "SELECT failedCount FROM VerifyCodes WHERE userType = 0 AND customerId = ?";
+        String sql = "SELECT failedCount FROM VerifyCodes WHERE customerId = ?";
         try ( ResultSet rs = execSelectQuery(sql, new Object[]{customerId})) {
             if (rs.next()) {
                 return rs.getInt("failedCount");
@@ -337,7 +337,7 @@ public class ForgetDAO extends DB.DBContext {
     }
 
     public void deleteCodeCustomer(int customerId, String code) {
-        String sql = "DELETE FROM VerifyCodes WHERE userType = 0 AND customerId = ? AND code = ?";
+        String sql = "DELETE FROM VerifyCodes WHERE customerId = ? AND code = ?";
         try {
             execQuery(sql, new Object[]{customerId, code});
         } catch (SQLException ex) {
@@ -379,7 +379,7 @@ public class ForgetDAO extends DB.DBContext {
     }
 
     public boolean isCustomerBlockedByFailedCount(int customerId) {
-        String sql = "SELECT 1 FROM VerifyCodes WHERE userType=0 AND customerId=? AND failedCount >= 5 AND createdAt >= ?";
+        String sql = "SELECT 1 FROM VerifyCodes WHERE customerId=? AND failedCount >= 5 AND createdAt >= ?";
         Timestamp since = Timestamp.valueOf(LocalDateTime.now().minusHours(24));
         try ( ResultSet rs = execSelectQuery(sql, new Object[]{customerId, since})) {
             return rs.next();

@@ -1,11 +1,15 @@
 package Controllers;
 
+import DAOs.ProductDAO;
 import DAOs.ReviewDAO;
+import Models.Employee;
+import Models.Product;
 import Models.Review;
 import Models.ReviewStats;
 import Utils.Converter;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonObject;
 import java.io.IOException;
 import java.io.PrintWriter;
 import jakarta.servlet.ServletException;
@@ -13,6 +17,7 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import java.awt.BorderLayout;
 import java.util.List;
 
@@ -86,6 +91,19 @@ public class ReviewServlet extends HttpServlet {
                 request.setAttribute("page", p);
                 request.getRequestDispatcher("/WEB-INF/customers/common/paginationTeamplate.jsp").forward(request, response);
                 break;
+            case "reviewStats":
+                ReviewStats reviewStats = rDao.getReviewStatsByProductId(Converter.parseOption(request.getParameter("productId"), 0));
+                request.setAttribute("reviewStats", reviewStats);
+                request.getRequestDispatcher("/WEB-INF/employees/templates/products/reviewStatsTeamplate.jsp").forward(request, response);
+                System.out.println(reviewStats);
+                break;
+            case "review":
+                int limitReview = 5;
+                int pageReview = Converter.parseOption(request.getParameter("page"), 1);
+                List<Review> reviewsOfAdmin = rDao.getReviewsByProductId(Converter.parseOption(request.getParameter("productId"), 0), Converter.parseOption(request.getParameter("star"), 0), pageReview, limitReview);
+                request.setAttribute("reviews", reviewsOfAdmin);
+                request.getRequestDispatcher("/WEB-INF/employees/templates/products/reviewTeamplate.jsp").forward(request, response);
+                break;
             default:
                 break;
         }
@@ -103,7 +121,33 @@ public class ReviewServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        String type = request.getParameter("type") != null ? request.getParameter("type") : "create";
+        ProductDAO pDao = new ProductDAO();
+        ReviewDAO rDao = new ReviewDAO();
+        HttpSession session = request.getSession(false);
+        Employee employee = (session != null) ? (Employee) session.getAttribute("employee") : null;
+        if (employee == null) {
+            response.sendRedirect(request.getContextPath() + "/admin/auth/login");
+            return;
+        }
+        switch (type) {
+            case "reply":
+                Gson gson = new Gson();
+                JsonObject json = gson.fromJson(request.getReader(), JsonObject.class);
 
+                int reviewId = json.get("reviewId").getAsInt();
+                String replyText = json.get("replyText").getAsString();
+                int employeeId = employee.getId();
+                boolean isSuccessReply = rDao.addReply(reviewId, employeeId, replyText);
+                if(isSuccessReply){
+                    Review newReview = rDao.getReviewById(reviewId);
+                    request.setAttribute("review", newReview);
+                    request.getRequestDispatcher("/WEB-INF/employees/templates/products/reviewItemTeamplate.jsp").forward(request, response);
+                }
+                break;
+            default:
+                break;
+        }
     }
 
     /**

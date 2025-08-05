@@ -9,6 +9,7 @@
 <html>
     <head>
         <title>Forgot Password - NanoForge</title>
+        <link rel="icon" type="image/png" href="https://res.cloudinary.com/dk4fqvp3v/image/upload/v1752501574/1_1_r1trli.png">
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
               <style>

@@ -11,7 +11,7 @@
             <c:if test="${not empty sessionScope.customer}">
                 <div class="">
                     <div class="flex justify-center pb-3">
-                        <img src="${sessionScope.customer.avatar}" alt="Avatar" class="w-20 h-20 rounded-full border-3 border-gray-300">
+                        <img src="${sessionScope.customer.avatar}" alt="Avatar" class="w-20 h-20 border rounded-full border-3 border-gray-300">
                     </div>
                     <div class="text-gray-800 text-center space-y-1">
                         <h3 class="text-lg font-semibold leading-tight">${sessionScope.customer.name}</h3>

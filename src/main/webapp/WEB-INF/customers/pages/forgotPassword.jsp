@@ -8,7 +8,8 @@
 <html lang="en">
     <head>
         <meta charset="UTF-8">
-        <title>Forgot Password</title>
+        <title>Forgot Password - Nano Forge</title>
+        <link rel="icon" type="image/png" href="https://res.cloudinary.com/dk4fqvp3v/image/upload/v1752501574/1_1_r1trli.png">
         <script src="https://cdn.tailwindcss.com"></script>
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Orbitron:wght@600&display=swap" rel="stylesheet">
     </head>

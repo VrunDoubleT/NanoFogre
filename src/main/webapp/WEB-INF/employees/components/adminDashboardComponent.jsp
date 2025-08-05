@@ -55,7 +55,7 @@
             </div>
             <div>
                 <div class="text-sm text-gray-500">Total Revenue</div>
-                <div class="text-2xl font-extrabold text-gray-900 break-all text-center truncate" title="${dashboardData.totalRevenue}">
+                <div class="text-2xl font-extrabold text-gray-900 break-all truncate" title="${dashboardData.totalRevenue}">
                     <%--<fmt:formatNumber value="${dashboardData.totalRevenue}" type="currency" currencyCode="VND"/>--%>
                     ${CurrencyFormatter.formatCurrencyShort(dashboardData.totalRevenue)}
                 </div>
@@ -96,7 +96,7 @@
                 </svg>
             </div>
             <div>
-                <div class="text-sm text-gray-500">Total Staff</div>
+                <div class="text-sm text-gray-500">Total Employee</div>
                 <div class="text-2xl font-extrabold text-gray-900">${totalStaff}</div>
             </div>
         </div>

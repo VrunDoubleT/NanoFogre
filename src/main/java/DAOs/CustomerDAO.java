@@ -309,7 +309,7 @@ public class CustomerDAO extends DB.DBContext {
     }
 
     public boolean insertCodeCustomer(int customerId, String code, LocalDateTime expiredAt) {
-        String sql = "INSERT INTO VerifyCodes (userType, customerId, code, isVerified, createdAt, expiredAt) VALUES (0, ?, ?, 0, ?, ?)";
+        String sql = "INSERT INTO VerifyCodes (customerId, code, isVerified, createdAt, expiredAt) VALUES (?, ?, 0, ?, ?)";
         Object[] params = {
             customerId,
             code,

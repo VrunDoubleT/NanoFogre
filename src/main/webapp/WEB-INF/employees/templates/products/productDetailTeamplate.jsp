@@ -124,6 +124,10 @@
                                     <span class="font-medium">${product.material}</span>
                                 </div>
                                 <div class="flex justify-between">
+                                    <span class="text-gray-600">Sold:</span>
+                                    <span class="font-medium">${product.sold}</span>
+                                </div>
+                                <div class="flex justify-between">
                                     <span class="text-gray-600">Status:</span>
                                     <span class="font-medium">
                                         <% if (product != null) { %>

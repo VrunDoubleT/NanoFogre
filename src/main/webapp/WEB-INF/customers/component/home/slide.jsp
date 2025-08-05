@@ -102,13 +102,6 @@
                             </div>
                         </c:forEach>
                     </div>
-                    <div class="flex space-x-12 shrink-0">
-                        <c:forEach var="brand" items="${brands}">
-                            <div class="brand-item flex items-center justify-center h-full rounded-xl">
-                                <span class="text-2xl font-bold text-blue-600 whitespace-nowrap">${brand.name}</span>
-                            </div>
-                        </c:forEach>
-                    </div>
                 </div> 
             </div> 
         </div>

@@ -1,11 +1,10 @@
 // ====== Order Status Labels and Colors ======
-const ORDER_STATUS_LABELS = ["Pending", "Processing", "Shipped", "Delivered", "Cancelled"];
+const ORDER_STATUS_LABELS = ["Pending", "Processing", "Shipped", "Delivered"];
 const ORDER_STATUS_COLORS = [
     "#2563eb", // Pending (blue)
     "#a78bfa", // Processing (purple)
     "#fbbf24", // Shipped (yellow)
     "#16a34a", // Delivered (green)
-    "#f87171"  // Cancelled (red)
 ];
 
 // ================== DASHBOARD MAIN FUNCTION ==================

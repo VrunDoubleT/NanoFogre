@@ -9,7 +9,7 @@
     <h3 class="text-lg font-semibold text-gray-900 mb-4">Additional Information</h3>
     <div class="space-y-4">
         <c:choose>
-            <c:when test="${not empty productAttributes}">
+            <c:when test="${not empty productAttributes and productAttributes[0].id != 0}">
                 <c:forEach var="productAttribute" items="${productAttributes}">
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">

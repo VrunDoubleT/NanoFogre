@@ -17,14 +17,14 @@
         <title>
             <c:choose>
                 <c:when test="${not empty product}">
-                    ${product.title} - Product Detail
+                    ${product.title} - Product Detail - Nano Forge
                 </c:when>
                 <c:otherwise>
                     Product Not Found
                 </c:otherwise>
             </c:choose>
         </title>
-
+        <link rel="icon" type="image/png" href="https://res.cloudinary.com/dk4fqvp3v/image/upload/v1752501574/1_1_r1trli.png">
         <script src="https://cdn.tailwindcss.com"></script>
         <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -112,7 +112,9 @@
                                         </c:if>
                                     </div>
                                 </div>
-
+                                <div class="text-sm text-gray-600">
+                                    Sold: ${product.sold}
+                                </div>
                                 <!-- Rating & Reviews -->
                                 <div class="flex items-center gap-2">
                                     <div class="flex items-center">

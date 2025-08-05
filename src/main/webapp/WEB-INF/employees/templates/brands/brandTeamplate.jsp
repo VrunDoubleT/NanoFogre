@@ -21,7 +21,7 @@
         <c:forEach var="brand" items="${brands}" varStatus="status">
             <tr class="hover:bg-gray-50 transition-colors" data-brand-id="${brand.id}">
                 <td class="py-3 px-6 align-middle">
-                    <c:out value="${startIndex + status.index}"/>
+                    <c:out value="${brand.id}"/>
                 </td>
                 <td class="py-3 px-6 font-medium align-middle">
                     ${brand.name}
@@ -60,7 +60,7 @@
                         </button>
                     </div>
                 </td>
-                </c:if>ss
+                </c:if>
             </tr>
         </c:forEach>
     </c:otherwise>

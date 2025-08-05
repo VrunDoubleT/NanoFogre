@@ -118,6 +118,7 @@ public class ProductServlet extends HttpServlet {
                 request.setAttribute("product", productToEdit);
                 request.setAttribute("productImages", productImages);
                 request.setAttribute("productAttributes", paEdit);
+                System.out.println(paEdit);
                 request.getRequestDispatcher("/WEB-INF/employees/templates/products/editProductTeamplate.jsp").forward(request, response);
                 break;
             case "stat":

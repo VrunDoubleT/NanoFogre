@@ -23,7 +23,7 @@
             <tr>
                 <!-- Index -->
                 <td class="px-9 py-3 whitespace-nowrap text-center">
-                    <span class="font-bold text-[20px] text-gray-500">${index}</span>
+                    <span class="font-bold text-[20px] text-gray-500">${v.id}</span>
                 </td>
 
                 <!-- Code -->

@@ -10,8 +10,9 @@
 <html lang="en">
     <head>
         <meta charset="UTF-8">
-        <title>Register</title>
+        <title>Register - Nano Forge</title>
         <script src="https://cdn.tailwindcss.com"></script>
+        <link rel="icon" type="image/png" href="https://res.cloudinary.com/dk4fqvp3v/image/upload/v1752501574/1_1_r1trli.png">
         <!-- Import Inter + Orbitron -->
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Orbitron:wght@600&display=swap" rel="stylesheet">
         <style>

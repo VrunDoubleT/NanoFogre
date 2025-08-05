@@ -6,6 +6,7 @@ package Controllers;
 
 import DAOs.StaffDAO;
 import Models.Employee;
+import Utils.Common;
 import Utils.Converter;
 import Utils.MailUtil;
 import com.google.gson.JsonObject;
@@ -155,7 +156,7 @@ public class StaffServlet extends HttpServlet {
                 String isBlockedParam = request.getParameter("block");
 
                 staff.setEmail(email);
-                staff.setPassword(password);
+                staff.setPassword(Common.hashPassword(password));
                 staff.setNewPassword(newPassword);
                 staff.setName(name);
                 staff.setAvatar((avatar != null && !avatar.trim().isEmpty()) ? avatar : null);

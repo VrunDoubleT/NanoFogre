@@ -113,8 +113,6 @@ public class ProductDAO extends DB.DBContext {
                 if (soltResult.next()) {
                     product.setSold(soltResult.getInt("sold"));
                 }
-                List<ProductAttribute> pas = getAttributesByProductId(productId);
-                product.setAttributes(pas);
                 pros.add(product);
             }
         } catch (SQLException e) {
@@ -608,7 +606,7 @@ public class ProductDAO extends DB.DBContext {
                     String sqlAttribute = "INSERT INTO ProductAttributeValues (productId, attributeId, value) VALUES\n";
                     for (int i = 0; i < product.getAttributes().size(); i++) {
                         sqlAttribute += String.format("(%d, %d, N'%s')", generateId, product.getAttributes().get(i).getId(), product.getAttributes().get(i).getValue());
-                        if (i < product.getAttributes().size() - 1) {
+                                            if (i < product.getAttributes().size() - 1) {
                             sqlAttribute += ",";
                         }
                     }
