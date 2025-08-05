@@ -205,7 +205,7 @@ public class AuthServlet extends HttpServlet {
         }
 
         String code = String.valueOf((int) ((Math.random() * 900000) + 100000));
-        LocalDateTime expiredAt = LocalDateTime.now().plusMinutes(10);
+        LocalDateTime expiredAt = LocalDateTime.now().plusMinutes(5);
 
         ForgetDAO.SendResult codeResult = forgetDAO.upsertCodeCustomer(saved.getId(), code, expiredAt, true);
         if (codeResult == ForgetDAO.SendResult.TOO_MANY_REQUESTS) {
@@ -220,7 +220,7 @@ public class AuthServlet extends HttpServlet {
 
         String subject = "Account Verification";
         String content = "Hello " + name + ",\n\nYour verification code is: " + code
-                + "\nThis code will expire in 10 minutes.\n\nThank you!";
+                + "\nThis code will expire in 5 minutes.\n\nThank you!";
         String mailResult = Utils.MailUtil.sendEmail(email, subject, content);
 
         if (!mailResult.startsWith("Email sent")) {
